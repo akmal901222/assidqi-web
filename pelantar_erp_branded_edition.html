@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>As-Sidqi ERP | Professional Engineering Portal</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Google Drive API & Identity Services -->
+    <script async defer src="https://apis.google.com/js/api.js"></script>
+    <script async defer src="https://accounts.google.com/gsi/client"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Sidebar Navigation Effects */
+        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-item:hover { background-color: rgba(255,255,255,0.05); }
+        .nav-item.active { background-color: rgba(16, 185, 129, 0.1); border-left-color: #10b981; color: #34d399; font-weight: 600; }
+
+        /* View Management */
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 50; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+        
+        /* The Magic Print Engine */
+        @media print {
+            body { background-color: white; }
+            #sidebar, #topbar, .no-print { display: none !important; }
+            #main-content { margin: 0 !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; }
+            .print-only { display: block !important; }
+            .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; border: none !important; }
+            .print-container { width: 100%; max-width: 210mm; margin: 0 auto; padding: 15mm; background: white; }
+            @page { margin: 0; size: A4 portrait; }
+        }
+        .print-only { display: none; }
+        
+        .logo-img { object-fit: contain; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <aside id="sidebar" class="w-72 bg-[#020617] text-slate-300 flex flex-col flex-shrink-0 z-20 shadow-2xl transition-all duration-300">
+        <div class="p-6 border-b border-slate-800 text-center flex flex-col items-center justify-center">
+            <!-- COMPANY LOGO FROM GOOGLE DRIVE -->
+            <img src="https://drive.google.com/uc?id=1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="h-16 mb-3 logo-img bg-white p-1 rounded-lg shadow-lg">
+            <p class="text-[9px] text-emerald-400 mt-1 uppercase tracking-widest font-bold border border-emerald-900/50 inline-block px-2 py-1 rounded bg-emerald-900/20">Engineering ERP Hub</p>
+        </div>
+        
+        <div class="px-6 py-4"><p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Operations</p></div>
+
+        <nav class="flex-1 overflow-y-auto px-3 space-y-1">
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left"><i class="ph ph-squares-four text-xl"></i> Executive Dashboard</button>
+            <button onclick="switchView('clients')" id="nav-clients" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left"><i class="ph ph-address-book text-xl"></i> Clients & CRM</button>
+            <button onclick="switchView('projects')" id="nav-projects" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left"><i class="ph ph-kanban text-xl"></i> Projects & OSC Tracker</button>
+            <button onclick="switchView('commercials')" id="nav-commercials" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left"><i class="ph ph-receipt text-xl"></i> Billing & Quotations</button>
+            <button onclick="switchView('letters')" id="nav-letters" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left"><i class="ph ph-file-text text-xl"></i> AI Surat Rasmi</button>
+            <button onclick="switchView('hr')" id="nav-hr" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left"><i class="ph ph-users text-xl"></i> HR & Payroll</button>
+            <button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-left mt-4 border-t border-slate-800 pt-4"><i class="ph ph-gear text-xl"></i> Company Setup</button>
+        </nav>
+
+        <div class="p-6 border-t border-slate-800 bg-slate-900/50">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-900/20">AA</div>
+                <div><p class="text-sm font-bold text-white">Ir. Amirul Akmal</p><p class="text-xs text-emerald-400">Principal Engineer</p></div>
+            </div>
+        </div>
+    </aside>
+
+    <main id="main-content" class="flex-1 flex flex-col h-screen overflow-hidden relative bg-[#f8fafc]">
+        
+        <header id="topbar" class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 flex-shrink-0 shadow-sm z-10">
+            <h2 id="page-title" class="text-lg font-bold text-slate-800">Executive Dashboard</h2>
+            <div class="flex items-center gap-4">
+                <!-- Google Drive Connect Button -->
+                <button id="gdrive-status-btn" onclick="handleAuthClick()" class="hidden px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors hover:bg-blue-100">
+                    <i class="ph ph-google-drive-logo text-lg"></i> <span id="gdrive-status-text">Connect Drive</span>
+                </button>
+                <span id="current-date" class="text-sm text-slate-500 font-medium"></span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            
+            <div id="view-dashboard" class="view-section active">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-money text-6xl"></i></div>
+                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Receivables</p>
+                        <h3 class="text-4xl font-black text-slate-800" id="dash-receivables">RM 0.00</h3>
+                        <p class="text-sm text-emerald-600 font-medium mt-2 flex items-center gap-1"><i class="ph ph-trend-up"></i> YTD Invoiced</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-kanban text-6xl"></i></div>
+                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Active Projects</p>
+                        <h3 class="text-4xl font-black text-slate-800" id="dash-projects-count">0</h3>
+                        <p class="text-sm text-blue-600 font-medium mt-2">Currently in pipeline</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-file-pdf text-6xl"></i></div>
+                        <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Pending OSC</p>
+                        <h3 class="text-4xl font-black text-slate-800" id="dash-osc-count">0</h3>
+                        <p class="text-sm text-amber-600 font-medium mt-2">Awaiting PBT Approval</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="font-bold text-slate-800">Revenue Analytics</h4>
+                        </div>
+                        <div class="h-64 relative w-full flex items-center justify-center bg-slate-50 rounded border border-dashed border-slate-200 text-slate-400">
+                            [Revenue Chart Area - Populates on Data Entry]
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-6">Recent Operations</h4>
+                        <div class="space-y-4" id="activity-feed">
+                            <p class="text-sm text-slate-400 italic">No recent activity.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-clients" class="view-section">
+                <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
+                    <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-grid"></div>
+            </div>
+
+            <div id="view-projects" class="view-section">
+                <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
+                    <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                            <tr><th class="px-6 py-4">Project ID & Client</th><th class="px-6 py-4">Structure Details</th><th class="px-6 py-4">PBT Reference</th><th class="px-6 py-4">Current Status</th><th class="px-6 py-4 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="table-projects" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-commercials" class="view-section">
+                 <div class="flex justify-between items-center mb-6 no-print">
+                    <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate advanced Quotations and Invoices.</p></div>
+                    <button onclick="openInvoiceWizard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-receipt text-lg"></i> Create Document</button>
+                </div>
+
+                <!-- Print Container (Only visible when printing) -->
+                <div id="print-invoice-container" class="print-only print-container"></div>
+
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden no-print">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px] tracking-wider">
+                            <tr><th class="px-6 py-4">Doc No. & Date</th><th class="px-6 py-4">Project Reference</th><th class="px-6 py-4">Total Amount</th><th class="px-6 py-4">Status</th><th class="px-6 py-4 text-right">Action</th></tr>
+                        </thead>
+                        <tbody id="table-commercials" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-letters" class="view-section">
+                 <div class="flex justify-between items-center mb-6 no-print">
+                    <div><h3 class="text-xl font-bold text-slate-800">AI Surat Rasmi Generator</h3><p class="text-sm text-slate-500">Auto-generate formal letters based on project data.</p></div>
+                </div>
+
+                <div id="print-letter-container" class="print-only print-container"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 no-print">
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-1 h-fit">
+                        <h4 class="font-bold text-slate-800 mb-4 border-b pb-2">Letter Parameters</h4>
+                        <div class="space-y-4">
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Project</label><select id="letter-project" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 bg-slate-50"></select></div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Letter Type</label>
+                                <select id="letter-type" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:border-emerald-500 bg-slate-50">
+                                    <option value="cover">Surat Iringan (Cover Letter OSC)</option>
+                                    <option value="endorse">Pengesahan Struktur (P.E. Endorsement)</option>
+                                </select>
+                            </div>
+                            <button onclick="generateLetter()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"><i class="ph ph-magic-wand"></i> Auto-Draft Letter</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 lg:col-span-2">
+                         <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h4 class="font-bold text-slate-800">Document Editor</h4>
+                            <div class="flex gap-3">
+                                <button onclick="saveLetterToDrive()" id="btn-drive-letter" class="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 hidden"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                                <button onclick="printLetter()" class="text-slate-500 hover:text-slate-800 font-medium text-sm flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded"><i class="ph ph-printer text-lg"></i> Print Official</button>
+                            </div>
+                        </div>
+                        <!-- Hidden div used to generate the PDF snapshot for Google Drive -->
+                        <div id="hidden-pdf-render" style="display:none; padding: 20mm; background: white; width: 210mm;"></div>
+                        <textarea id="letter-editor" class="w-full h-[500px] border border-slate-200 rounded-lg p-4 outline-none resize-none font-serif text-sm leading-relaxed text-slate-800 placeholder-slate-300 shadow-inner" placeholder="Your generated letter will appear here..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-hr" class="view-section">
+                <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculate statutory deductions.</p></div>
+                    <button onclick="openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="staff-grid"></div>
+            </div>
+
+            <div id="view-settings" class="view-section">
+                 <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm max-w-4xl">
+                    <h3 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Company Profile & Document Settings</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Official Company Name</label><input type="text" id="set-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" value="AS-SIDQI ENGINEERING & SERVICES"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">BEM Practicing No.</label><input type="text" id="set-bem" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., C12345"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">SSM Registration No.</label><input type="text" id="set-ssm" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., 20230100XXXX"></div>
+                        <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Official Address (For Letterhead)</label><input type="text" id="set-address" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="Full address..."></div>
+                        <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bank Details (For Invoices)</label><input type="text" id="set-bank" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Maybank: 51234567890"></div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <h4 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="ph ph-google-drive-logo text-blue-500"></i> Google Drive API Integration</h4>
+                        <p class="text-sm text-slate-500 mb-4">Paste your Google Cloud API credentials here to enable one-click PDF uploads to your Google Drive.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">OAuth Client ID</label><input type="text" id="set-gclient" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="XXXXXX.apps.googleusercontent.com"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">API Key</label><input type="password" id="set-gapi" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="AIzaSyAXXXXXXX..."></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button onclick="saveSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition-all">Save Configuration</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Add Client Modal -->
+    <div id="modal-client" class="modal-overlay">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-bold text-slate-800">Add New Client</h3><button onclick="closeModal('modal-client')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Company Name</label><input type="text" id="c-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Ganad Media Sdn Bhd"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact Person & Phone</label><input type="text" id="c-contact" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., En. Ahmad (012-3456789)"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Billing Address</label><textarea id="c-address" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm resize-none" rows="3"></textarea></div>
+                <button onclick="saveClient()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl mt-2">Save Client Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Project Modal -->
+    <div id="modal-project" class="modal-overlay">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-bold text-slate-800">Register New Project</h3><button onclick="closeModal('modal-project')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Client</label><select id="p-client" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50"></select></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Structure Type & Details</label><input type="text" id="p-details" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Unipole 18m Free-standing"></div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Local Authority (PBT)</label>
+                    <select id="p-pbt" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+                        <option value="DBKL">Dewan Bandaraya Kuala Lumpur (DBKL)</option>
+                        <option value="MBPJ">Majlis Bandaraya Petaling Jaya (MBPJ)</option>
+                        <option value="MBSA">Majlis Bandaraya Shah Alam (MBSA)</option>
+                        <option value="MPKj">Majlis Perbandaran Kajang (MPKj)</option>
+                    </select>
+                </div>
+                <button onclick="saveProject()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl mt-2">Save to Pipeline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Staff Modal -->
+    <div id="modal-staff" class="modal-overlay">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-bold text-slate-800">Add Staff</h3><button onclick="closeModal('modal-staff')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label><input type="text" id="s-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="Staff name"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Position / Role</label><input type="text" id="s-role" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Draftsman"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Basic Salary (RM)</label><input type="number" id="s-salary" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="3000"></div>
+                <button onclick="saveStaff()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl mt-2">Save Staff Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Invoice Builder Modal -->
+    <div id="modal-invoice" class="modal-overlay">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center flex-shrink-0"><h3 class="font-bold text-slate-800">Commercial Document Builder</h3><button onclick="closeModal('modal-invoice')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button></div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Document Type</label><select id="inv-type" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"><option value="Quotation">Quotation (Sebut Harga)</option><option value="Invoice">Tax Invoice (Invois)</option></select></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Link to Project (Auto-fills Client)</label><select id="inv-project" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"></select></div>
+                </div>
+
+                <div class="border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Line Items</span><button onclick="addLineItem()" class="text-xs text-emerald-600 font-bold hover:underline">+ Add Row</button></div>
+                    <div class="p-4 space-y-3" id="line-items-container"></div>
+                </div>
+
+                <div class="flex justify-end border-t pt-4">
+                    <div class="w-64 space-y-2">
+                        <div class="flex justify-between text-sm"><span class="text-slate-500">Subtotal</span><span id="calc-subtotal" class="font-medium text-slate-800">RM 0.00</span></div>
+                        <div class="flex justify-between text-sm items-center"><label class="flex items-center gap-2 text-slate-500 cursor-pointer"><input type="checkbox" id="inv-tax" onchange="calculateTotals()" class="rounded text-emerald-600"> Add 8% SST</label><span id="calc-tax" class="font-medium text-slate-800">RM 0.00</span></div>
+                        <div class="flex justify-between text-lg font-bold border-t pt-2 mt-2"><span class="text-slate-800">Total</span><span id="calc-total" class="text-emerald-600">RM 0.00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-6 border-t border-slate-200 flex-shrink-0"><button onclick="saveCommercialDoc()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-emerald-600/20">Generate & Save Document</button></div>
+        </div>
+    </div>
+
+    <script>
+        // Set Date
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Standard Company Logo URL (Extracted from User's Drive Link)
+        const COMPANY_LOGO_URL = "https://drive.google.com/uc?id=1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC";
+
+        // --- STATE MANAGEMENT ---
+        let state = {
+            clients: [], projects: [], commercials: [], staff: [],
+            settings: { name: 'AS-SIDQI ENGINEERING & SERVICES', bem: '', ssm: '', address: '', bank: '', gclient: '', gapi: '' }
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('asSidqiERP');
+            if(saved) state = JSON.parse(saved);
+            
+            if(state.settings.name) {
+                ['name', 'bem', 'ssm', 'address', 'bank', 'gclient', 'gapi'].forEach(k => {
+                    if(document.getElementById('set-'+k)) document.getElementById('set-'+k).value = state.settings[k] || '';
+                });
+            }
+            renderDashboard(); renderClients(); renderProjects(); renderCommercials(); renderStaff(); updateDropdowns();
+            if(state.settings.gclient && state.settings.gapi) initGoogleAPI();
+        }
+
+        function saveState() {
+            localStorage.setItem('asSidqiERP', JSON.stringify(state));
+            renderDashboard(); updateDropdowns();
+        }
+
+        // --- NAVIGATION & UTILS ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + viewId).classList.add('active');
+            const titles = { 'dashboard': 'Executive Dashboard', 'clients': 'Client Directory', 'projects': 'Project Pipeline', 'commercials': 'Commercial Documents', 'letters': 'AI Surat Rasmi Generator', 'hr': 'HR & Payroll', 'settings': 'Company Setup' };
+            document.getElementById('page-title').innerText = titles[viewId];
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function formatRM(num) { return 'RM ' + parseFloat(num).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits:2}); }
+
+        // --- SETTINGS ---
+        function saveSettings() {
+            ['name', 'bem', 'ssm', 'address', 'bank', 'gclient', 'gapi'].forEach(k => { state.settings[k] = document.getElementById('set-'+k).value; });
+            saveState();
+            Swal.fire({ icon: 'success', title: 'Saved', text: 'Company configuration updated.', timer: 1500, showConfirmButton: false });
+            if(state.settings.gclient && state.settings.gapi) initGoogleAPI();
+        }
+
+        // --- CLIENTS ---
+        function saveClient() {
+            const name = document.getElementById('c-name').value;
+            const contact = document.getElementById('c-contact').value;
+            const address = document.getElementById('c-address').value;
+            if(!name) return Swal.fire('Error', 'Company Name is required', 'error');
+            state.clients.push({ id: 'C-' + Math.floor(Math.random()*9000), name, contact, address }); 
+            saveState(); renderClients(); closeModal('modal-client');
+            ['c-name','c-contact','c-address'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        function renderClients() {
+            const grid = document.getElementById('client-grid'); grid.innerHTML = '';
+            state.clients.forEach(c => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
+                        <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center font-bold">${c.name.charAt(0)}</div><h4 class="font-bold text-slate-800 leading-tight truncate" title="${c.name}">${c.name}</h4></div>
+                        <p class="text-xs text-slate-500 mb-1 truncate"><i class="ph ph-phone mr-1"></i> ${c.contact || 'N/A'}</p>
+                        <p class="text-xs text-slate-500 line-clamp-2" title="${c.address}"><i class="ph ph-map-pin mr-1"></i> ${c.address || 'N/A'}</p>
+                    </div>`;
+            });
+        }
+
+        // --- STAFF & HR ---
+        function saveStaff() {
+            const name = document.getElementById('s-name').value;
+            const role = document.getElementById('s-role').value;
+            const salary = parseFloat(document.getElementById('s-salary').value) || 0;
+            if(!name) return Swal.fire('Error', 'Staff Name required', 'error');
+            state.staff.push({ id: 'E-' + Math.floor(Math.random()*9000), name, role, salary });
+            saveState(); renderStaff(); closeModal('modal-staff');
+        }
+
+        function renderStaff() {
+            const grid = document.getElementById('staff-grid'); grid.innerHTML = '';
+            state.staff.forEach(s => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800">${s.name}</h4><p class="text-xs text-emerald-600 font-medium mb-3">${s.role}</p>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                            <span class="text-xs text-slate-500">Basic: ${formatRM(s.salary)}</span>
+                            <button onclick="calculatePayslip('${s.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-bold transition-colors">Calc Payslip</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function calculatePayslip(id) {
+            const s = state.staff.find(x => x.id === id);
+            if(!s) return;
+            const kwsp = s.salary * 0.11;
+            const socso = s.salary * 0.005; // simplified
+            const net = s.salary - kwsp - socso;
+            Swal.fire({
+                title: `${s.name} - Payslip`,
+                html: `
+                    <div class="text-left space-y-2 mt-4 text-sm">
+                        <div class="flex justify-between"><span class="text-slate-500">Basic Salary</span><span class="font-bold">${formatRM(s.salary)}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">KWSP (11%)</span><span class="text-red-500">-${formatRM(kwsp)}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">SOCSO/EIS</span><span class="text-red-500">-${formatRM(socso)}</span></div>
+                        <div class="flex justify-between pt-2 border-t font-bold text-lg"><span class="text-slate-800">Net Payable</span><span class="text-emerald-600">${formatRM(net)}</span></div>
+                    </div>
+                `,
+                confirmButtonColor: '#0f172a', confirmButtonText: 'Close'
+            });
+        }
+
+        // --- PROJECTS ---
+        function updateDropdowns() {
+            const pClient = document.getElementById('p-client'); pClient.innerHTML = '<option value="">-- Select Client --</option>';
+            state.clients.forEach(c => pClient.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+
+            const invProj = document.getElementById('inv-project'); const letProj = document.getElementById('letter-project');
+            invProj.innerHTML = '<option value="">-- Select Project --</option>'; letProj.innerHTML = '<option value="">-- Select Project --</option>';
+            state.projects.forEach(p => {
+                const cName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
+                const opt = `<option value="${p.id}">${p.id} : ${cName} - ${p.details}</option>`;
+                invProj.innerHTML += opt; letProj.innerHTML += opt;
+            });
+        }
+
+        function saveProject() {
+            const clientId = document.getElementById('p-client').value;
+            const details = document.getElementById('p-details').value;
+            const pbt = document.getElementById('p-pbt').value;
+            if(!clientId || !details) return Swal.fire('Error', 'Please fill all fields', 'error');
+
+            const newProj = { id: 'PRJ-' + Math.floor(Math.random()*90000), clientId, details, pbt, status: 'Drafting', ref: 'Pending...', date: new Date().toISOString() };
+            state.projects.unshift(newProj); saveState(); renderProjects(); closeModal('modal-project');
+            logActivity(`Registered new project: ${details}`, 'kanban', 'emerald');
+        }
+
+        function renderProjects() {
+            const tbody = document.getElementById('table-projects'); tbody.innerHTML = '';
+            state.projects.forEach(p => {
+                const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
+                let badge = 'bg-amber-100 text-amber-700'; 
+                if(p.status === 'Approved') badge = 'bg-emerald-100 text-emerald-700';
+                if(p.status === 'Drafting') badge = 'bg-slate-100 text-slate-700';
+                
+                // Calculate Aging
+                const days = Math.floor((new Date() - new Date(p.date)) / (1000 * 60 * 60 * 24));
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4"><p class="font-bold text-slate-800">${p.id}</p><p class="text-xs text-slate-500 truncate w-40" title="${clientName}">${clientName}</p></td>
+                        <td class="px-6 py-4"><p class="text-slate-800 text-sm truncate w-48" title="${p.details}">${p.details}</p><p class="text-[10px] text-slate-400 mt-0.5">Aged: ${days} days</p></td>
+                        <td class="px-6 py-4"><p class="font-medium text-slate-800 text-xs">${p.pbt}</p><p class="text-[10px] text-slate-500 font-mono mt-0.5">${p.ref}</p></td>
+                        <td class="px-6 py-4"><span class="px-2.5 py-1 ${badge} rounded-lg text-[10px] font-bold tracking-wide uppercase">${p.status}</span></td>
+                        <td class="px-6 py-4 text-right"><button onclick="updateProjectStatus('${p.id}')" class="text-emerald-600 font-bold text-xs hover:underline bg-emerald-50 px-2 py-1 rounded">Update</button></td>
+                    </tr>`;
+            });
+        }
+
+        async function updateProjectStatus(id) {
+            const proj = state.projects.find(p => p.id === id);
+            const { value: formValues } = await Swal.fire({
+                title: 'Update Status',
+                html: `<select id="swal-status" class="swal2-input"><option value="Drafting" ${proj.status==='Drafting'?'selected':''}>Drafting / Design</option><option value="PE Endorsement" ${proj.status==='PE Endorsement'?'selected':''}>P.E. Endorsement</option><option value="OSC Submitted" ${proj.status==='OSC Submitted'?'selected':''}>OSC Submitted</option><option value="Approved" ${proj.status==='Approved'?'selected':''}>Approved / KM Issued</option></select>
+                       <input id="swal-ref" class="swal2-input" placeholder="PBT Reference No." value="${proj.ref === 'Pending...' ? '' : proj.ref}">`,
+                focusConfirm: false, confirmButtonColor: '#059669',
+                preConfirm: () => { return { status: document.getElementById('swal-status').value, ref: document.getElementById('swal-ref').value || 'Pending...' } }
+            });
+            if(formValues) { proj.status = formValues.status; proj.ref = formValues.ref; saveState(); renderProjects(); }
+        }
+
+        // --- COMMERCIALS (INVOICES & QUOTATIONS) ---
+        let tempLineItems = [];
+        function openInvoiceWizard() {
+            tempLineItems = [{ desc: 'Professional Engineering Services for C&S', qty: 1, price: 0 }];
+            renderLineItems(); calculateTotals(); openModal('modal-invoice');
+        }
+
+        function renderLineItems() {
+            const container = document.getElementById('line-items-container'); container.innerHTML = '';
+            tempLineItems.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="flex gap-3 items-start">
+                        <input type="text" class="flex-1 border border-slate-300 rounded p-2 text-sm" placeholder="Description" value="${item.desc}" onchange="updateLine(${index}, 'desc', this.value)">
+                        <input type="number" class="w-16 border border-slate-300 rounded p-2 text-sm text-center" placeholder="Qty" value="${item.qty}" onchange="updateLine(${index}, 'qty', this.value)">
+                        <input type="number" class="w-28 border border-slate-300 rounded p-2 text-sm text-right" placeholder="Unit RM" value="${item.price}" onchange="updateLine(${index}, 'price', this.value)">
+                        <button onclick="removeLine(${index})" class="text-red-400 hover:text-red-600 p-2"><i class="ph ph-trash"></i></button>
+                    </div>`;
+            });
+        }
+
+        function addLineItem() { tempLineItems.push({ desc: '', qty: 1, price: 0 }); renderLineItems(); }
+        function removeLine(idx) { tempLineItems.splice(idx, 1); renderLineItems(); calculateTotals(); }
+        function updateLine(idx, field, val) { tempLineItems[idx][field] = field === 'desc' ? val : parseFloat(val) || 0; calculateTotals(); }
+
+        function calculateTotals() {
+            let sub = 0; tempLineItems.forEach(item => { sub += (item.qty * item.price); });
+            const isTax = document.getElementById('inv-tax').checked;
+            const tax = isTax ? sub * 0.08 : 0;
+            const total = sub + tax;
+            document.getElementById('calc-subtotal').innerText = formatRM(sub);
+            document.getElementById('calc-tax').innerText = formatRM(tax);
+            document.getElementById('calc-total').innerText = formatRM(total);
+            return { sub, tax, total };
+        }
+
+        function saveCommercialDoc() {
+            const projId = document.getElementById('inv-project').value;
+            const type = document.getElementById('inv-type').value;
+            if(!projId || tempLineItems.length === 0) return Swal.fire('Error', 'Select a project & add items.', 'error');
+            
+            const totals = calculateTotals();
+            const doc = { id: (type==='Invoice'?'INV':'QT') + '-' + Math.floor(Math.random()*90000), projectId: projId, type, items: [...tempLineItems], subtotal: totals.sub, tax: totals.tax, total: totals.total, date: new Date().toLocaleDateString('en-MY') };
+            
+            state.commercials.unshift(doc); saveState(); renderCommercials(); closeModal('modal-invoice');
+            logActivity(`Generated ${type} ${doc.id}`, 'receipt', 'emerald');
+        }
+
+        function renderCommercials() {
+            const tbody = document.getElementById('table-commercials'); tbody.innerHTML = '';
+            state.commercials.forEach(d => {
+                let badge = d.type === 'Invoice' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4"><p class="font-bold text-slate-800">${d.id}</p><p class="text-[10px] text-slate-500">${d.date}</p></td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-600">${d.projectId}</td>
+                        <td class="px-6 py-4 font-bold text-slate-800">${formatRM(d.total)}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 ${badge} rounded text-[10px] font-bold uppercase">${d.type}</span></td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="printCommercial('${d.id}')" class="text-slate-500 hover:text-slate-800 p-1.5"><i class="ph ph-printer text-lg"></i></button>
+                            <button onclick="saveDocToDrive('${d.id}')" class="text-blue-500 hover:text-blue-800 p-1.5 ml-1 hidden gdrive-btn"><i class="ph ph-google-drive-logo text-lg"></i></button>
+                        </td>
+                    </tr>`;
+            });
+            // Show drive buttons if active
+            if(tokenClient) document.querySelectorAll('.gdrive-btn').forEach(b => b.classList.remove('hidden'));
+        }
+
+        // --- AI SURAT RASMI ---
+        function generateLetter() {
+            const projId = document.getElementById('letter-project').value;
+            const type = document.getElementById('letter-type').value;
+            if(!projId) return Swal.fire('Error', 'Please select a project first.', 'error');
+            
+            const proj = state.projects.find(p => p.id === projId);
+            const client = state.clients.find(c => c.id === proj.clientId);
+            
+            // Basic PBT Address mapping
+            const pbtAddresses = {
+                'DBKL': "Jabatan Perancangan Bandaraya,\nDewan Bandaraya Kuala Lumpur,\nMenara DBKL 1, Jalan Raja Laut,\n50350 Kuala Lumpur.",
+                'MBPJ': "Jabatan Kawalan Bangunan,\nMajlis Bandaraya Petaling Jaya,\nJalan Yong Shook Lin,\n46675 Petaling Jaya, Selangor.",
+                'MBSA': "Jabatan Bangunan,\nMajlis Bandaraya Shah Alam,\nWisma MBSA, Persiaran Perbandaran,\n40000 Shah Alam, Selangor.",
+                'MPKj': "Jabatan Kawalan Bangunan,\nMajlis Perbandaran Kajang,\nMenara MPKj, Jalan Cempaka Putih,\n43000 Kajang, Selangor."
+            };
+            const targetAddress = pbtAddresses[proj.pbt] || "Pihak Berkuasa Tempatan,\n[Alamat PBT]";
+
+            const today = new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let content = "";
+            if(type === 'cover') {
+                content = `Rujukan Kami: AS/${proj.id}/OSC\nTarikh: ${today}\n\nKehadapan,\n\n${targetAddress}\n\nTuan/Puan,\n\nPER: SURAT IRINGAN KEMUKAAN PELAN STRUKTUR (OSC 3.0 PLUS)\nTAJUK PROJEK: ${proj.details.toUpperCase()}\nUNTUK TETUAN: ${client.name.toUpperCase()}\n\nMerujuk kepada perkara di atas, kami bagi pihak klien ingin mengemukakan dokumen dan pelan struktur bagi cadangan pemajuan tersebut untuk pertimbangan dan kelulusan pihak tuan.\n\n2. Bersama-sama surat ini dilampirkan:\n   i. 3 Set Pelan Struktur yang telah ditandatangani oleh Jurutera Profesional\n   ii. 1 Set Kiraan Rekabentuk Struktur\n   iii. Borang A yang telah lengkap\n\nKerjasama dan pertimbangan segera dari pihak tuan amatlah kami hargai.\n\nSekian, terima kasih.\n\nYang Benar,\n\n...................................\nIr. Amirul Akmal\nJurutera Perunding Awam & Struktur\nNo. Pendaftaran BEM: ${state.settings.bem}`;
+            } else {
+                content = `Rujukan Kami: AS/${proj.id}/PE\nTarikh: ${today}\n\nKehadapan,\n\n${targetAddress}\n\nTuan/Puan,\n\nPER: SURAT PENGESAHAN STRUKTUR (P.E. ENDORSEMENT)\nTAJUK PROJEK: ${proj.details.toUpperCase()}\n\nAdalah dengan ini saya, Ir. Amirul Akmal, Jurutera Awam dan Struktur yang bertauliah (No. BEM: ${state.settings.bem}), mengesahkan bahawa rekabentuk struktur bagi projek yang dinamakan di atas telah disemak dan mematuhi kehendak-kehendak Kod Amalan BS 5950 / MS EN 1993 dan piawaian Malaysia yang berkaitan.\n\n2. Saya bertanggungjawab sepenuhnya ke atas integriti struktur dan keselamatan rekabentuk tersebut.\n\nSekian, pengesahan dari pihak kami.\n\nYang Benar,\n\n...................................\nIr. Amirul Akmal\nPrincipal Engineer\n${state.settings.name}`;
+            }
+            
+            document.getElementById('letter-editor').value = content;
+            logActivity(`Drafted Surat Rasmi for ${proj.pbt}`, 'magic-wand', 'purple');
+        }
+
+        // --- PRINTING ENGINE (WITH LOGO LETTERHEAD) ---
+        function buildPrintHeader() {
+            return `
+                <div style="display: flex; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px;">
+                    <img src="${COMPANY_LOGO_URL}" style="max-height: 80px; margin-right: 20px; object-fit: contain;" alt="As-Sidqi Logo" onerror="this.style.display='none'">
+                    <div>
+                        <h1 style="font-size: 20px; font-weight: 900; margin:0; text-transform: uppercase; color: #0f172a; letter-spacing: 0.5px;">${state.settings.name}</h1>
+                        <p style="margin: 4px 0 0 0; font-size: 11px; color: #475569; max-width: 400px; line-height: 1.4;">${state.settings.address || 'Alamat berdaftar belum ditetapkan dalam sistem.'}</p>
+                        <p style="margin: 4px 0 0 0; font-size: 11px; color: #475569; font-weight: bold;">SSM: ${state.settings.ssm || '-'} | BEM No: ${state.settings.bem || '-'}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function printCommercial(docId) {
+            const doc = state.commercials.find(d => d.id === docId);
+            const proj = state.projects.find(p => p.id === doc.projectId);
+            const client = state.clients.find(c => c.id === proj.clientId);
+            const container = document.getElementById('print-invoice-container');
+            
+            let itemsHtml = '';
+            doc.items.forEach(i => {
+                itemsHtml += `<tr><td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">${i.desc}</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center;">${i.qty}</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">${formatRM(i.price)}</td><td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right;">${formatRM(i.qty * i.price)}</td></tr>`;
+            });
+
+            container.innerHTML = `
+                ${buildPrintHeader()}
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 40px;">
+                    <div>
+                        <p style="font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">Billed To:</p>
+                        <h3 style="font-size: 16px; font-weight: bold; margin:0;">${client.name}</h3>
+                        <p style="font-size: 12px; color: #475569; margin: 4px 0 0 0; white-space: pre-wrap;">${client.address}</p>
+                        <p style="font-size: 12px; color: #475569; margin: 4px 0 0 0;">Attn: ${client.contact}</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 style="font-size: 24px; font-weight: 900; margin:0; color: #0f172a; text-transform: uppercase;">${doc.type}</h2>
+                        <p style="font-size: 12px; color: #475569; margin: 4px 0 0 0;">Reference: <strong>${doc.id}</strong></p>
+                        <p style="font-size: 12px; color: #475569; margin: 4px 0 0 0;">Date: ${doc.date}</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <p style="font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">Project Details:</p>
+                    <p style="font-size: 14px; font-weight: bold; margin:0;">${proj.details}</p>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px; font-size: 12px;">
+                    <thead>
+                        <tr style="background-color: #f8fafc;">
+                            <th style="padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1;">Description</th>
+                            <th style="padding: 10px; text-align: center; border-bottom: 2px solid #cbd5e1;">Qty</th>
+                            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1;">Unit Price</th>
+                            <th style="padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+
+                <div style="display: flex; justify-content: flex-end;">
+                    <div style="width: 300px; font-size: 12px;">
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0;"><span style="color: #64748b;">Subtotal</span><strong>${formatRM(doc.subtotal)}</strong></div>
+                        <div style="display: flex; justify-content: space-between; padding: 6px 0;"><span style="color: #64748b;">SST (8%)</span><strong>${formatRM(doc.tax)}</strong></div>
+                        <div style="display: flex; justify-content: space-between; padding: 12px 0; border-top: 2px solid #0f172a; margin-top: 6px; font-size: 16px; font-weight: 900;"><span style="color: #0f172a;">Grand Total</span><span style="color: #059669;">${formatRM(doc.total)}</span></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #64748b;">
+                    <p style="font-weight: bold; margin-bottom: 4px;">Payment Terms & Details:</p>
+                    <p style="margin: 0;">Please make cheque/transfer payable to <strong>${state.settings.name}</strong>.</p>
+                    <p style="margin: 4px 0 0 0;">Bank Account: <strong>${state.settings.bank || 'Not provided'}</strong></p>
+                    <p style="margin: 8px 0 0 0;">This is a computer-generated document. No signature is required.</p>
+                </div>
+            `;
+            window.print();
+        }
+
+        function printLetter() {
+            const text = document.getElementById('letter-editor').value;
+            const container = document.getElementById('print-letter-container');
+            
+            container.innerHTML = `
+                ${buildPrintHeader()}
+                <div style="white-space: pre-wrap; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; color: black;">${text}</div>
+            `;
+            window.print();
+        }
+
+        // --- DASHBOARD ---
+        function renderDashboard() {
+            let totalRev = 0; state.commercials.forEach(c => { if(c.type === 'Invoice') totalRev += c.total; });
+            document.getElementById('dash-receivables').innerText = formatRM(totalRev);
+            document.getElementById('dash-projects-count').innerText = state.projects.filter(p => p.status !== 'Approved').length;
+            document.getElementById('dash-osc-count').innerText = state.projects.filter(p => p.status === 'OSC Submitted').length;
+        }
+
+        function logActivity(msg, icon, color) {
+            const feed = document.getElementById('activity-feed');
+            if(feed.innerText.includes('No recent activity')) feed.innerHTML = '';
+            feed.innerHTML = `<div class="flex items-start gap-4 mb-4"><div class="w-8 h-8 rounded-full bg-${color}-100 text-${color}-600 flex items-center justify-center flex-shrink-0"><i class="ph ph-${icon} text-lg"></i></div><div><p class="text-sm font-medium text-slate-800">${msg}</p><p class="text-[10px] text-slate-400">Just now</p></div></div>` + feed.innerHTML;
+        }
+
+        // --- GOOGLE DRIVE API INTEGRATION ---
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        let tokenClient; 
+
+        function initGoogleAPI() {
+            if(!state.settings.gclient || !state.settings.gapi) return;
+            document.getElementById('gdrive-status-btn').classList.remove('hidden');
+            gapi.load('client', async () => {
+                try {
+                    await gapi.client.init({ apiKey: state.settings.gapi, discoveryDocs: [DISCOVERY_DOC] });
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: state.settings.gclient, scope: SCOPES, callback: (resp) => {
+                            if (resp.error) throw resp;
+                            document.getElementById('gdrive-status-text').innerText = 'Drive Connected';
+                            document.getElementById('gdrive-status-btn').classList.replace('bg-blue-50', 'bg-emerald-50');
+                            document.getElementById('gdrive-status-btn').classList.replace('text-blue-600', 'text-emerald-600');
+                            document.getElementById('btn-drive-letter').classList.remove('hidden');
+                            renderCommercials(); // Refresh to show drive buttons on table
+                        }
+                    });
+                } catch(e) { console.error("Drive Init Error:", e); }
+            });
+        }
+
+        function handleAuthClick() {
+            if (!state.settings.gclient) return Swal.fire('Error', 'Set API Keys in Settings first.', 'warning');
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        }
+
+        async function uploadFileToDrive(blob, filename) {
+            try {
+                Swal.fire({ title: 'Uploading to Drive...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                const metadata = { 'name': filename, 'mimeType': 'application/pdf' };
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', blob);
+
+                const token = gapi.client.getToken().access_token;
+                const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + token }), body: form
+                });
+                if(!res.ok) throw new Error("Upload failed");
+                Swal.fire({ icon: 'success', title: 'Saved to Google Drive', text: filename, timer: 2000, showConfirmButton: false });
+            } catch(e) { console.error(e); Swal.fire('Upload Failed', e.message, 'error'); }
+        }
+
+        function saveDocToDrive(docId) {
+             const doc = state.commercials.find(d => d.id === docId);
+             const proj = state.projects.find(p => p.id === doc.projectId);
+             // We reuse the print logic but render to a hidden div for PDF capture
+             printCommercial(docId); // Temporarily uses print view container
+             const element = document.getElementById('print-invoice-container');
+             element.style.display = 'block';
+
+             const opt = { margin: 0, filename: `${docId}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+             html2pdf().set(opt).from(element).output('blob').then(function(pdfBlob) {
+                 element.style.display = 'none'; element.innerHTML = '';
+                 uploadFileToDrive(pdfBlob, `${doc.type} - ${proj.details}.pdf`);
+             });
+        }
+        
+        function saveLetterToDrive() {
+             printLetter();
+             const element = document.getElementById('print-letter-container');
+             element.style.display = 'block';
+             const opt = { margin: 0, filename: `Surat_Rasmi.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+             html2pdf().set(opt).from(element).output('blob').then(function(pdfBlob) {
+                 element.style.display = 'none'; element.innerHTML = '';
+                 uploadFileToDrive(pdfBlob, `Surat Rasmi - As-Sidqi.pdf`);
+             });
+        }
+
+        window.onload = loadState;
+    </script>
+</body>
+</html>
