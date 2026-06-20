@@ -10,38 +10,33 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- PDF Generation Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
+    <!-- Excel Parsing Library (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <!-- Google Drive API & Identity Services -->
     <script async defer src="https://apis.google.com/js/api.js"></script>
     <script async defer src="https://accounts.google.com/gsi/client"></script>
 
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        
-        /* Premium Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Sidebar Navigation Effects */
         .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
         .nav-item:hover { background-color: rgba(255,255,255,0.05); }
         .nav-item.active { background-color: rgba(16, 185, 129, 0.1); border-left-color: #10b981; color: #34d399; font-weight: 600; }
 
-        /* View Management */
         .view-section { display: none; animation: fadeIn 0.4s ease; }
         .view-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modals */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 50; justify-content: center; align-items: center; }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
         
-        /* The Magic Print Engine */
         @media print {
             body { background-color: white; }
             #sidebar, #topbar, .no-print { display: none !important; }
@@ -52,7 +47,6 @@
             @page { margin: 0; size: A4 portrait; }
         }
         .print-only { display: none; }
-        
         .logo-img { object-fit: contain; }
     </style>
 </head>
@@ -60,7 +54,6 @@
 
     <aside id="sidebar" class="w-72 bg-[#020617] text-slate-300 flex flex-col flex-shrink-0 z-20 shadow-2xl transition-all duration-300">
         <div class="p-6 border-b border-slate-800 text-center flex flex-col items-center justify-center">
-            <!-- COMPANY LOGO FROM GOOGLE DRIVE -->
             <img src="https://drive.google.com/uc?id=1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="h-16 mb-3 logo-img bg-white p-1 rounded-lg shadow-lg">
             <p class="text-[9px] text-emerald-400 mt-1 uppercase tracking-widest font-bold border border-emerald-900/50 inline-block px-2 py-1 rounded bg-emerald-900/20">Engineering ERP Hub</p>
         </div>
@@ -90,7 +83,6 @@
         <header id="topbar" class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 flex-shrink-0 shadow-sm z-10">
             <h2 id="page-title" class="text-lg font-bold text-slate-800">Executive Dashboard</h2>
             <div class="flex items-center gap-4">
-                <!-- Google Drive Connect Button -->
                 <button id="gdrive-status-btn" onclick="handleAuthClick()" class="hidden px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors hover:bg-blue-100">
                     <i class="ph ph-google-drive-logo text-lg"></i> <span id="gdrive-status-text">Connect Drive</span>
                 </button>
@@ -100,6 +92,7 @@
 
         <div class="flex-1 overflow-y-auto p-8 relative">
             
+            <!-- Dashboard View -->
             <div id="view-dashboard" class="view-section active">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 relative overflow-hidden">
@@ -140,6 +133,7 @@
                 </div>
             </div>
 
+            <!-- Clients View -->
             <div id="view-clients" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
@@ -148,10 +142,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-grid"></div>
             </div>
 
+            <!-- Projects View -->
             <div id="view-projects" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
-                    <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
+                    <div class="flex gap-2">
+                        <!-- Hidden file input for Excel -->
+                        <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
+                        <button onclick="document.getElementById('excel-upload').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-xls text-lg"></i> Bulk Import Excel</button>
+                        
+                        <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
+                    </div>
                 </div>
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <table class="w-full text-left text-sm whitespace-nowrap">
@@ -163,13 +164,13 @@
                 </div>
             </div>
 
+            <!-- Commercials View -->
             <div id="view-commercials" class="view-section">
                  <div class="flex justify-between items-center mb-6 no-print">
-                    <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate advanced Quotations and Invoices.</p></div>
+                    <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices.</p></div>
                     <button onclick="openInvoiceWizard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-receipt text-lg"></i> Create Document</button>
                 </div>
 
-                <!-- Print Container (Only visible when printing) -->
                 <div id="print-invoice-container" class="print-only print-container"></div>
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden no-print">
@@ -182,6 +183,7 @@
                 </div>
             </div>
 
+            <!-- Letters View -->
             <div id="view-letters" class="view-section">
                  <div class="flex justify-between items-center mb-6 no-print">
                     <div><h3 class="text-xl font-bold text-slate-800">AI Surat Rasmi Generator</h3><p class="text-sm text-slate-500">Auto-generate formal letters based on project data.</p></div>
@@ -213,13 +215,13 @@
                                 <button onclick="printLetter()" class="text-slate-500 hover:text-slate-800 font-medium text-sm flex items-center gap-1 bg-slate-100 px-3 py-1.5 rounded"><i class="ph ph-printer text-lg"></i> Print Official</button>
                             </div>
                         </div>
-                        <!-- Hidden div used to generate the PDF snapshot for Google Drive -->
                         <div id="hidden-pdf-render" style="display:none; padding: 20mm; background: white; width: 210mm;"></div>
                         <textarea id="letter-editor" class="w-full h-[500px] border border-slate-200 rounded-lg p-4 outline-none resize-none font-serif text-sm leading-relaxed text-slate-800 placeholder-slate-300 shadow-inner" placeholder="Your generated letter will appear here..."></textarea>
                     </div>
                 </div>
             </div>
 
+            <!-- HR View -->
             <div id="view-hr" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculate statutory deductions.</p></div>
@@ -228,6 +230,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="staff-grid"></div>
             </div>
 
+            <!-- Settings View -->
             <div id="view-settings" class="view-section">
                  <div class="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm max-w-4xl">
                     <h3 class="text-xl font-bold text-slate-800 mb-6 border-b pb-4">Company Profile & Document Settings</h3>
@@ -263,8 +266,16 @@
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-bold text-slate-800">Add New Client</h3><button onclick="closeModal('modal-client')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button></div>
             <div class="p-6 space-y-4">
                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Company Name</label><input type="text" id="c-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Ganad Media Sdn Bhd"></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact Person & Phone</label><input type="text" id="c-contact" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., En. Ahmad (012-3456789)"></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Billing Address</label><textarea id="c-address" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm resize-none" rows="3"></textarea></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">SSM / Company No.</label><input type="text" id="c-ssm" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., 123456-T"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact No.</label><input type="text" id="c-contact" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., 012-3456789"></div>
+                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address</label><input type="email" id="c-email" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="admin@client.com"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Billing Address</label><textarea id="c-address" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm resize-none" rows="2"></textarea></div>
+                <div class="border border-dashed border-slate-300 p-3 rounded-lg bg-slate-50">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph ph-cloud-arrow-up mr-1"></i> Attach Document (SSM/Profile)</label>
+                    <input type="file" id="c-file" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                </div>
                 <button onclick="saveClient()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl mt-2">Save Client Profile</button>
             </div>
         </div>
@@ -276,15 +287,22 @@
             <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center"><h3 class="font-bold text-slate-800">Register New Project</h3><button onclick="closeModal('modal-project')" class="text-slate-400 hover:text-red-500"><i class="ph ph-x text-xl"></i></button></div>
             <div class="p-6 space-y-4">
                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Client</label><select id="p-client" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm bg-slate-50"></select></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Structure Type & Details</label><input type="text" id="p-details" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Unipole 18m Free-standing"></div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Local Authority (PBT)</label>
-                    <select id="p-pbt" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
-                        <option value="DBKL">Dewan Bandaraya Kuala Lumpur (DBKL)</option>
-                        <option value="MBPJ">Majlis Bandaraya Petaling Jaya (MBPJ)</option>
-                        <option value="MBSA">Majlis Bandaraya Shah Alam (MBSA)</option>
-                        <option value="MPKj">Majlis Perbandaran Kajang (MPKj)</option>
-                    </select>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Structure Type & Details</label><input type="text" id="p-details" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Unipole 18m Free-standing (2 Sided)"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Local Authority (PBT)</label>
+                        <select id="p-pbt" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+                            <option value="DBKL">DBKL (Kuala Lumpur)</option>
+                            <option value="MBPJ">MBPJ (Petaling Jaya)</option>
+                            <option value="MBSA">MBSA (Shah Alam)</option>
+                            <option value="MPKj">MPKj (Kajang)</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Site GPS / Location</label><input type="text" id="p-gps" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., Lebuhraya LDP KM 5.2"></div>
+                </div>
+                <div class="border border-dashed border-slate-300 p-3 rounded-lg bg-slate-50">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph ph-cloud-arrow-up mr-1"></i> Attach Project Files (.dwg, PDF, Soil Test)</label>
+                    <input type="file" id="p-file" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300">
                 </div>
                 <button onclick="saveProject()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl mt-2">Save to Pipeline</button>
             </div>
@@ -311,7 +329,15 @@
             <div class="p-6 overflow-y-auto flex-1 space-y-6">
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Document Type</label><select id="inv-type" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"><option value="Quotation">Quotation (Sebut Harga)</option><option value="Invoice">Tax Invoice (Invois)</option></select></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Link to Project (Auto-fills Client)</label><select id="inv-project" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"></select></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Link to Project</label><select id="inv-project" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"></select></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Client PO / LOU Ref (Optional)</label><input type="text" id="inv-po" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm" placeholder="e.g., PO-2026-882"></div>
+                    <div class="border border-dashed border-slate-300 p-2 rounded-lg bg-slate-50">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1"><i class="ph ph-cloud-arrow-up mr-1"></i> Attach Supporting Doc (PO/Receipt)</label>
+                        <input type="file" id="inv-file" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                    </div>
                 </div>
 
                 <div class="border border-slate-200 rounded-xl overflow-hidden">
@@ -332,13 +358,10 @@
     </div>
 
     <script>
-        // Set Date
         document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        // Standard Company Logo URL (Extracted from User's Drive Link)
         const COMPANY_LOGO_URL = "https://drive.google.com/uc?id=1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC";
 
-        // --- STATE MANAGEMENT ---
         let state = {
             clients: [], projects: [], commercials: [], staff: [],
             settings: { name: 'AS-SIDQI ENGINEERING & SERVICES', bem: '', ssm: '', address: '', bank: '', gclient: '', gapi: '' }
@@ -362,7 +385,6 @@
             renderDashboard(); updateDropdowns();
         }
 
-        // --- NAVIGATION & UTILS ---
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + viewId).classList.add('active');
@@ -374,10 +396,8 @@
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-        
         function formatRM(num) { return 'RM ' + parseFloat(num).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits:2}); }
 
-        // --- SETTINGS ---
         function saveSettings() {
             ['name', 'bem', 'ssm', 'address', 'bank', 'gclient', 'gapi'].forEach(k => { state.settings[k] = document.getElementById('set-'+k).value; });
             saveState();
@@ -385,74 +405,68 @@
             if(state.settings.gclient && state.settings.gapi) initGoogleAPI();
         }
 
-        // --- CLIENTS ---
-        function saveClient() {
+        async function uploadAttachmentToDrive(fileInputId, prefixName) {
+            if (!tokenClient || !gapi.client.getToken()) return null;
+            const fileInput = document.getElementById(fileInputId);
+            if (!fileInput.files || fileInput.files.length === 0) return null;
+            
+            const file = fileInput.files[0];
+            const filename = `${prefixName} - ${file.name}`;
+            
+            try {
+                Swal.fire({ title: 'Uploading Attachment to Drive...', text: filename, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                const metadata = { 'name': filename };
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', file);
+
+                const token = gapi.client.getToken().access_token;
+                const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + token }), body: form
+                });
+                if(!res.ok) throw new Error("Upload failed");
+                return filename; 
+            } catch(e) { 
+                console.error("Attachment Upload Error:", e); 
+                Swal.fire('Upload Failed', 'File could not be saved to Drive.', 'error'); 
+                return null;
+            }
+        }
+
+        async function saveClient() {
             const name = document.getElementById('c-name').value;
+            const ssm = document.getElementById('c-ssm').value;
             const contact = document.getElementById('c-contact').value;
+            const email = document.getElementById('c-email').value;
             const address = document.getElementById('c-address').value;
             if(!name) return Swal.fire('Error', 'Company Name is required', 'error');
-            state.clients.push({ id: 'C-' + Math.floor(Math.random()*9000), name, contact, address }); 
+
+            let attachedFile = null;
+            if(document.getElementById('c-file').files.length > 0) {
+                if(!tokenClient) return Swal.fire('Warning', 'Connect Google Drive first to upload files.', 'warning');
+                attachedFile = await uploadAttachmentToDrive('c-file', `CLIENT_${name}`);
+            }
+
+            state.clients.push({ id: 'C-' + Math.floor(Math.random()*9000), name, ssm, contact, email, address, attachedFile }); 
             saveState(); renderClients(); closeModal('modal-client');
-            ['c-name','c-contact','c-address'].forEach(id => document.getElementById(id).value = '');
+            ['c-name','c-ssm','c-contact','c-email','c-address','c-file'].forEach(id => document.getElementById(id).value = '');
+            Swal.fire({ icon: 'success', title: 'Client Saved', timer: 1500, showConfirmButton: false });
         }
 
         function renderClients() {
             const grid = document.getElementById('client-grid'); grid.innerHTML = '';
             state.clients.forEach(c => {
+                const attachIcon = c.attachedFile ? `<span class="text-blue-500 ml-2" title="${c.attachedFile}"><i class="ph ph-paperclip"></i></span>` : '';
                 grid.innerHTML += `
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-                        <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center font-bold">${c.name.charAt(0)}</div><h4 class="font-bold text-slate-800 leading-tight truncate" title="${c.name}">${c.name}</h4></div>
-                        <p class="text-xs text-slate-500 mb-1 truncate"><i class="ph ph-phone mr-1"></i> ${c.contact || 'N/A'}</p>
+                        <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center font-bold">${c.name.charAt(0)}</div><h4 class="font-bold text-slate-800 leading-tight truncate" title="${c.name}">${c.name}${attachIcon}</h4></div>
+                        <p class="text-xs text-slate-500 mb-1 truncate"><i class="ph ph-identification-card mr-1"></i> ${c.ssm || 'No SSM provided'}</p>
+                        <p class="text-xs text-slate-500 mb-1 truncate"><i class="ph ph-phone mr-1"></i> ${c.contact || 'N/A'} | <i class="ph ph-envelope-simple mr-1"></i> ${c.email || 'N/A'}</p>
                         <p class="text-xs text-slate-500 line-clamp-2" title="${c.address}"><i class="ph ph-map-pin mr-1"></i> ${c.address || 'N/A'}</p>
                     </div>`;
             });
         }
 
-        // --- STAFF & HR ---
-        function saveStaff() {
-            const name = document.getElementById('s-name').value;
-            const role = document.getElementById('s-role').value;
-            const salary = parseFloat(document.getElementById('s-salary').value) || 0;
-            if(!name) return Swal.fire('Error', 'Staff Name required', 'error');
-            state.staff.push({ id: 'E-' + Math.floor(Math.random()*9000), name, role, salary });
-            saveState(); renderStaff(); closeModal('modal-staff');
-        }
-
-        function renderStaff() {
-            const grid = document.getElementById('staff-grid'); grid.innerHTML = '';
-            state.staff.forEach(s => {
-                grid.innerHTML += `
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                        <h4 class="font-bold text-slate-800">${s.name}</h4><p class="text-xs text-emerald-600 font-medium mb-3">${s.role}</p>
-                        <div class="flex justify-between items-center pt-3 border-t border-slate-100">
-                            <span class="text-xs text-slate-500">Basic: ${formatRM(s.salary)}</span>
-                            <button onclick="calculatePayslip('${s.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-bold transition-colors">Calc Payslip</button>
-                        </div>
-                    </div>`;
-            });
-        }
-
-        function calculatePayslip(id) {
-            const s = state.staff.find(x => x.id === id);
-            if(!s) return;
-            const kwsp = s.salary * 0.11;
-            const socso = s.salary * 0.005; // simplified
-            const net = s.salary - kwsp - socso;
-            Swal.fire({
-                title: `${s.name} - Payslip`,
-                html: `
-                    <div class="text-left space-y-2 mt-4 text-sm">
-                        <div class="flex justify-between"><span class="text-slate-500">Basic Salary</span><span class="font-bold">${formatRM(s.salary)}</span></div>
-                        <div class="flex justify-between"><span class="text-slate-500">KWSP (11%)</span><span class="text-red-500">-${formatRM(kwsp)}</span></div>
-                        <div class="flex justify-between"><span class="text-slate-500">SOCSO/EIS</span><span class="text-red-500">-${formatRM(socso)}</span></div>
-                        <div class="flex justify-between pt-2 border-t font-bold text-lg"><span class="text-slate-800">Net Payable</span><span class="text-emerald-600">${formatRM(net)}</span></div>
-                    </div>
-                `,
-                confirmButtonColor: '#0f172a', confirmButtonText: 'Close'
-            });
-        }
-
-        // --- PROJECTS ---
         function updateDropdowns() {
             const pClient = document.getElementById('p-client'); pClient.innerHTML = '<option value="">-- Select Client --</option>';
             state.clients.forEach(c => pClient.innerHTML += `<option value="${c.id}">${c.name}</option>`);
@@ -466,15 +480,24 @@
             });
         }
 
-        function saveProject() {
+        async function saveProject() {
             const clientId = document.getElementById('p-client').value;
             const details = document.getElementById('p-details').value;
             const pbt = document.getElementById('p-pbt').value;
-            if(!clientId || !details) return Swal.fire('Error', 'Please fill all fields', 'error');
+            const gps = document.getElementById('p-gps').value;
+            if(!clientId || !details) return Swal.fire('Error', 'Client & Details are required', 'error');
 
-            const newProj = { id: 'PRJ-' + Math.floor(Math.random()*90000), clientId, details, pbt, status: 'Drafting', ref: 'Pending...', date: new Date().toISOString() };
+            let attachedFile = null;
+            if(document.getElementById('p-file').files.length > 0) {
+                if(!tokenClient) return Swal.fire('Warning', 'Connect Google Drive first to upload project files.', 'warning');
+                attachedFile = await uploadAttachmentToDrive('p-file', `PROJ_${pbt}`);
+            }
+
+            const newProj = { id: 'PRJ-' + Math.floor(Math.random()*90000), clientId, details, pbt, gps, status: 'Drafting', ref: 'Pending...', date: new Date().toISOString(), attachedFile };
             state.projects.unshift(newProj); saveState(); renderProjects(); closeModal('modal-project');
             logActivity(`Registered new project: ${details}`, 'kanban', 'emerald');
+            ['p-details','p-gps','p-file'].forEach(id => document.getElementById(id).value = '');
+            Swal.fire({ icon: 'success', title: 'Project Saved', timer: 1500, showConfirmButton: false });
         }
 
         function renderProjects() {
@@ -485,22 +508,22 @@
                 if(p.status === 'Approved') badge = 'bg-emerald-100 text-emerald-700';
                 if(p.status === 'Drafting') badge = 'bg-slate-100 text-slate-700';
                 
-                // Calculate Aging
                 const days = Math.floor((new Date() - new Date(p.date)) / (1000 * 60 * 60 * 24));
+                const attachIcon = p.attachedFile ? `<i class="ph ph-paperclip text-blue-500 ml-1" title="File Attached to Drive"></i>` : '';
                 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4"><p class="font-bold text-slate-800">${p.id}</p><p class="text-xs text-slate-500 truncate w-40" title="${clientName}">${clientName}</p></td>
-                        <td class="px-6 py-4"><p class="text-slate-800 text-sm truncate w-48" title="${p.details}">${p.details}</p><p class="text-[10px] text-slate-400 mt-0.5">Aged: ${days} days</p></td>
-                        <td class="px-6 py-4"><p class="font-medium text-slate-800 text-xs">${p.pbt}</p><p class="text-[10px] text-slate-500 font-mono mt-0.5">${p.ref}</p></td>
-                        <td class="px-6 py-4"><span class="px-2.5 py-1 ${badge} rounded-lg text-[10px] font-bold tracking-wide uppercase">${p.status}</span></td>
-                        <td class="px-6 py-4 text-right"><button onclick="updateProjectStatus('${p.id}')" class="text-emerald-600 font-bold text-xs hover:underline bg-emerald-50 px-2 py-1 rounded">Update</button></td>
+                        <td class="px-6 py-4"><p class="font-bold text-slate-800">${p.id} ${attachIcon}</p><p class="text-xs text-slate-500 truncate w-40" title="${clientName}">${clientName}</p></td>
+                        <td class="px-6 py-4"><p class="text-slate-800 text-sm truncate w-48" title="${p.details}">${p.details}</p><p class="text-[10px] text-slate-400 mt-0.5"><i class="ph ph-map-pin"></i> ${p.gps || 'Site TBA'} | Aged: ${days} days</p></td>
+                        <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${p.pbt}</span></td>
+                        <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badge}">${p.status}</span><p class="text-[10px] text-slate-400 mt-1">Ref: ${p.ref}</p></td>
+                        <td class="px-6 py-4 text-right"><button onclick="updateProjectStatus('${p.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded">Update</button></td>
                     </tr>`;
             });
         }
 
         async function updateProjectStatus(id) {
-            const proj = state.projects.find(p => p.id === id);
+            const proj = state.projects.find(x => x.id === id);
             const { value: formValues } = await Swal.fire({
                 title: 'Update Status',
                 html: `<select id="swal-status" class="swal2-input"><option value="Drafting" ${proj.status==='Drafting'?'selected':''}>Drafting / Design</option><option value="PE Endorsement" ${proj.status==='PE Endorsement'?'selected':''}>P.E. Endorsement</option><option value="OSC Submitted" ${proj.status==='OSC Submitted'?'selected':''}>OSC Submitted</option><option value="Approved" ${proj.status==='Approved'?'selected':''}>Approved / KM Issued</option></select>
@@ -511,7 +534,6 @@
             if(formValues) { proj.status = formValues.status; proj.ref = formValues.ref; saveState(); renderProjects(); }
         }
 
-        // --- COMMERCIALS (INVOICES & QUOTATIONS) ---
         let tempLineItems = [];
         function openInvoiceWizard() {
             tempLineItems = [{ desc: 'Professional Engineering Services for C&S', qty: 1, price: 0 }];
@@ -546,39 +568,103 @@
             return { sub, tax, total };
         }
 
-        function saveCommercialDoc() {
+        async function saveCommercialDoc() {
             const projId = document.getElementById('inv-project').value;
             const type = document.getElementById('inv-type').value;
+            const poRef = document.getElementById('inv-po').value;
             if(!projId || tempLineItems.length === 0) return Swal.fire('Error', 'Select a project & add items.', 'error');
             
+            let attachedFile = null;
+            if(document.getElementById('inv-file').files.length > 0) {
+                if(!tokenClient) return Swal.fire('Warning', 'Connect Google Drive first to attach POs.', 'warning');
+                attachedFile = await uploadAttachmentToDrive('inv-file', `${type}_PO`);
+            }
+
             const totals = calculateTotals();
-            const doc = { id: (type==='Invoice'?'INV':'QT') + '-' + Math.floor(Math.random()*90000), projectId: projId, type, items: [...tempLineItems], subtotal: totals.sub, tax: totals.tax, total: totals.total, date: new Date().toLocaleDateString('en-MY') };
+            const doc = { id: (type==='Invoice'?'INV':'QT') + '-' + Math.floor(Math.random()*90000), projectId: projId, poRef, type, items: [...tempLineItems], subtotal: totals.sub, tax: totals.tax, total: totals.total, date: new Date().toLocaleDateString('en-MY'), attachedFile };
             
             state.commercials.unshift(doc); saveState(); renderCommercials(); closeModal('modal-invoice');
             logActivity(`Generated ${type} ${doc.id}`, 'receipt', 'emerald');
+            document.getElementById('inv-po').value = ''; document.getElementById('inv-file').value = '';
+            Swal.fire({ icon: 'success', title: `${type} Saved`, timer: 1500, showConfirmButton: false });
         }
 
         function renderCommercials() {
             const tbody = document.getElementById('table-commercials'); tbody.innerHTML = '';
             state.commercials.forEach(d => {
                 let badge = d.type === 'Invoice' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
+                const attachIcon = d.attachedFile ? `<i class="ph ph-paperclip text-blue-500 ml-1" title="PO Attached"></i>` : '';
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4"><p class="font-bold text-slate-800">${d.id}</p><p class="text-[10px] text-slate-500">${d.date}</p></td>
-                        <td class="px-6 py-4 text-xs font-mono text-slate-600">${d.projectId}</td>
-                        <td class="px-6 py-4 font-bold text-slate-800">${formatRM(d.total)}</td>
-                        <td class="px-6 py-4"><span class="px-2 py-1 ${badge} rounded text-[10px] font-bold uppercase">${d.type}</span></td>
+                        <td class="px-6 py-4"><p class="font-bold text-slate-800">${d.id} ${attachIcon}</p><p class="text-[10px] text-slate-500">${d.date}</p></td>
+                        <td class="px-6 py-4 text-xs font-mono text-slate-600">${d.projectId}<br><span class="text-[9px] text-slate-400">PO: ${d.poRef || '-'}</span></td>
+                        <td class="px-6 py-4"><span class="font-bold text-emerald-600">${formatRM(d.total)}</span></td>
+                        <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badge}">${d.type}</span></td>
                         <td class="px-6 py-4 text-right">
                             <button onclick="printCommercial('${d.id}')" class="text-slate-500 hover:text-slate-800 p-1.5"><i class="ph ph-printer text-lg"></i></button>
-                            <button onclick="saveDocToDrive('${d.id}')" class="text-blue-500 hover:text-blue-800 p-1.5 ml-1 hidden gdrive-btn"><i class="ph ph-google-drive-logo text-lg"></i></button>
+                            <button onclick="saveDocToDrive('${d.id}')" class="text-blue-500 hover:text-blue-800 p-1.5 ml-1 hidden gdrive-action"><i class="ph ph-google-drive-logo text-lg"></i></button>
                         </td>
                     </tr>`;
             });
-            // Show drive buttons if active
-            if(tokenClient) document.querySelectorAll('.gdrive-btn').forEach(b => b.classList.remove('hidden'));
+            if(tokenClient) document.querySelectorAll('.gdrive-action').forEach(el => el.classList.remove('hidden'));
         }
 
-        // --- AI SURAT RASMI ---
+        function saveStaff() {
+            const name = document.getElementById('s-name').value;
+            const role = document.getElementById('s-role').value;
+            const salary = parseFloat(document.getElementById('s-salary').value) || 0;
+            if(!name) return Swal.fire('Error', 'Staff Name required', 'error');
+            state.staff.push({ id: 'E-' + Math.floor(Math.random()*9000), name, role, salary });
+            saveState(); renderStaff(); closeModal('modal-staff');
+        }
+
+        function renderStaff() {
+            const grid = document.getElementById('staff-grid'); grid.innerHTML = '';
+            state.staff.forEach(s => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800">${s.name}</h4><p class="text-xs text-emerald-600 font-medium mb-3">${s.role}</p>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                            <span class="text-xs text-slate-500">Basic: ${formatRM(s.salary)}</span>
+                            <button onclick="calculatePayslip('${s.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded font-bold transition-colors">Calc Payslip</button>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function calculatePayslip(id) {
+            const s = state.staff.find(x => x.id === id);
+            if(!s) return;
+            const kwsp = s.salary * 0.11;
+            const socso = s.salary * 0.005;
+            const net = s.salary - kwsp - socso;
+            Swal.fire({
+                title: `${s.name} - Payslip`,
+                html: `
+                    <div class="text-left space-y-2 mt-4 text-sm">
+                        <div class="flex justify-between"><span class="text-slate-500">Basic Salary</span><span class="font-bold">${formatRM(s.salary)}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">KWSP (11%)</span><span class="text-red-500">-${formatRM(kwsp)}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500">SOCSO/EIS</span><span class="text-red-500">-${formatRM(socso)}</span></div>
+                        <div class="flex justify-between pt-2 border-t font-bold text-lg"><span class="text-slate-800">Net Payable</span><span class="text-emerald-600">${formatRM(net)}</span></div>
+                    </div>
+                `,
+                confirmButtonColor: '#0f172a', confirmButtonText: 'Close'
+            });
+        }
+
+        function renderDashboard() {
+            let totalRev = 0; state.commercials.forEach(c => { if(c.type === 'Invoice') totalRev += c.total; });
+            document.getElementById('dash-receivables').innerText = formatRM(totalRev);
+            document.getElementById('dash-projects-count').innerText = state.projects.filter(p => p.status !== 'Approved').length;
+            document.getElementById('dash-osc-count').innerText = state.projects.filter(p => p.status === 'OSC Submitted').length;
+        }
+
+        function logActivity(msg, icon, color) {
+            const feed = document.getElementById('activity-feed');
+            if(feed.innerText.includes('No recent activity')) feed.innerHTML = '';
+            feed.innerHTML = `<div class="flex items-start gap-4 mb-4"><div class="w-8 h-8 rounded-full bg-${color}-100 text-${color}-600 flex items-center justify-center flex-shrink-0"><i class="ph ph-${icon} text-lg"></i></div><div><p class="text-sm font-medium text-slate-800">${msg}</p><p class="text-[10px] text-slate-400">Just now</p></div></div>` + feed.innerHTML;
+        }
+
         function generateLetter() {
             const projId = document.getElementById('letter-project').value;
             const type = document.getElementById('letter-type').value;
@@ -587,7 +673,6 @@
             const proj = state.projects.find(p => p.id === projId);
             const client = state.clients.find(c => c.id === proj.clientId);
             
-            // Basic PBT Address mapping
             const pbtAddresses = {
                 'DBKL': "Jabatan Perancangan Bandaraya,\nDewan Bandaraya Kuala Lumpur,\nMenara DBKL 1, Jalan Raja Laut,\n50350 Kuala Lumpur.",
                 'MBPJ': "Jabatan Kawalan Bangunan,\nMajlis Bandaraya Petaling Jaya,\nJalan Yong Shook Lin,\n46675 Petaling Jaya, Selangor.",
@@ -609,7 +694,6 @@
             logActivity(`Drafted Surat Rasmi for ${proj.pbt}`, 'magic-wand', 'purple');
         }
 
-        // --- PRINTING ENGINE (WITH LOGO LETTERHEAD) ---
         function buildPrintHeader() {
             return `
                 <div style="display: flex; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px;">
@@ -697,21 +781,6 @@
             window.print();
         }
 
-        // --- DASHBOARD ---
-        function renderDashboard() {
-            let totalRev = 0; state.commercials.forEach(c => { if(c.type === 'Invoice') totalRev += c.total; });
-            document.getElementById('dash-receivables').innerText = formatRM(totalRev);
-            document.getElementById('dash-projects-count').innerText = state.projects.filter(p => p.status !== 'Approved').length;
-            document.getElementById('dash-osc-count').innerText = state.projects.filter(p => p.status === 'OSC Submitted').length;
-        }
-
-        function logActivity(msg, icon, color) {
-            const feed = document.getElementById('activity-feed');
-            if(feed.innerText.includes('No recent activity')) feed.innerHTML = '';
-            feed.innerHTML = `<div class="flex items-start gap-4 mb-4"><div class="w-8 h-8 rounded-full bg-${color}-100 text-${color}-600 flex items-center justify-center flex-shrink-0"><i class="ph ph-${icon} text-lg"></i></div><div><p class="text-sm font-medium text-slate-800">${msg}</p><p class="text-[10px] text-slate-400">Just now</p></div></div>` + feed.innerHTML;
-        }
-
-        // --- GOOGLE DRIVE API INTEGRATION ---
         const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
         const SCOPES = 'https://www.googleapis.com/auth/drive.file';
         let tokenClient; 
@@ -729,7 +798,7 @@
                             document.getElementById('gdrive-status-btn').classList.replace('bg-blue-50', 'bg-emerald-50');
                             document.getElementById('gdrive-status-btn').classList.replace('text-blue-600', 'text-emerald-600');
                             document.getElementById('btn-drive-letter').classList.remove('hidden');
-                            renderCommercials(); // Refresh to show drive buttons on table
+                            renderCommercials();
                         }
                     });
                 } catch(e) { console.error("Drive Init Error:", e); }
@@ -761,8 +830,7 @@
         function saveDocToDrive(docId) {
              const doc = state.commercials.find(d => d.id === docId);
              const proj = state.projects.find(p => p.id === doc.projectId);
-             // We reuse the print logic but render to a hidden div for PDF capture
-             printCommercial(docId); // Temporarily uses print view container
+             printCommercial(docId);
              const element = document.getElementById('print-invoice-container');
              element.style.display = 'block';
 
@@ -782,6 +850,85 @@
                  element.style.display = 'none'; element.innerHTML = '';
                  uploadFileToDrive(pdfBlob, `Surat Rasmi - As-Sidqi.pdf`);
              });
+        }
+
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Swal.fire({ title: 'Reading Excel File...', text: 'Extracting project data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    processExcelData(json);
+                } catch (error) {
+                    console.error("Excel Read Error:", error);
+                    Swal.fire('Error', 'Failed to read the Excel file. Please ensure it is a valid .xlsx or .xls format.', 'error');
+                }
+                document.getElementById('excel-upload').value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processExcelData(data) {
+            let addedCount = 0;
+            let newClientsCount = 0;
+
+            data.forEach(row => {
+                let clientName = row['Client'] || row['Client Name'] || row['Tetuan'] || row['Company'] || 'Unknown Client';
+                let details = row['Project Details'] || row['Details'] || row['Tajuk Projek'] || row['Project Title'];
+                let pbt = row['PBT'] || row['Local Council'] || row['Majlis'] || 'TBA';
+                let gps = row['GPS'] || row['Location'] || row['Lokasi'] || '';
+                let status = row['Status'] || 'Drafting';
+                let ref = row['Reference'] || row['PBT Ref'] || 'Pending...';
+
+                if(!details) return; 
+
+                // 1. Auto-create Client if they don't exist in our CRM
+                let client = state.clients.find(c => c.name.toLowerCase().trim() === clientName.toLowerCase().trim());
+                if(!client) {
+                    client = { id: 'C-' + Math.floor(Math.random()*9000), name: clientName, ssm: '', contact: '', email: '', address: '', attachedFile: null };
+                    state.clients.push(client);
+                    newClientsCount++;
+                }
+
+                // 2. Register the Project
+                const newProj = { 
+                    id: 'PRJ-' + Math.floor(Math.random()*90000), 
+                    clientId: client.id, 
+                    details: details, 
+                    pbt: pbt, 
+                    gps: gps, 
+                    status: status, 
+                    ref: ref, 
+                    date: new Date().toISOString(), 
+                    attachedFile: null 
+                };
+                
+                state.projects.unshift(newProj);
+                addedCount++;
+            });
+
+            saveState(); 
+            renderProjects(); 
+            renderClients(); 
+            updateDropdowns();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Data Imported!',
+                html: `Successfully imported <b>${addedCount}</b> projects.<br>Auto-created <b>${newClientsCount}</b> new client profiles.`,
+                confirmButtonColor: '#059669'
+            });
+            
+            logActivity(`Bulk imported ${addedCount} projects via Excel`, 'file-xls', 'emerald');
         }
 
         window.onload = loadState;
