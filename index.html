@@ -147,9 +147,9 @@
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
                     <div class="flex gap-2">
-                        <!-- Hidden file input for Excel -->
-                        <input type="file" id="excel-upload" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleExcelUpload(event)">
-                        <button onclick="document.getElementById('excel-upload').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-xls text-lg"></i> Bulk Import Excel</button>
+                        <!-- Hidden file input for CSV -->
+                        <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+                        <button onclick="document.getElementById('csv-upload').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
                         
                         <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
                     </div>
@@ -852,11 +852,11 @@
              });
         }
 
-        function handleExcelUpload(event) {
+        function handleCSVUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            Swal.fire({ title: 'Reading Excel File...', text: 'Extracting project data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            Swal.fire({ title: 'Reading CSV File...', text: 'Extracting project data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -867,26 +867,26 @@
                     const worksheet = workbook.Sheets[firstSheetName];
                     const json = XLSX.utils.sheet_to_json(worksheet);
 
-                    processExcelData(json);
+                    processCSVData(json);
                 } catch (error) {
-                    console.error("Excel Read Error:", error);
-                    Swal.fire('Error', 'Failed to read the Excel file. Please ensure it is a valid .xlsx or .xls format.', 'error');
+                    console.error("CSV Read Error:", error);
+                    Swal.fire('Error', 'Failed to read the CSV file. Please ensure it is a valid .csv format.', 'error');
                 }
-                document.getElementById('excel-upload').value = '';
+                document.getElementById('csv-upload').value = '';
             };
             reader.readAsArrayBuffer(file);
         }
 
-        function processExcelData(data) {
+        function processCSVData(data) {
             let addedCount = 0;
             let newClientsCount = 0;
 
             if (!data || data.length === 0) {
-                return Swal.fire('Empty File', 'No data found. Ensure your Excel file has headers in the first row.', 'warning');
+                return Swal.fire('Empty File', 'No data found. Ensure your CSV file has headers in the first row.', 'warning');
             }
 
             data.forEach(row => {
-                // Smart search: ignore uppercase, lowercase, and extra spaces in Excel headers
+                // Smart search: ignore uppercase, lowercase, and extra spaces in headers
                 const getValue = (searchKeywords) => {
                     const rowKeys = Object.keys(row);
                     for (let key of rowKeys) {
@@ -946,7 +946,7 @@
                 confirmButtonColor: '#059669'
             });
             
-            logActivity(`Bulk imported ${addedCount} projects via Excel`, 'file-xls', 'emerald');
+            logActivity(`Bulk imported ${addedCount} projects via CSV`, 'file-csv', 'emerald');
         }
 
         window.onload = loadState;
