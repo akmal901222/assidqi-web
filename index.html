@@ -50,7 +50,7 @@
     <div id="login-screen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
-            <div class="bg-white rounded-2xl p-2 w-24 h-24 mb-6 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
+            <div class="bg-white rounded-[24px] p-2 w-24 h-24 mb-6 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
                 <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
             </div>
             <h2 class="text-2xl font-black text-white mb-2">As-Sidqi ERP</h2>
@@ -189,6 +189,7 @@
                     <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
                     <div class="flex flex-wrap gap-2">
                         <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <!-- Hidden file input for CSV -->
                         <input type="file" id="csv-upload-clients" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'clients')">
                         <button onclick="document.getElementById('csv-upload-clients').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
                         <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
@@ -214,6 +215,37 @@
             </div>
 
             <!-- Projects View -->
+            <div id="view-projects" class="view-section hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportToCSV('projects')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <!-- Hidden file input for CSV -->
+                        <input type="file" id="csv-upload-projects" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'projects')">
+                        <button onclick="document.getElementById('csv-upload-projects').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
+                        <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="table-responsive overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[900px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4 md:p-5">Project Information & Scope</th>
+                                    <th class="p-4 md:p-5">Client</th>
+                                    <th class="p-4 md:p-5">Local Authority (PBT)</th>
+                                    <th class="p-4 md:p-5">Location / GPS</th>
+                                    <th class="p-4 md:p-5">PBT Reference</th>
+                                    <th class="p-4 md:p-5 text-right">Current Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="project-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Commercials View -->
             <div id="view-commercials" class="view-section hidden">
                  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
@@ -896,7 +928,6 @@
 
             state.clients.forEach(c => {
                 const projCount = state.projects.filter(p => p.clientId === c.id).length;
-                
                 const row = document.createElement('tr');
                 row.className = "hover:bg-slate-50 transition-colors group";
                 row.innerHTML = `
@@ -992,24 +1023,24 @@
                         scopesHtml += `<span class="inline-block bg-cyan-50 text-cyan-600 border border-cyan-100 text-[9px] px-2 py-0.5 rounded mr-1 mt-1 font-bold uppercase">${scope}</span>`;
                     });
                 }
-        // --- STREAMING_CHUNK:Updating Client Table View ---
-        function renderClients() {
-            const tbody = document.getElementById('client-table-body');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            state.clients.forEach(c => {
-                const projCount = state.projects.filter(p => p.clientId === c.id).length;
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group">
-                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800">${c.name}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 font-mono text-slate-500 text-xs">${c.ssm || '-'}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-slate-600">${c.contact || '-'}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-indigo-600">${c.email || '-'}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800 text-center">${projCount}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100">
+                            <div class="font-bold text-slate-800 text-sm">${p.details}</div>
+                            <div class="text-[10px] text-slate-400 mt-1">${p.date}</div>
+                            ${scopesHtml ? `<div class="mt-2">${scopesHtml}</div>` : ''}
+                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs font-semibold text-slate-700">${client ? client.name : 'Unknown Client'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800 text-xs">${p.pbt}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs text-slate-500"><i class="ph ph-map-pin"></i> ${p.gps || '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs font-mono text-slate-500">${p.ref || 'Pending...'}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right">
-                            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editClient('${c.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
-                                <button onclick="deleteData('client', '${c.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
+                            <span class="${statusColors[p.status]} px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">${p.status}</span>
+                            <div class="flex justify-end gap-1 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="quickQuote('${p.id}')" title="Quick Quote" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button>
+                                <button onclick="editProject('${p.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
+                                <button onclick="deleteData('project', '${p.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
                             </div>
                         </td>
                     </tr>`;
@@ -1304,6 +1335,7 @@
             let data = [];
             let filename = '';
             
+            // Helper function to safely wrap strings containing commas or quotes
             const escapeCSV = (str) => {
                 if (str == null) return '""';
                 const s = String(str);
@@ -1315,37 +1347,50 @@
 
             if (type === 'clients') {
                 data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV));
-                state.clients.forEach(c => data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV)));
-                filename = 'AsSidqi_Clients.csv';
+                state.clients.forEach(c => {
+                    data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Clients_Export.csv';
+                
             } else if (type === 'projects') {
-                data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date'].map(escapeCSV));
+                data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date Registered'].map(escapeCSV));
                 state.projects.forEach(p => {
                     const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
                     data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV));
                 });
-                filename = 'AsSidqi_Projects.csv';
+                filename = 'AsSidqi_Projects_Export.csv';
+                
             } else if (type === 'commercials') {
-                data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)', 'Status'].map(escapeCSV));
+                data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)'].map(escapeCSV));
                 state.commercials.forEach(d => {
                     const proj = state.projects.find(p => p.id === d.projectId);
                     const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown';
-                    data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total, d.status].map(escapeCSV));
+                    data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total].map(escapeCSV));
                 });
-                filename = 'AsSidqi_Commercials.csv';
+                filename = 'AsSidqi_Commercials_Export.csv';
+                
             } else if (type === 'hr') {
                 data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV));
-                state.staff.forEach(s => data.push([s.id, s.name, s.role, s.salary].map(escapeCSV)));
-                filename = 'AsSidqi_HR.csv';
+                state.staff.forEach(s => {
+                    data.push([s.id, s.name, s.role, s.salary].map(escapeCSV));
+                });
+                filename = 'AsSidqi_HR_Export.csv';
             }
 
-            if (data.length <= 1) return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
+            if (data.length <= 1) {
+                return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
+            }
 
+            // Construct the CSV string
             const csvContent = data.map(row => row.join(',')).join('\n');
+            
+            // Create a Blob and trigger the browser's download prompt
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.setAttribute('href', url);
             link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1384,7 +1429,7 @@
         async function processClientCSV(data) {
             let addedCount = 0;
             for(const row of data) {
-                const name = row['Client Name'] || row['Company Name'] || row['Client'];
+                const name = row['Client Name'] || row['Company Name'] || row['Client'] || row['Folder Name'];
                 if(!name) continue;
                 
                 const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
@@ -1444,7 +1489,7 @@
             }
             refreshAllViews();
             if (addedCount === 0) {
-                Swal.fire('No Data Imported', '0 projects found. Please ensure you are uploading a Project CSV, not a Client or Billing CSV.', 'warning');
+                Swal.fire('No Data Imported', '0 projects found. Please ensure you are uploading a Project CSV.', 'warning');
             } else {
                 Swal.fire('Data Imported!', `Successfully imported ${addedCount} projects.\nAuto-created ${newClients} new client profiles.`, 'success');
             }
@@ -1494,10 +1539,9 @@
             }
             refreshAllViews();
             if (addedCount === 0) {
-                 Swal.fire('No Data Imported', '0 commercial documents found. Ensure you are uploading a Billing CSV, not a Project CSV.', 'warning');
+                 Swal.fire('No Data Imported', '0 commercial documents found.', 'warning');
             } else {
-                 Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents.`, 'success');
-                 logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
+                 Swal.fire('Billing Imported!', `Successfully imported ${addedCount} documents.`, 'success');
             }
         }
 
@@ -1520,7 +1564,6 @@
             if(!ctx) return;
             if(revChart) revChart.destroy();
             
-            // Simple mockup data based on real totals for visualization
             revChart = new Chart(ctx, {
                 type: 'line',
                 data: {
