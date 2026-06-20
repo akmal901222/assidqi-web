@@ -920,7 +920,24 @@
                 refreshAllViews();
                 Swal.close();
                 logActivity('ERP authenticated and synchronized with Firebase', 'cloud-check', 'cyan');
-            } catch (e) { console.error(e); Swal.fire('Database Error', 'Failed to connect to Firebase. Check console.', 'error'); }
+            } catch (e) { 
+                console.error(e); 
+                // Enhanced Error Reporting to Screen
+                Swal.fire({
+                    title: 'Connection Blocked', 
+                    html: `
+                        <p class="text-sm text-slate-600 mb-2">Your browser or network is blocking the database.</p>
+                        <div class="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-lg font-mono mb-4 text-left break-words">
+                            Error: ${e.message}
+                        </div>
+                        <p class="text-sm font-bold text-slate-800">Please send this error message to the developer!</p>
+                    `, 
+                    icon: 'error',
+                    confirmButtonText: 'Enter Offline Mode'
+                }).then(() => {
+                    refreshAllViews(); // Let you into the app anyway so it isn't frozen
+                });
+            }
         }
 
         function refreshAllViews() { renderClients(); renderProjects(); renderCommercials(); renderPOs(); renderDashboard(); renderStaff(); renderExpenses(); updateDropdowns(); }
