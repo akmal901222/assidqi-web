@@ -862,12 +862,30 @@
                         <td class="p-5 text-center align-top"><span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest ${colors[p.status]} shadow-sm inline-block">${p.status}</span></td>
                         <td class="p-5 text-right align-top">
                             <div class="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editProject('${p.id}')" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg transition-colors"><i class="ph ph-pencil-simple text-lg"></i></button>
-                                <button onclick="deleteData('project', '${p.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"><i class="ph ph-trash text-lg"></i></button>
+                                <button onclick="quickQuote('${p.id}')" title="Generate Quote" class="text-cyan-500 hover:text-cyan-700 hover:bg-cyan-50 p-2 rounded-lg transition-colors"><i class="ph ph-receipt text-lg"></i></button>
+                                <button onclick="editProject('${p.id}')" title="Edit Project" class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-2 rounded-lg transition-colors"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteData('project', '${p.id}')" title="Delete Project" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"><i class="ph ph-trash text-lg"></i></button>
                             </div>
                         </td>
                     </tr>`;
             });
+        }
+
+        function quickQuote(projectId) {
+            // 1. Switch to the Commercials View
+            switchView('commercials');
+            // 2. Open the Document Builder Modal
+            openInvoiceWizard();
+            // 3. Auto-select the specific project in the dropdown
+            setTimeout(() => {
+                const projectSelect = document.getElementById('inv-project');
+                if(projectSelect) {
+                    projectSelect.value = projectId;
+                    // Provide a nice visual cue that it was auto-selected
+                    projectSelect.classList.add('ring-2', 'ring-cyan-500', 'bg-cyan-50');
+                    setTimeout(() => projectSelect.classList.remove('ring-2', 'ring-cyan-500', 'bg-cyan-50'), 1500);
+                }
+            }, 100);
         }
 
         function saveProject() {
