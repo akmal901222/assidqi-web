@@ -465,7 +465,14 @@
                 const attachIcon = c.attachedFile ? `<span class="text-blue-500 ml-2" title="${c.attachedFile}"><i class="ph ph-paperclip"></i></span>` : '';
                 grid.innerHTML += `
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow">
-                        <div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center font-bold">${c.name.charAt(0)}</div><h4 class="font-bold text-slate-800 leading-tight truncate" title="${c.name}">${c.name}${attachIcon}</h4></div>
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 border border-slate-200 flex items-center justify-center font-bold">${c.name.charAt(0)}</div>
+                            <h4 class="font-bold text-slate-800 leading-tight truncate flex-1" title="${c.name}">${c.name}${attachIcon}</h4>
+                            <div class="flex gap-1">
+                                <button onclick="editClient('${c.id}')" class="text-slate-400 hover:text-blue-500 p-1" title="Edit Client"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteClient('${c.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Delete Client"><i class="ph ph-trash text-lg"></i></button>
+                            </div>
+                        </div>
                         <p class="text-xs text-slate-500 mb-1 truncate"><i class="ph ph-identification-card mr-1"></i> ${c.ssm || 'No SSM provided'}</p>
                         <p class="text-xs text-slate-500 mb-1 truncate"><i class="ph ph-phone mr-1"></i> ${c.contact || 'N/A'} | <i class="ph ph-envelope-simple mr-1"></i> ${c.email || 'N/A'}</p>
                         <p class="text-xs text-slate-500 line-clamp-2" title="${c.address}"><i class="ph ph-map-pin mr-1"></i> ${c.address || 'N/A'}</p>
@@ -523,7 +530,11 @@
                         <td class="px-6 py-4"><p class="text-slate-800 text-sm truncate w-48" title="${p.details}">${p.details}</p><p class="text-[10px] text-slate-400 mt-0.5"><i class="ph ph-map-pin"></i> ${p.gps || 'Site TBA'} | Aged: ${days} days</p></td>
                         <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${p.pbt}</span></td>
                         <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badge}">${p.status}</span><p class="text-[10px] text-slate-400 mt-1">Ref: ${p.ref}</p></td>
-                        <td class="px-6 py-4 text-right"><button onclick="updateProjectStatus('${p.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded">Update</button></td>
+                        <td class="px-6 py-4 text-right flex justify-end gap-2 items-center h-full mt-2">
+                            <button onclick="updateProjectStatus('${p.id}')" class="text-emerald-600 hover:text-emerald-800 font-bold text-xs bg-emerald-50 px-3 py-1.5 rounded">Status</button>
+                            <button onclick="editProject('${p.id}')" class="text-slate-400 hover:text-blue-500 p-1" title="Edit Details"><i class="ph ph-pencil-simple text-lg"></i></button>
+                            <button onclick="deleteProject('${p.id}')" class="text-slate-400 hover:text-red-500 p-1" title="Delete Project"><i class="ph ph-trash text-lg"></i></button>
+                        </td>
                     </tr>`;
             });
         }
@@ -607,12 +618,89 @@
                         <td class="px-6 py-4"><span class="font-bold text-emerald-600">${formatRM(d.total)}</span></td>
                         <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${badge}">${d.type}</span></td>
                         <td class="px-6 py-4 text-right">
-                            <button onclick="printCommercial('${d.id}')" class="text-slate-500 hover:text-slate-800 p-1.5"><i class="ph ph-printer text-lg"></i></button>
-                            <button onclick="saveDocToDrive('${d.id}')" class="text-blue-500 hover:text-blue-800 p-1.5 ml-1 hidden gdrive-action"><i class="ph ph-google-drive-logo text-lg"></i></button>
+                            <button onclick="printCommercial('${d.id}')" class="text-slate-500 hover:text-slate-800 p-1.5" title="Print/PDF"><i class="ph ph-printer text-lg"></i></button>
+                            <button onclick="saveDocToDrive('${d.id}')" class="text-blue-500 hover:text-blue-800 p-1.5 ml-1 hidden gdrive-action" title="Save to Drive"><i class="ph ph-google-drive-logo text-lg"></i></button>
+                            <button onclick="deleteCommercial('${d.id}')" class="text-red-400 hover:text-red-600 p-1.5 ml-1" title="Delete Document"><i class="ph ph-trash text-lg"></i></button>
                         </td>
                     </tr>`;
             });
             if(tokenClient) document.querySelectorAll('.gdrive-action').forEach(el => el.classList.remove('hidden'));
+        }
+
+        async function editClient(id) {
+            const c = state.clients.find(x => x.id === id);
+            const { value: formValues } = await Swal.fire({
+                title: 'Edit Client Details',
+                html: `
+                    <div class="text-left mb-2 text-xs font-bold text-slate-500">Company Name</div><input id="swal-c-name" class="swal2-input mt-0 mb-4 w-full" value="${c.name}">
+                    <div class="text-left mb-2 text-xs font-bold text-slate-500">SSM No.</div><input id="swal-c-ssm" class="swal2-input mt-0 mb-4 w-full" value="${c.ssm}">
+                    <div class="text-left mb-2 text-xs font-bold text-slate-500">Contact / Email</div><input id="swal-c-contact" class="swal2-input mt-0 mb-4 w-full" value="${c.contact}">`,
+                focusConfirm: false, showCancelButton: true, confirmButtonColor: '#059669', confirmButtonText: 'Save Changes',
+                preConfirm: () => {
+                    return {
+                        name: document.getElementById('swal-c-name').value,
+                        ssm: document.getElementById('swal-c-ssm').value,
+                        contact: document.getElementById('swal-c-contact').value
+                    }
+                }
+            });
+            if (formValues && formValues.name) {
+                c.name = formValues.name; c.ssm = formValues.ssm; c.contact = formValues.contact;
+                saveState(); renderClients(); updateDropdowns();
+                Swal.fire({ icon: 'success', title: 'Updated!', timer: 1500, showConfirmButton: false });
+            }
+        }
+
+        function deleteClient(id) {
+            Swal.fire({ title: 'Delete Client?', text: "This will remove the client. Related projects will lose their client reference.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete it!' }).then((result) => {
+                if (result.isConfirmed) {
+                    state.clients = state.clients.filter(c => c.id !== id);
+                    saveState(); renderClients(); updateDropdowns();
+                    Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+                }
+            });
+        }
+
+        async function editProject(id) {
+            const p = state.projects.find(x => x.id === id);
+            const { value: formValues } = await Swal.fire({
+                title: 'Edit Project Details',
+                html: `
+                    <div class="text-left mb-2 text-xs font-bold text-slate-500">Project Title / Scope</div><input id="swal-p-details" class="swal2-input mt-0 mb-4 w-full" value="${p.details}">
+                    <div class="text-left mb-2 text-xs font-bold text-slate-500">Location / GPS</div><input id="swal-p-gps" class="swal2-input mt-0 mb-4 w-full" value="${p.gps}">`,
+                focusConfirm: false, showCancelButton: true, confirmButtonColor: '#059669', confirmButtonText: 'Save Changes',
+                preConfirm: () => {
+                    return {
+                        details: document.getElementById('swal-p-details').value,
+                        gps: document.getElementById('swal-p-gps').value
+                    }
+                }
+            });
+            if (formValues && formValues.details) {
+                p.details = formValues.details; p.gps = formValues.gps;
+                saveState(); renderProjects(); updateDropdowns();
+                Swal.fire({ icon: 'success', title: 'Updated!', timer: 1500, showConfirmButton: false });
+            }
+        }
+
+        function deleteProject(id) {
+            Swal.fire({ title: 'Delete Project?', text: "This project will be permanently removed from the pipeline.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete it!' }).then((result) => {
+                if (result.isConfirmed) {
+                    state.projects = state.projects.filter(p => p.id !== id);
+                    saveState(); renderProjects(); updateDropdowns();
+                    Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+                }
+            });
+        }
+
+        function deleteCommercial(id) {
+            Swal.fire({ title: 'Delete Document?', text: "This invoice/quotation will be permanently deleted. Revenue calculations will be updated.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Yes, delete it!' }).then((result) => {
+                if (result.isConfirmed) {
+                    state.commercials = state.commercials.filter(c => c.id !== id);
+                    saveState(); renderCommercials(); renderDashboard();
+                    Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
+                }
+            });
         }
 
         function saveStaff() {
