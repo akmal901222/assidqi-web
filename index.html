@@ -373,7 +373,10 @@
                     <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Default Vault Folder ID (Optional)</label><input type="text" id="set-folderid" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-mono text-xs" placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ12345"></div>
                 </div>
 
-                <button onclick="saveSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-600/20">Save Configuration</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <button onclick="saveSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-emerald-600/20">Save Configuration</button>
+                    <button onclick="manualInjectData()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"><i class="ph ph-database text-xl"></i> Auto-Inject Default Data</button>
+                </div>
             </div>
 
         </div>
@@ -787,6 +790,35 @@
         function refreshAllViews() {
             renderClients(); renderProjects(); renderCommercials(); renderDashboard(); renderStaff(); renderExpenses(); updateDropdowns();
         }
+
+        window.manualInjectData = async function() {
+            Swal.fire({ title: 'Injecting Data', text: 'Pushing hardcoded data to Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try {
+                const hardcodedClients = [
+                    { name: "Ganad Media Sdn Bhd", ssm: "1992010XXXXX", contact: "En. Ahmad Firdaus", email: "firdaus@ganad.com.my", address: "Level 12 Menara Ganad, Bangsar South, KL" },
+                    { name: "Qisya Iman Enterprise", ssm: "00234XXXX-W", contact: "Pn. Qisya", email: "qisya.iman@gmail.com", address: "No 15 Jalan Melati, Cheras, Selangor" },
+                    { name: "Keyad Media Asia", ssm: "2018010XXXXX", contact: "Mr. Kelvin Yeoh", email: "kelvin@keyad.com.my", address: "Block B, PJ Trade Centre, Petaling Jaya" },
+                    { name: "Seni Jaya Corporation", ssm: "1985010XXXXX", contact: "Cik Aminah", email: "admin@senijaya.com.my", address: "Menara Seni Jaya, TTDI, Selangor" },
+                    { name: "Evo Media Sdn Bhd", ssm: "2005010XXXXX", contact: "En. Khairul", email: "projects@evomedia.com", address: "Suite 8B, Sunway Putra Tower, KL" }
+                ];
+
+                let added = 0;
+                for (const c of hardcodedClients) {
+                    const existing = state.clients.find(existingClient => existingClient.name.toLowerCase() === c.name.toLowerCase());
+                    if (!existing) {
+                        const docRef = await addDoc(collection(db, "clients"), c);
+                        state.clients.push({ ...c, id: docRef.id });
+                        added++;
+                    }
+                }
+                
+                refreshAllViews();
+                Swal.fire('Data Injected!', `Successfully hardcoded ${added} clients into your Firebase database.`, 'success');
+            } catch(e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to inject data to Firebase.', 'error');
+            }
+        };
 
         window.saveSettings = async function() {
             const newSettings = {};
@@ -1331,27 +1363,57 @@
             logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
         };
 
-        // --- STREAMING_CHUNK:Implementing Bulk Import CSV Engines... ---
         window.handleCSVUpload = function(event, type) {
             const file = event.target.files[0];
             if(!file) return;
+            
+            Swal.fire({ title: 'Reading File...', text: 'Parsing data safely...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
             const reader = new FileReader();
             reader.onload = async function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
-                
-                Swal.showLoading();
-                if(type === 'projects') await processProjectCSV(json);
-                else if(type === 'clients') await processClientCSV(json);
-                else if(type === 'commercials') await processCommercialCSV(json);
-                
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
+                    
+                    if(type === 'projects') await processProjectCSV(json);
+                    else if(type === 'clients') await processClientCSV(json);
+                    else if(type === 'commercials') await processCommercialCSV(json);
+                    
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire('Import Failed', 'Could not read the CSV file correctly.', 'error');
+                }
                 event.target.value = ''; // Reset input
             };
             reader.readAsArrayBuffer(file);
         };
+
+        async function processClientCSV(data) {
+            let addedCount = 0;
+            for(const row of data) {
+                const name = row['Client Name'] || row['Company Name'] || row['Client'];
+                if(!name) continue;
+                
+                const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
+                if(!existing) {
+                    const clientData = {
+                        name: name.trim(),
+                        ssm: row['SSM Number'] || row['SSM'] || '',
+                        contact: row['Contact Person'] || row['Contact'] || '',
+                        email: row['Email Address'] || row['Email'] || '',
+                        address: row['Billing Address'] || row['Address'] || ''
+                    };
+                    const docRef = await addDoc(collection(db, "clients"), clientData);
+                    state.clients.push({ ...clientData, id: docRef.id });
+                    addedCount++;
+                }
+            }
+            refreshAllViews();
+            Swal.fire('Clients Imported!', `Successfully imported ${addedCount} clients to Firebase.`, 'success');
+        }
 
         async function processProjectCSV(data) {
             let addedCount = 0; let newClients = 0;
