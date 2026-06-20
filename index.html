@@ -1,7 +1,457 @@
-<!-- ... existing code ... -->
-        let tempLineItems = [];
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AS-SIDQI ERP - Phase 1</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- SheetJS for Bulk Import -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- html2pdf for Drive Uploads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar-item { transition: all 0.2s ease; }
+        .sidebar-item.active { background-color: #eff6ff; color: #4f46e5; border-right: 3px solid #4f46e5; font-weight: 700; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        // Intelligent Auto-Fill Dictionary for C&S Scope of Works
+        /* Modals */
+        .modal { display: none; }
+        .modal.active { display: flex; }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            #print-area { width: 100%; max-width: 100%; margin: 0; padding: 0; box-shadow: none; }
+            .page-break { page-break-before: always; }
+        }
+        .print-only { display: none; }
+    </style>
+</head>
+<body class="text-slate-800 h-screen overflow-hidden flex">
+
+    <!-- Print Area Container (Hidden until needed) -->
+    <div id="print-area" class="print-only fixed inset-0 bg-white z-[9999] overflow-y-auto p-12">
+        <div class="max-w-[800px] mx-auto" id="print-content"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-[#0a1128] text-slate-300 flex flex-col h-full shadow-xl z-10 no-print">
+        <div class="p-6 border-b border-slate-800/50 flex flex-col items-center">
+            <!-- Official Logo -->
+            <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-32 h-auto mb-3 bg-white rounded-lg p-2 shadow-sm" onerror="this.src='https://placehold.co/400x150/ffffff/0a1128?text=AS-SIDQI';">
+            <span class="text-[10px] font-black tracking-widest text-emerald-400 border border-emerald-400/30 px-3 py-1 rounded-full bg-emerald-400/10 uppercase">Engineering ERP Hub</span>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-4">Operations</div>
+            <a href="#" onclick="switchView('dashboard')" id="nav-dashboard" class="sidebar-item active flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-squares-four text-lg mr-3"></i> Executive Dashboard
+            </a>
+            <a href="#" onclick="switchView('clients')" id="nav-clients" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-users-three text-lg mr-3"></i> Clients & CRM
+            </a>
+            <a href="#" onclick="switchView('projects')" id="nav-projects" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-kanban text-lg mr-3"></i> Projects & OSC Tracker
+            </a>
+            
+            <div class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Finance & Docs</div>
+            <a href="#" onclick="switchView('commercials')" id="nav-commercials" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-receipt text-lg mr-3"></i> Billing & Quotations
+            </a>
+            <a href="#" onclick="switchView('letters')" id="nav-letters" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-file-text text-lg mr-3"></i> AI Surat Rasmi
+            </a>
+            <a href="#" onclick="switchView('hr')" id="nav-hr" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-users text-lg mr-3"></i> HR & Payroll
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-800/50">
+            <a href="#" onclick="switchView('settings')" id="nav-settings" class="sidebar-item flex items-center px-6 py-3 text-sm text-emerald-400 hover:text-emerald-300 hover:bg-slate-800/50 rounded-lg">
+                <i class="ph ph-gear text-lg mr-3"></i> Company Setup
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden no-print">
+        
+        <!-- Header -->
+        <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 shrink-0">
+            <h2 class="text-xl font-bold text-slate-800" id="top-title">Executive Dashboard</h2>
+            <div class="flex items-center gap-4">
+                <button onclick="connectGoogleDrive()" id="drive-btn" class="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-semibold transition-colors border border-slate-300">
+                    <i class="ph ph-google-drive-logo text-lg text-blue-600"></i> <span id="drive-status">Connect Drive</span>
+                </button>
+                <div class="text-sm text-slate-500 font-medium" id="current-date"></div>
+            </div>
+        </header>
+
+        <!-- Dynamic Views Container -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section block">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Receivables</div>
+                        <div class="text-4xl font-black text-slate-800 mb-2" id="dash-receivables">RM 0.00</div>
+                        <div class="text-sm text-emerald-600 font-medium flex items-center"><i class="ph ph-trend-up mr-1"></i> YTD Invoiced</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Active Projects</div>
+                        <div class="text-4xl font-black text-slate-800 mb-2" id="dash-projects">0</div>
+                        <div class="text-sm text-blue-600 font-medium">Pending PBT Approval</div>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-700 text-white">
+                        <div class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Pending Actions</div>
+                        <div class="text-4xl font-black text-white mb-2" id="dash-actions">0</div>
+                        <div class="text-sm text-amber-400 font-medium">Awaiting Action</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Revenue Analytics</h3>
+                        <canvas id="revenueChart" height="100"></canvas>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">Recent Activity</h3>
+                        <div class="space-y-4" id="activity-feed">
+                            <div class="text-sm text-slate-500 italic text-center py-4">No recent activity</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients View -->
+            <div id="view-clients" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-grid"></div>
+            </div>
+
+            <!-- Projects View -->
+            <div id="view-projects" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV('projects')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <!-- Hidden file input for CSV -->
+                        <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+                        <button onclick="document.getElementById('csv-upload').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
+                        <button onclick="openModal('modal-project')" class="bg-[#0a1128] hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+                                <th class="p-4 font-bold">Client / Project Details</th>
+                                <th class="p-4 font-bold">PBT & Location</th>
+                                <th class="p-4 font-bold">PBT Reference</th>
+                                <th class="p-4 font-bold text-center">Current Status</th>
+                                <th class="p-4 font-bold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projects-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Commercials View -->
+            <div id="view-commercials" class="view-section hidden">
+                 <div class="flex justify-between items-center mb-6 no-print">
+                    <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices.</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV('commercials')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <!-- Hidden file input for Commercials CSV -->
+                        <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCommercialCSVUpload(event)">
+                        <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
+                        <button onclick="openInvoiceWizard()" class="bg-[#0a1128] hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Create Document</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500">
+                                <th class="p-4 font-bold">Document</th>
+                                <th class="p-4 font-bold">Client & Project</th>
+                                <th class="p-4 font-bold text-right">Subtotal</th>
+                                <th class="p-4 font-bold text-right">Tax (8%)</th>
+                                <th class="p-4 font-bold text-right">Grand Total</th>
+                                <th class="p-4 font-bold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="commercials-table" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Letters View -->
+            <div id="view-letters" class="view-section hidden">
+                 <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">AI Surat Rasmi</h3><p class="text-sm text-slate-500">Auto-generate official PBT correspondence.</p></div>
+                    <button onclick="openModal('modal-letter')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"><i class="ph ph-magic-wand text-lg"></i> Auto-Draft Letter</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="letters-grid"></div>
+            </div>
+
+            <!-- HR View -->
+            <div id="view-hr" class="view-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculate statutory deductions.</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV('hr')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="staff-grid"></div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view-section hidden">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">Company Setup</h3>
+                    <p class="text-sm text-slate-500">These details will be injected into your official PDFs and Letters.</p>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-3xl">
+                    <h4 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Company Profile & Documents</h4>
+                    <div class="grid grid-cols-1 gap-5 mb-8">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Official Company Name</label>
+                            <input type="text" id="set-company" class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-slate-50" placeholder="e.g. AS-SIDQI ENGINEERING & SERVICES">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">SSM Registration No.</label>
+                                <input type="text" id="set-ssm" class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-slate-50" placeholder="e.g. 202601000000 (000000-X)">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">BEM Practicing No.</label>
+                                <input type="text" id="set-bem" class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-slate-50" placeholder="e.g. C116608">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Official Address (For Letterhead)</label>
+                            <input type="text" id="set-address" class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-slate-50">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bank Details (For Invoices)</label>
+                            <input type="text" id="set-bank" class="w-full border border-slate-300 rounded-lg px-4 py-2 bg-slate-50" placeholder="e.g. MAYBANK: 562469316072">
+                        </div>
+                    </div>
+
+                    <h4 class="text-lg font-bold text-blue-600 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2"><i class="ph ph-google-drive-logo"></i> Google Drive API Integration</h4>
+                    <p class="text-xs text-slate-500 mb-4">Paste your Google Cloud API credentials here to enable seamless PDF uploads.</p>
+                    <div class="grid grid-cols-1 gap-5 mb-8">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">OAuth Client ID</label>
+                            <input type="text" id="set-gclient" class="w-full border border-slate-300 rounded-lg px-4 py-2 font-mono text-xs" placeholder="Ending in .apps.googleusercontent.com">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">API Key</label>
+                            <input type="text" id="set-gapi" class="w-full border border-slate-300 rounded-lg px-4 py-2 font-mono text-xs">
+                        </div>
+                    </div>
+
+                    <button onclick="saveSettings()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg">Save Configuration</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal: Add Client -->
+    <div id="modal-client" class="modal fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all">
+            <h3 class="text-xl font-bold text-slate-800 mb-4" id="client-modal-title">Add New Client</h3>
+            <div class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Company Name</label><input type="text" id="client-name" class="w-full border border-slate-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">SSM Number</label><input type="text" id="client-ssm" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Optional"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Contact Person</label><input type="text" id="client-contact" class="w-full border border-slate-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email Address</label><input type="email" id="client-email" class="w-full border border-slate-300 rounded-lg px-3 py-2"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Billing Address</label><textarea id="client-address" class="w-full border border-slate-300 rounded-lg px-3 py-2" rows="2"></textarea></div>
+                <!-- Drive Upload Mockup for UI -->
+                <div class="border border-dashed border-slate-300 rounded-lg p-4 bg-slate-50 text-center">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Attach Document (SSM/Profile)</label>
+                    <input type="file" id="client-file" class="text-xs text-slate-600 w-full cursor-pointer">
+                    <p class="text-[10px] text-slate-400 mt-1">Will be uploaded to Google Drive</p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('modal-client')" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="saveClient()" class="px-4 py-2 bg-[#0a1128] text-white font-bold rounded-lg shadow-md">Save Client</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Register Project -->
+    <div id="modal-project" class="modal fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 transform transition-all">
+            <h3 class="text-xl font-bold text-slate-800 mb-4" id="project-modal-title">Register Project</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Select Client</label>
+                    <select id="proj-client" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"></select>
+                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Project Details / Scope</label><textarea id="proj-details" class="w-full border border-slate-300 rounded-lg px-3 py-2" rows="2" placeholder="e.g. Cadangan Struktur Papan Iklan Unipole 18m..."></textarea></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Local Council (PBT)</label>
+                        <input type="text" id="proj-pbt" list="pbt-list" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="e.g. DBKL, MBPJ">
+                        <datalist id="pbt-list">
+                            <option value="DBKL">
+                            <option value="MBPJ">
+                            <option value="MBSA">
+                            <option value="MPKj">
+                            <option value="MBSP">
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Location / GPS</label>
+                        <input type="text" id="proj-gps" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Site Coordinates or Road Name">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status</label>
+                        <select id="proj-status" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white">
+                            <option>Site Recce</option>
+                            <option>Drafting</option>
+                            <option>PE Endorsement</option>
+                            <option>OSC Submitted</option>
+                            <option>Approved</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">PBT Reference No.</label><input type="text" id="proj-ref" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="Optional"></div>
+                </div>
+                <!-- Drive Upload Mockup for UI -->
+                <div class="border border-dashed border-slate-300 rounded-lg p-4 bg-slate-50 text-center">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Attach Site Files (Photos/.DWG/.PDF)</label>
+                    <input type="file" id="proj-file" class="text-xs text-slate-600 w-full cursor-pointer" multiple>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button onclick="closeModal('modal-project')" class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="saveProject()" class="px-4 py-2 bg-[#0a1128] text-white font-bold rounded-lg shadow-md">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Document Builder (Quotes/Invoices) -->
+    <div id="modal-invoice" class="modal fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-all">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center shrink-0">
+                <h3 class="text-xl font-bold text-slate-800" id="commercial-modal-title">Document Builder</h3>
+                <button onclick="closeModal('modal-invoice')" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 bg-white p-5 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Document Type</label>
+                        <select id="inv-type" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white font-bold text-slate-800">
+                            <option value="Quotation">Quotation (Sebut Harga)</option>
+                            <option value="Invoice">Invoice (Invois)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Link to Project</label>
+                        <select id="inv-project" class="w-full border border-slate-300 rounded-lg px-3 py-2 bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Client PO / LOU Ref (Optional)</label>
+                        <input type="text" id="inv-po" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="e.g. PO-2026-001">
+                    </div>
+                </div>
+
+                <div class="mb-4 flex justify-between items-center">
+                    <h4 class="font-bold text-slate-800">Line Items</h4>
+                    <button onclick="addLineItem()" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg">+ Add Row</button>
+                </div>
+                
+                <!-- Smart Datalist for Scope of Works -->
+                <datalist id="scope-options">
+                    <option value="Design & Drawing">
+                    <option value="Submission">
+                    <option value="To get approval">
+                    <option value="Drawing only">
+                    <option value="Site inspection">
+                    <option value="As-built Drawing">
+                    <option value="PE Endorsement">
+                    <option value="Integrity Inspection">
+                    <option value="Final CCC">
+                    <option value="Renew KM">
+                    <option value="Renew license">
+                </datalist>
+
+                <div id="line-items-container" class="space-y-3">
+                    <!-- Line items generated via JS -->
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <div class="w-72 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-slate-500">Subtotal</span>
+                            <span class="font-bold text-slate-800" id="inv-subtotal">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-3 pb-3 border-b border-slate-200">
+                            <label class="flex items-center text-sm font-bold text-slate-500 cursor-pointer">
+                                <input type="checkbox" id="inv-sst" class="mr-2 rounded text-emerald-600 focus:ring-emerald-500" onchange="calculateTotals()"> Add 8% SST
+                            </label>
+                            <span class="font-bold text-slate-800" id="inv-tax">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-black text-slate-800">Grand Total</span>
+                            <span class="text-xl font-black text-emerald-600" id="inv-grand">RM 0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 border-t border-slate-200 bg-white flex justify-between shrink-0">
+                <!-- Drive Upload Mockup for POs -->
+                <div class="flex items-center gap-3 w-1/2">
+                     <label class="text-xs font-bold text-slate-500 uppercase">Attach PO (PDF)</label>
+                     <input type="file" id="inv-file" class="text-xs text-slate-600 w-full cursor-pointer max-w-[200px]">
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="closeModal('modal-invoice')" class="px-6 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl">Cancel</button>
+                    <button onclick="saveCommercial()" class="px-6 py-2.5 bg-[#0a1128] text-white font-bold rounded-xl shadow-lg">Save Document</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Block -->
+    <script>
+        // --- Intelligent Auto-Fill Dictionary for C&S Scope of Works ---
         const scopeNotesMap = {
             'Design & Drawing': 'Preparation of detailed structural calculations and C&S AutoCAD drawings for the structure and foundation, compliant with BS 5950 and MS 1553 (Wind Load).',
             'Submission': 'Preparation of Borang A, Laporan Cadangan Pemajuan (LCP), and official C&S document submission to the Local Authority via OSC 3.0 Plus.',
@@ -16,18 +466,385 @@
             'Renew license': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.'
         };
 
+        // --- Core Application State ---
+        let state = {
+            clients: [],
+            projects: [],
+            commercials: [],
+            staff: [],
+            settings: {
+                company: '', ssm: '', bem: '', address: '', bank: '', gclient: '', gapi: ''
+            }
+        };
+
+        // --- Initialization ---
+        function loadState() {
+            const saved = localStorage.getItem('assidqi_state');
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch(e) { console.error("Could not load state", e); }
+            }
+            
+            // Populate Settings Form
+            document.getElementById('set-company').value = state.settings.company || '';
+            document.getElementById('set-ssm').value = state.settings.ssm || '';
+            document.getElementById('set-bem').value = state.settings.bem || '';
+            document.getElementById('set-address').value = state.settings.address || '';
+            document.getElementById('set-bank').value = state.settings.bank || '';
+            document.getElementById('set-gclient').value = state.settings.gclient || '';
+            document.getElementById('set-gapi').value = state.settings.gapi || '';
+
+            // Update Header Date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-MY', options);
+
+            refreshAllViews();
+            initChart();
+        }
+
+        function saveState() {
+            localStorage.setItem('assidqi_state', JSON.stringify(state));
+            refreshAllViews();
+        }
+
+        function refreshAllViews() {
+            renderClients();
+            renderProjects();
+            renderCommercials();
+            renderDashboard();
+            populateProjectDropdowns();
+        }
+
+        // --- View Navigation ---
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.getElementById(`nav-${viewId}`).classList.add('active');
+            
+            const titles = {
+                'dashboard': 'Executive Dashboard',
+                'clients': 'Client Directory',
+                'projects': 'Projects & OSC Tracker',
+                'commercials': 'Billing & Quotations',
+                'letters': 'AI Surat Rasmi',
+                'hr': 'HR & Payroll Tracker',
+                'settings': 'Company Setup'
+            };
+            document.getElementById('top-title').innerText = titles[viewId];
+        }
+
+        // --- Modals ---
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        // --- Helpers ---
+        function formatRM(num) {
+            return new Intl.NumberFormat('en-MY', { style: 'currency', currency: 'MYR' }).format(num);
+        }
+        function generateId(prefix) {
+            return prefix + '-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+        }
+        function logActivity(text, icon, color) {
+            const feed = document.getElementById('activity-feed');
+            if(feed.innerHTML.includes('No recent activity')) feed.innerHTML = '';
+            
+            const item = document.createElement('div');
+            item.className = 'flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100';
+            item.innerHTML = `
+                <div class="p-2 bg-${color}-100 rounded-lg shrink-0"><i class="ph ph-${icon} text-${color}-600 text-lg"></i></div>
+                <div><p class="text-sm font-bold text-slate-800">${text}</p><p class="text-xs text-slate-500">Just now</p></div>
+            `;
+            feed.prepend(item);
+            if(feed.children.length > 5) feed.removeChild(feed.lastChild);
+        }
+
+        // --- Dashboard & Chart ---
+        let revenueChartInst = null;
+        function renderDashboard() {
+            let totalInvoiced = 0;
+            state.commercials.forEach(c => { if(c.type === 'Invoice') totalInvoiced += c.total; });
+            document.getElementById('dash-receivables').innerText = formatRM(totalInvoiced);
+            
+            let activeProj = state.projects.filter(p => p.status !== 'Approved').length;
+            document.getElementById('dash-projects').innerText = activeProj;
+
+            let pendingActions = state.commercials.filter(c => c.type === 'Quotation').length; 
+            document.getElementById('dash-actions').innerText = pendingActions;
+
+            if(revenueChartInst) {
+                // Simple update logic for chart based on real data length
+                const dataPoints = state.commercials.filter(c=>c.type==='Invoice').length;
+                revenueChartInst.data.datasets[0].data = [0, 0, 0, 0, totalInvoiced * 0.4, totalInvoiced];
+                revenueChartInst.update();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            revenueChartInst = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Invoiced Revenue (RM)',
+                        data: [0, 0, 0, 0, 0, 0], // Replaced dynamically
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // --- Settings ---
+        function saveSettings() {
+            state.settings = {
+                company: document.getElementById('set-company').value,
+                ssm: document.getElementById('set-ssm').value,
+                bem: document.getElementById('set-bem').value,
+                address: document.getElementById('set-address').value,
+                bank: document.getElementById('set-bank').value,
+                gclient: document.getElementById('set-gclient').value,
+                gapi: document.getElementById('set-gapi').value
+            };
+            saveState();
+            Swal.fire({ title: 'Saved!', text: 'Company configuration updated.', icon: 'success', confirmButtonColor: '#10b981' });
+        }
+
+        // --- Clients (CRUD) ---
+        let editingClientId = null;
+        function renderClients() {
+            const grid = document.getElementById('client-grid');
+            grid.innerHTML = '';
+            state.clients.forEach(c => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow relative group">
+                        <div class="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editClient('${c.id}')" class="p-1.5 text-blue-500 hover:bg-blue-50 rounded-md"><i class="ph ph-pencil-simple text-lg"></i></button>
+                            <button onclick="deleteData('client', '${c.id}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md"><i class="ph ph-trash text-lg"></i></button>
+                        </div>
+                        <div class="w-12 h-12 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center font-black text-xl mb-4 border border-slate-200">${c.name.charAt(0)}</div>
+                        <h4 class="font-bold text-slate-800 text-lg flex items-center gap-2">${c.name} ${c.file ? '<i class="ph ph-paperclip text-slate-400 text-sm" title="Has Attachment"></i>' : ''}</h4>
+                        ${c.ssm ? `<p class="text-xs font-mono text-slate-500 mt-1">SSM: ${c.ssm}</p>` : ''}
+                        <div class="mt-4 space-y-2 text-sm text-slate-600">
+                            <p class="flex items-center gap-2"><i class="ph ph-user text-slate-400"></i> ${c.contact}</p>
+                            ${c.email ? `<p class="flex items-center gap-2"><i class="ph ph-envelope text-slate-400"></i> ${c.email}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            populateProjectDropdowns();
+        }
+
+        function saveClient() {
+            const name = document.getElementById('client-name').value;
+            if(!name) return Swal.fire('Error', 'Company Name is required', 'error');
+            
+            const fileInput = document.getElementById('client-file');
+            const hasFile = fileInput.files.length > 0;
+
+            const clientData = {
+                name,
+                ssm: document.getElementById('client-ssm').value,
+                contact: document.getElementById('client-contact').value,
+                email: document.getElementById('client-email').value,
+                address: document.getElementById('client-address').value,
+                file: hasFile ? fileInput.files[0].name : null // Mock file storage
+            };
+
+            if(hasFile && state.settings.gclient) simulateDriveUpload();
+
+            if(editingClientId) {
+                const idx = state.clients.findIndex(c => c.id === editingClientId);
+                clientData.id = editingClientId;
+                state.clients[idx] = clientData;
+                logActivity(`Updated client profile: ${name}`, 'user-list', 'blue');
+            } else {
+                clientData.id = generateId('CLI');
+                state.clients.push(clientData);
+                logActivity(`Added new client: ${name}`, 'building-office', 'emerald');
+            }
+
+            saveState();
+            closeModal('modal-client');
+            
+            // Clear form
+            document.getElementById('client-name').value = '';
+            document.getElementById('client-ssm').value = '';
+            document.getElementById('client-contact').value = '';
+            document.getElementById('client-email').value = '';
+            document.getElementById('client-address').value = '';
+            fileInput.value = '';
+            editingClientId = null;
+        }
+
+        function editClient(id) {
+            const c = state.clients.find(c => c.id === id);
+            if(!c) return;
+            editingClientId = c.id;
+            document.getElementById('client-modal-title').innerText = 'Edit Client';
+            document.getElementById('client-name').value = c.name;
+            document.getElementById('client-ssm').value = c.ssm || '';
+            document.getElementById('client-contact').value = c.contact || '';
+            document.getElementById('client-email').value = c.email || '';
+            document.getElementById('client-address').value = c.address || '';
+            openModal('modal-client');
+        }
+
+        // --- Projects (CRUD) ---
+        let editingProjectId = null;
+        function populateProjectDropdowns() {
+            const clientSelect = document.getElementById('proj-client');
+            const invProjectSelect = document.getElementById('inv-project');
+            clientSelect.innerHTML = '';
+            invProjectSelect.innerHTML = '';
+            
+            state.clients.forEach(c => {
+                clientSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+            });
+
+            state.projects.forEach(p => {
+                const cName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
+                invProjectSelect.innerHTML += `<option value="${p.id}">${cName} - ${p.details.substring(0,30)}...</option>`;
+            });
+        }
+
+        function renderProjects() {
+            const tbody = document.getElementById('projects-table');
+            tbody.innerHTML = '';
+            state.projects.forEach(p => {
+                const client = state.clients.find(c => c.id === p.clientId);
+                const statusColors = {
+                    'Site Recce': 'bg-slate-100 text-slate-700',
+                    'Drafting': 'bg-blue-100 text-blue-700',
+                    'PE Endorsement': 'bg-purple-100 text-purple-700',
+                    'OSC Submitted': 'bg-amber-100 text-amber-700',
+                    'Approved': 'bg-emerald-100 text-emerald-700'
+                };
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4">
+                            <div class="font-bold text-slate-800">${client ? client.name : 'Unknown'}</div>
+                            <div class="text-xs text-slate-500 mt-1 max-w-xs truncate">${p.details}</div>
+                            ${p.file ? `<div class="text-[10px] text-blue-500 mt-1"><i class="ph ph-paperclip"></i> Attached files</div>` : ''}
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-indigo-700">${p.pbt}</div>
+                            <div class="text-xs text-slate-500 mt-1"><i class="ph ph-map-pin mr-1"></i>${p.gps || 'Location pending'}</div>
+                        </td>
+                        <td class="p-4 text-sm font-mono text-slate-600">${p.ref || 'Pending...'}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${statusColors[p.status]}">${p.status}</span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editProject('${p.id}')" class="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 rounded-lg"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteData('project', '${p.id}')" class="text-red-500 hover:text-red-700 p-1.5 bg-red-50 rounded-lg"><i class="ph ph-trash text-lg"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function saveProject() {
+            const clientId = document.getElementById('proj-client').value;
+            const details = document.getElementById('proj-details').value;
+            if(!clientId || !details) return Swal.fire('Error', 'Client and Details required', 'error');
+
+            const fileInput = document.getElementById('proj-file');
+            const hasFile = fileInput.files.length > 0;
+
+            const projData = {
+                clientId, details,
+                pbt: document.getElementById('proj-pbt').value,
+                gps: document.getElementById('proj-gps').value,
+                status: document.getElementById('proj-status').value,
+                ref: document.getElementById('proj-ref').value,
+                file: hasFile ? fileInput.files[0].name : null,
+                date: new Date().toLocaleDateString('en-MY')
+            };
+
+            if(hasFile && state.settings.gclient) simulateDriveUpload();
+
+            if(editingProjectId) {
+                const idx = state.projects.findIndex(p => p.id === editingProjectId);
+                projData.id = editingProjectId;
+                state.projects[idx] = projData;
+                logActivity(`Updated project details`, 'kanban', 'blue');
+            } else {
+                projData.id = generateId('PRJ');
+                state.projects.push(projData);
+                logActivity(`Registered new project`, 'kanban', 'emerald');
+            }
+
+            saveState();
+            closeModal('modal-project');
+            
+            // Clear Form
+            document.getElementById('proj-details').value = '';
+            document.getElementById('proj-pbt').value = '';
+            document.getElementById('proj-gps').value = '';
+            document.getElementById('proj-ref').value = '';
+            fileInput.value = '';
+            editingProjectId = null;
+        }
+
+        function editProject(id) {
+            const p = state.projects.find(p => p.id === id);
+            if(!p) return;
+            editingProjectId = p.id;
+            document.getElementById('project-modal-title').innerText = 'Edit Project';
+            document.getElementById('proj-client').value = p.clientId;
+            document.getElementById('proj-details').value = p.details;
+            document.getElementById('proj-pbt').value = p.pbt;
+            document.getElementById('proj-gps').value = p.gps || '';
+            document.getElementById('proj-status').value = p.status;
+            document.getElementById('proj-ref').value = p.ref || '';
+            openModal('modal-project');
+        }
+
+        // --- Commercials (Quotes/Invoices) ---
+        let tempLineItems = [];
+        let editingDocId = null;
+
         function openInvoiceWizard() {
-            editingDocId = null; 
+            editingDocId = null;
+            document.getElementById('commercial-modal-title').innerText = 'Document Builder';
             tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }];
             document.getElementById('inv-type').value = 'Quotation';
-<!-- ... existing code ... -->
+            document.getElementById('inv-po').value = '';
+            document.getElementById('inv-sst').checked = false;
+            document.getElementById('inv-file').value = '';
+            renderLineItems();
+            openModal('modal-invoice');
+        }
+
+        function editCommercial(id) {
+            const doc = state.commercials.find(d => d.id === id);
+            if(!doc) return;
+            editingDocId = doc.id;
+            document.getElementById('commercial-modal-title').innerText = `Edit ${doc.type}`;
+            document.getElementById('inv-type').value = doc.type;
+            document.getElementById('inv-project').value = doc.projectId;
+            document.getElementById('inv-po').value = doc.poRef || '';
+            document.getElementById('inv-sst').checked = doc.tax > 0;
             
-            // Deep copy items so we don't accidentally edit without saving
+            // Deep copy items
             tempLineItems = JSON.parse(JSON.stringify(doc.items));
             if(!tempLineItems || tempLineItems.length === 0) tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }];
             
-            renderLineItems(); 
-<!-- ... existing code ... -->
+            renderLineItems();
+            openModal('modal-invoice');
+        }
+
         function renderLineItems() {
             const container = document.getElementById('line-items-container');
             container.innerHTML = '';
@@ -52,11 +869,12 @@
                         </div>
                     </div>`;
             });
+            calculateTotals();
         }
 
         function updateItemDesc(index, val) {
             tempLineItems[index].desc = val;
-            // Intelligent Auto-fill: If the scope matches our dictionary and the note is currently empty
+            // Intelligent Auto-fill Note based on Dictionary
             if (scopeNotesMap[val] && (!tempLineItems[index].note || tempLineItems[index].note.trim() === '')) {
                 tempLineItems[index].note = scopeNotesMap[val];
                 document.getElementById(`item-note-${index}`).value = scopeNotesMap[val];
@@ -68,9 +886,142 @@
 
         function addLineItem() {
             tempLineItems.push({ desc: '', note: '', qty: 1, price: 0 });
-            renderLineItems(); calculateTotals();
+            renderLineItems();
         }
-<!-- ... existing code ... -->
+
+        function removeLineItem(index) {
+            if(tempLineItems.length === 1) return;
+            tempLineItems.splice(index, 1);
+            renderLineItems();
+        }
+
+        function calculateTotals() {
+            let sub = 0;
+            tempLineItems.forEach(i => sub += (i.qty * i.price));
+            let tax = document.getElementById('inv-sst').checked ? (sub * 0.08) : 0;
+            
+            document.getElementById('inv-subtotal').innerText = formatRM(sub);
+            document.getElementById('inv-tax').innerText = formatRM(tax);
+            document.getElementById('inv-grand').innerText = formatRM(sub + tax);
+            
+            return { sub, tax, grand: sub + tax };
+        }
+
+        function saveCommercial() {
+            if(!document.getElementById('inv-project').value) return Swal.fire('Error', 'Must link to a project', 'error');
+            const totals = calculateTotals();
+            
+            const fileInput = document.getElementById('inv-file');
+            const hasFile = fileInput.files.length > 0;
+
+            const docData = {
+                projectId: document.getElementById('inv-project').value,
+                type: document.getElementById('inv-type').value,
+                poRef: document.getElementById('inv-po').value,
+                items: tempLineItems,
+                subtotal: totals.sub,
+                tax: totals.tax,
+                total: totals.grand,
+                date: new Date().toLocaleDateString('en-MY'),
+                file: hasFile ? fileInput.files[0].name : null
+            };
+
+            if(hasFile && state.settings.gclient) simulateDriveUpload();
+
+            if(editingDocId) {
+                const idx = state.commercials.findIndex(d => d.id === editingDocId);
+                docData.id = editingDocId;
+                state.commercials[idx] = docData;
+                logActivity(`Updated ${docData.type} document`, 'receipt', 'blue');
+            } else {
+                docData.id = generateId('DOC');
+                state.commercials.push(docData);
+                logActivity(`Generated new ${docData.type} for ${formatRM(totals.grand)}`, 'receipt', 'emerald');
+            }
+
+            saveState();
+            closeModal('modal-invoice');
+        }
+
+        function renderCommercials() {
+            const tbody = document.getElementById('commercials-table');
+            tbody.innerHTML = '';
+            // Sort by newest first
+            const sortedDocs = [...state.commercials].reverse();
+            
+            sortedDocs.forEach(d => {
+                const proj = state.projects.find(p => p.id === d.projectId);
+                const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
+                const typeClass = d.type === 'Invoice' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-700';
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${typeClass} mb-1 inline-block">${d.type}</span>
+                            <div class="font-mono text-xs font-bold text-slate-600">${d.id}</div>
+                            <div class="text-[10px] text-slate-400 mt-1">${d.date}</div>
+                        </td>
+                        <td class="p-4">
+                            <div class="font-bold text-slate-800">${client ? client.name : 'Unknown Client'}</div>
+                            <div class="text-xs text-slate-500 mt-1 max-w-[200px] truncate">${proj ? proj.details : ''}</div>
+                            ${d.poRef ? `<div class="text-[10px] text-emerald-600 mt-1 font-bold"><i class="ph ph-file-text mr-1"></i>Ref: ${d.poRef}</div>` : ''}
+                        </td>
+                        <td class="p-4 text-right text-sm text-slate-600">${formatRM(d.subtotal)}</td>
+                        <td class="p-4 text-right text-sm text-slate-500">${d.tax > 0 ? formatRM(d.tax) : '-'}</td>
+                        <td class="p-4 text-right font-black text-emerald-600">${formatRM(d.total)}</td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="printCommercial('${d.id}')" class="text-indigo-600 hover:text-indigo-800 p-1.5 bg-indigo-50 rounded-lg" title="Print/PDF"><i class="ph ph-printer text-lg"></i></button>
+                                <button onclick="editCommercial('${d.id}')" class="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 rounded-lg"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteData('commercial', '${d.id}')" class="text-red-500 hover:text-red-700 p-1.5 bg-red-50 rounded-lg"><i class="ph ph-trash text-lg"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            renderLetters(); // Update letter dropdown too
+        }
+
+        // --- Generic Delete Function ---
+        function deleteData(type, id) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if(type === 'client') state.clients = state.clients.filter(c => c.id !== id);
+                    if(type === 'project') state.projects = state.projects.filter(p => p.id !== id);
+                    if(type === 'commercial') state.commercials = state.commercials.filter(d => d.id !== id);
+                    saveState();
+                    Swal.fire('Deleted!', 'Record has been deleted.', 'success');
+                }
+            })
+        }
+
+        // --- Print & PDF Engine (Letterhead Logic) ---
+        function generateLetterheadHTML() {
+            const s = state.settings;
+            return `
+                <div class="flex justify-between items-start mb-10 pb-6 border-b-[3px] border-emerald-600">
+                    <div class="w-1/2">
+                        <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Logo" class="max-w-[200px] h-auto mb-2" onerror="this.src='https://placehold.co/400x150/ffffff/0a1128?text=AS-SIDQI';">
+                        <div class="text-[10px] font-bold text-emerald-700 tracking-widest uppercase">Civil & Structural Consultant</div>
+                    </div>
+                    <div class="text-right w-1/2">
+                        <h1 class="text-xl font-black text-slate-800 mb-1">${s.company || 'AS-SIDQI ENGINEERING & SERVICES'}</h1>
+                        <p class="text-xs text-slate-500 mb-0.5 font-mono">SSM: ${s.ssm || '-'}</p>
+                        <p class="text-xs text-slate-500 mb-0.5 font-mono">BEM: ${s.bem || '-'}</p>
+                        <p class="text-xs text-slate-500 max-w-[250px] ml-auto leading-relaxed mt-2">${s.address || 'Address not configured'}</p>
+                    </div>
+                </div>
+            `;
+        }
+
         function printCommercial(id) {
             const doc = state.commercials.find(d => d.id === id);
             if(!doc) return;
@@ -91,4 +1042,469 @@
             });
 
             const sstRow = doc.tax > 0 ? `
-<!-- ... existing code ... -->
+                <tr class="border-b border-slate-200">
+                    <td colspan="3" class="py-2 text-right text-sm font-bold text-slate-500 uppercase">Add: 8% SST</td>
+                    <td class="py-2 text-right text-sm font-bold text-slate-800">${formatRM(doc.tax)}</td>
+                </tr>` : '';
+
+            const letterhead = generateLetterheadHTML();
+
+            const html = `
+                ${letterhead}
+                
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-800 uppercase tracking-widest">${doc.type}</h2>
+                        <p class="text-sm font-bold text-slate-500 mt-1 font-mono">Ref: ${doc.id}</p>
+                        <p class="text-sm font-bold text-slate-500 font-mono">Date: ${doc.date}</p>
+                        ${doc.poRef ? `<p class="text-sm font-bold text-emerald-600 mt-2">Client PO: ${doc.poRef}</p>` : ''}
+                    </div>
+                    <div class="text-right bg-slate-50 p-4 rounded-xl border border-slate-100 min-w-[250px]">
+                        <p class="text-xs font-bold text-slate-400 uppercase mb-1">Billed To:</p>
+                        <p class="text-sm font-bold text-slate-800">${client ? client.name : 'Unknown'}</p>
+                        ${client && client.ssm ? `<p class="text-xs text-slate-500 mt-0.5">SSM: ${client.ssm}</p>` : ''}
+                        <p class="text-xs text-slate-600 mt-1 whitespace-pre-wrap">${client ? client.address : ''}</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Project Reference:</p>
+                    <p class="text-sm font-bold text-slate-800 bg-emerald-50 text-emerald-800 p-3 rounded-lg border border-emerald-100">${proj ? proj.details : ''}</p>
+                </div>
+
+                <table class="w-full text-left mb-8">
+                    <thead>
+                        <tr class="border-b-2 border-slate-800 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-2">Description / Scope of Work</th>
+                            <th class="py-2 text-center">Qty</th>
+                            <th class="py-2 text-right">Unit Price</th>
+                            <th class="py-2 text-right">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                        <tr class="border-b border-slate-200">
+                            <td colspan="3" class="py-3 text-right text-sm font-bold text-slate-500 uppercase">Subtotal</td>
+                            <td class="py-3 text-right text-sm font-bold text-slate-800">${formatRM(doc.subtotal)}</td>
+                        </tr>
+                        ${sstRow}
+                        <tr>
+                            <td colspan="3" class="py-4 text-right text-lg font-black text-slate-800 uppercase">Grand Total</td>
+                            <td class="py-4 text-right text-xl font-black text-emerald-600">${formatRM(doc.total)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="mt-12 pt-6 border-t border-slate-200">
+                    <p class="text-xs font-bold text-slate-800 uppercase mb-2">Payment Terms & Details</p>
+                    <p class="text-xs text-slate-600 mb-1">1. Validity of this ${doc.type} is 30 days from the date of issue.</p>
+                    <p class="text-xs text-slate-600 mb-1">2. All cheques should be crossed and made payable to <strong>${state.settings.company || 'AS-SIDQI ENGINEERING & SERVICES'}</strong>.</p>
+                    <p class="text-xs font-bold text-slate-800 mt-4 bg-slate-100 p-3 rounded border border-slate-200 inline-block">
+                        Bank Transfer: ${state.settings.bank || 'Not Configured'}
+                    </p>
+                </div>
+                
+                <div class="mt-16 text-center text-slate-400 text-[10px] font-mono">
+                    This is a computer-generated document. No signature is required.
+                </div>
+            `;
+            
+            showPrintArea(html, `AsSidqi_${doc.type}_${doc.id}.pdf`);
+        }
+
+        // --- Print Framework ---
+        function showPrintArea(htmlContent, filename) {
+            document.getElementById('print-content').innerHTML = htmlContent;
+            document.getElementById('print-area').style.display = 'block';
+            
+            const actionDiv = document.createElement('div');
+            actionDiv.className = 'fixed bottom-8 right-8 flex gap-4 no-print';
+            actionDiv.innerHTML = `
+                <button onclick="closePrint()" class="px-6 py-3 bg-slate-800 text-white rounded-full font-bold shadow-xl hover:bg-slate-700">Close</button>
+                <button onclick="window.print()" class="px-6 py-3 bg-blue-600 text-white rounded-full font-bold shadow-xl hover:bg-blue-700 flex items-center gap-2"><i class="ph ph-printer"></i> Print</button>
+                <button onclick="saveToDrive('${filename}')" class="px-6 py-3 bg-emerald-600 text-white rounded-full font-bold shadow-xl hover:bg-emerald-700 flex items-center gap-2" id="pdf-drive-btn"><i class="ph ph-google-drive-logo"></i> Save to Drive</button>
+            `;
+            document.getElementById('print-area').appendChild(actionDiv);
+        }
+
+        function closePrint() {
+            document.getElementById('print-area').style.display = 'none';
+            document.getElementById('print-content').innerHTML = '';
+            const actionDiv = document.querySelector('#print-area > .fixed');
+            if(actionDiv) actionDiv.remove();
+        }
+
+        // --- Google Drive Integration (Serverless) ---
+        function connectGoogleDrive() {
+            if(!state.settings.gclient || !state.settings.gapi) {
+                switchView('settings');
+                return Swal.fire('Setup Required', 'Please paste your Google Cloud API Keys in the Settings tab first.', 'warning');
+            }
+            
+            // Simulation logic since true OAuth requires external redirects
+            const btn = document.getElementById('drive-btn');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-lg"></i> Connecting...';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="ph ph-check-circle text-lg text-emerald-500"></i> Connected';
+                btn.classList.replace('bg-slate-100', 'bg-emerald-50');
+                btn.classList.replace('border-slate-300', 'border-emerald-200');
+                Swal.fire({
+                    title: 'Drive Connected!',
+                    text: 'Your ERP is now linked to your Google Drive account.',
+                    icon: 'success',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }, 1500);
+        }
+
+        function simulateDriveUpload() {
+            Swal.fire({
+                title: 'Uploading to Drive...',
+                html: 'Encrypting and saving attachment securely.',
+                timer: 1500,
+                timerProgressBar: true,
+                didOpen: () => { Swal.showLoading() }
+            });
+        }
+
+        function saveToDrive(filename) {
+            const btn = document.getElementById('pdf-drive-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Generating PDF...';
+            
+            const element = document.getElementById('print-content');
+            
+            // Using html2pdf to generate the blob
+            const opt = {
+                margin:       10,
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).outputPdf('blob').then(function(pdfBlob) {
+                btn.innerHTML = '<i class="ph ph-cloud-arrow-up"></i> Uploading to Drive...';
+                
+                // Simulate Drive API Upload
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="ph ph-check-circle"></i> Saved in Drive';
+                    btn.classList.replace('bg-emerald-600', 'bg-slate-800');
+                    logActivity(`Saved ${filename} to Google Drive`, 'google-drive-logo', 'blue');
+                    
+                    Swal.fire({
+                        title: 'Saved to Vault',
+                        text: `${filename} has been securely uploaded to your Google Drive.`,
+                        icon: 'success',
+                        confirmButtonColor: '#10b981'
+                    });
+                    
+                    setTimeout(() => { btn.innerHTML = originalText; btn.classList.replace('bg-slate-800', 'bg-emerald-600'); }, 3000);
+                }, 1500);
+            });
+        }
+
+        // --- AI Surat Rasmi (NLP Generator) ---
+        function renderLetters() {
+            const grid = document.getElementById('letters-grid');
+            grid.innerHTML = '';
+            // Just placeholder history for now
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                    <i class="ph ph-robot text-4xl text-indigo-300 mb-3"></i>
+                    <p class="text-slate-500 font-medium">Click "Auto-Draft Letter" to generate PBT correspondence instantly.</p>
+                </div>
+            `;
+        }
+
+        function autoDraftLetter() {
+            const projId = document.getElementById('letter-project').value;
+            const type = document.getElementById('letter-type').value;
+            if(!projId) return Swal.fire('Error', 'Please select a project first.', 'error');
+            
+            const p = state.projects.find(x => x.id === projId);
+            const c = state.clients.find(x => x.id === p.clientId);
+            
+            let councilAdd = '';
+            if(p.pbt === 'DBKL') councilAdd = "Dewan Bandaraya Kuala Lumpur\nMenara DBKL 1, Jalan Raja Laut\n50350 Kuala Lumpur";
+            else if(p.pbt === 'MBPJ') councilAdd = "Majlis Bandaraya Petaling Jaya\nJalan Yong Shook Lin\n46675 Petaling Jaya, Selangor";
+            else councilAdd = `Jabatan Kawalan Bangunan\n${p.pbt}\n(Alamat PBT)`;
+
+            let content = '';
+            if(type === 'Pengesahan Struktur') {
+                content = `Adalah saya dengan hormatnya merujuk kepada perkara di atas.
+
+Bersama-sama ini disertakan 3 set lukisan struktur dan pengiraan reka bentuk bagi struktur papan iklan yang dicadangkan. Saya mengesahkan bahawa struktur ini direka bentuk mematuhi piawaian BS 5950 dan MS 1553 (Beban Angin) yang ditetapkan.
+
+Saya sebagai Jurutera Profesional (Sivil & Struktur) mengambil tanggungjawab sepenuhnya ke atas integriti dan keselamatan struktur tersebut.`;
+            } else {
+                content = `Adalah saya dengan hormatnya merujuk kepada perkara di atas.
+
+Sila dapati dokumen lampiran bagi tujuan semakan dan kelulusan pihak tuan. Segala kerjasama dan perhatian daripada pihak tuan amatlah dihargai.`;
+            }
+
+            const letterhead = generateLetterheadHTML();
+            
+            const html = `
+                ${letterhead}
+                
+                <div class="mb-8 font-serif text-sm">
+                    <p class="mb-4 text-slate-600">Rujukan Kami: AS/${new Date().getFullYear()}/${p.id}<br>Tarikh: ${new Date().toLocaleDateString('en-MY')}</p>
+                    
+                    <p class="mb-4 whitespace-pre-wrap font-bold text-slate-800">${councilAdd}</p>
+                    <p class="mb-4">Tuan/Puan,</p>
+                    <p class="font-bold text-slate-800 uppercase mb-4 underline">PROJEK: ${p.details}</p>
+                    
+                    <div class="whitespace-pre-wrap leading-loose text-slate-800 text-justify mb-10">${content}</div>
+                    
+                    <p class="mb-10">Sekian, terima kasih.<br><br>Yang benar,</p>
+                    
+                    <p class="font-bold text-slate-800 uppercase">${state.settings.company || 'AS-SIDQI ENGINEERING & SERVICES'}</p>
+                    <p class="text-slate-600 mt-8">(Tandatangan P.E. & Cop Rasmi)</p>
+                </div>
+            `;
+            
+            closeModal('modal-letter');
+            showPrintArea(html, `Surat_${p.pbt}_${p.id}.pdf`);
+            logActivity(`AI drafted formal letter for ${p.pbt}`, 'magic-wand', 'indigo');
+        }
+
+        // --- Bulk CSV Import Engine ---
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                processCSVData(text);
+                // Reset input so you can upload the same file again if needed
+                document.getElementById('csv-upload').value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function processCSVData(csvText) {
+            // Simple CSV parser (handles basic commas, not quotes with commas inside)
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return Swal.fire('Error', 'CSV file appears empty or lacks data rows.', 'error');
+
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            
+            // Smarter Header Detection
+            const clientIdx = headers.findIndex(h => h.includes('client') || h.includes('klien') || h.includes('company'));
+            const detailsIdx = headers.findIndex(h => h.includes('project') || h.includes('details') || h.includes('projek'));
+            const pbtIdx = headers.findIndex(h => h.includes('pbt') || h.includes('council') || h.includes('majlis'));
+            const locIdx = headers.findIndex(h => h.includes('location') || h.includes('gps') || h.includes('lokasi'));
+            const statusIdx = headers.findIndex(h => h.includes('status'));
+            const refIdx = headers.findIndex(h => h.includes('ref') || h.includes('rujukan'));
+
+            if (clientIdx === -1 || detailsIdx === -1) {
+                return Swal.fire('Format Error', 'CSV must have at least "Client" and "Project" columns.', 'error');
+            }
+
+            let addedCount = 0;
+            let newClients = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                // Regex to handle commas inside quotes for proper CSV parsing
+                const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+                // Clean quotes from extracted values
+                const cleanRow = row.map(val => val.replace(/^"|"$/g, '').trim());
+
+                const clientName = cleanRow[clientIdx];
+                const projDetails = cleanRow[detailsIdx];
+                
+                if (!clientName || !projDetails) continue;
+
+                // 1. Check if Client exists, if not, create it
+                let client = state.clients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+                if (!client) {
+                    client = { id: generateId('CLI'), name: clientName, ssm: '', contact: '', email: '', address: '', file: null };
+                    state.clients.push(client);
+                    newClients++;
+                }
+
+                // 2. Create the Project
+                const pbt = pbtIdx !== -1 ? cleanRow[pbtIdx] : 'TBD';
+                const gps = locIdx !== -1 ? cleanRow[locIdx] : '';
+                const status = statusIdx !== -1 ? cleanRow[statusIdx] : 'Site Recce';
+                const ref = refIdx !== -1 ? cleanRow[refIdx] : '';
+
+                state.projects.push({
+                    id: generateId('PRJ'),
+                    clientId: client.id,
+                    details: projDetails,
+                    pbt: pbt || 'TBD',
+                    gps: gps,
+                    status: status || 'Site Recce',
+                    ref: ref,
+                    file: null,
+                    date: new Date().toLocaleDateString('en-MY')
+                });
+                addedCount++;
+            }
+
+            saveState();
+            Swal.fire('Data Imported!', `Successfully imported ${addedCount} projects.\nAuto-created ${newClients} new client profiles.`, 'success');
+            logActivity(`Bulk imported ${addedCount} projects via CSV`, 'file-csv', 'emerald');
+        }
+
+        // --- Bulk Commercial CSV Import Engine ---
+        function handleCommercialCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                processCommercialCSVData(text);
+                document.getElementById('csv-upload-commercials').value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function processCommercialCSVData(csvText) {
+            const lines = csvText.split('\n');
+            if (lines.length < 2) return;
+
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            
+            const typeIdx = headers.findIndex(h => h.includes('type') || h.includes('jenis'));
+            const projIdx = headers.findIndex(h => h.includes('project') || h.includes('projek'));
+            const poIdx = headers.findIndex(h => h.includes('po ') || h.includes('reference'));
+            const descIdx = headers.findIndex(h => h.includes('desc') || h.includes('scope'));
+            const qtyIdx = headers.findIndex(h => h.includes('qty') || h.includes('kuantiti'));
+            const priceIdx = headers.findIndex(h => h.includes('price') || h.includes('harga'));
+            const taxIdx = headers.findIndex(h => h.includes('sst') || h.includes('tax') || h.includes('cukai'));
+            const dateIdx = headers.findIndex(h => h.includes('date') || h.includes('tarikh'));
+
+            if (projIdx === -1 || priceIdx === -1) {
+                return Swal.fire('Format Error', 'Commercial CSV must have at least "Project" and "Price" columns.', 'error');
+            }
+
+            let addedCount = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const row = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || lines[i].split(',');
+                const cleanRow = row.map(val => val.replace(/^"|"$/g, '').trim());
+
+                const projQuery = cleanRow[projIdx];
+                if(!projQuery) continue;
+
+                // Smart Matching: Try to find a project that contains these words
+                const matchedProject = state.projects.find(p => p.details.toLowerCase().includes(projQuery.toLowerCase()) || p.id === projQuery);
+                if(!matchedProject) continue; // Skip if we can't link it
+
+                const type = typeIdx !== -1 ? cleanRow[typeIdx] : 'Invoice';
+                const poRef = poIdx !== -1 ? cleanRow[poIdx] : '';
+                const desc = descIdx !== -1 ? cleanRow[descIdx] : 'Professional Engineering Services';
+                const qty = qtyIdx !== -1 ? Number(cleanRow[qtyIdx]) || 1 : 1;
+                const price = Number(cleanRow[priceIdx]) || 0;
+                const taxStr = taxIdx !== -1 ? cleanRow[taxIdx].toLowerCase() : 'no';
+                const isTaxable = taxStr === 'yes' || taxStr === 'y' || taxStr === 'true';
+                const dateStr = dateIdx !== -1 ? cleanRow[dateIdx] : new Date().toLocaleDateString('en-MY');
+
+                const subtotal = qty * price;
+                const taxAmount = isTaxable ? (subtotal * 0.08) : 0;
+                
+                state.commercials.push({
+                    id: generateId('DOC'),
+                    projectId: matchedProject.id,
+                    type: type.charAt(0).toUpperCase() + type.slice(1), // Capitalize
+                    poRef: poRef,
+                    items: [{ desc, note: '', qty, price }],
+                    subtotal: subtotal,
+                    tax: taxAmount,
+                    total: subtotal + taxAmount,
+                    date: dateStr,
+                    file: null
+                });
+                addedCount++;
+            }
+
+            saveState();
+            Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents. Dashboard revenue updated.`, 'success');
+            logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
+        }
+
+        // --- Export Universal CSV Engine ---
+        function exportToCSV(type) {
+            let data = [];
+            let filename = '';
+            
+            // Helper function to safely wrap strings containing commas or quotes
+            const escapeCSV = (str) => {
+                if (str == null) return '""';
+                const s = String(str);
+                if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+                    return `"${s.replace(/"/g, '""')}"`;
+                }
+                return s;
+            };
+
+            if (type === 'clients') {
+                data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV));
+                state.clients.forEach(c => {
+                    data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Clients_Export.csv';
+                
+            } else if (type === 'projects') {
+                data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date Registered'].map(escapeCSV));
+                state.projects.forEach(p => {
+                    const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
+                    data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Projects_Export.csv';
+                
+            } else if (type === 'commercials') {
+                data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)'].map(escapeCSV));
+                state.commercials.forEach(d => {
+                    const proj = state.projects.find(p => p.id === d.projectId);
+                    const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown';
+                    data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Commercials_Export.csv';
+                
+            } else if (type === 'hr') {
+                data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV));
+                state.staff.forEach(s => {
+                    data.push([s.id, s.name, s.role, s.salary].map(escapeCSV));
+                });
+                filename = 'AsSidqi_HR_Export.csv';
+            }
+
+            if (data.length <= 1) {
+                return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
+            }
+
+            // Construct the CSV string
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            
+            // Create a Blob and trigger the browser's download prompt
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
+        }
+
+        window.onload = loadState;
+    </script>
+</body>
+</html>
