@@ -881,17 +881,35 @@
             let addedCount = 0;
             let newClientsCount = 0;
 
-            data.forEach(row => {
-                let clientName = row['Client'] || row['Client Name'] || row['Tetuan'] || row['Company'] || 'Unknown Client';
-                let details = row['Project Details'] || row['Details'] || row['Tajuk Projek'] || row['Project Title'];
-                let pbt = row['PBT'] || row['Local Council'] || row['Majlis'] || 'TBA';
-                let gps = row['GPS'] || row['Location'] || row['Lokasi'] || '';
-                let status = row['Status'] || 'Drafting';
-                let ref = row['Reference'] || row['PBT Ref'] || 'Pending...';
+            if (!data || data.length === 0) {
+                return Swal.fire('Empty File', 'No data found. Ensure your Excel file has headers in the first row.', 'warning');
+            }
 
+            data.forEach(row => {
+                // Smart search: ignore uppercase, lowercase, and extra spaces in Excel headers
+                const getValue = (searchKeywords) => {
+                    const rowKeys = Object.keys(row);
+                    for (let key of rowKeys) {
+                        const cleanKey = key.toLowerCase().trim();
+                        if (searchKeywords.some(keyword => cleanKey.includes(keyword))) {
+                            return row[key];
+                        }
+                    }
+                    return null;
+                };
+
+                // Smartly extract data based on keywords
+                let clientName = getValue(['client', 'tetuan', 'company', 'syarikat']) || 'Unknown Client';
+                let details = getValue(['project', 'detail', 'tajuk', 'title', 'skop', 'cadangan']);
+                let pbt = getValue(['pbt', 'council', 'majlis', 'authority', 'local']) || 'TBA';
+                let gps = getValue(['gps', 'location', 'lokasi', 'site', 'tapak']) || '';
+                let status = getValue(['status', 'progress', 'peringkat']) || 'Drafting';
+                let ref = getValue(['ref', 'rujukan', 'file', 'no']) || 'Pending...';
+
+                // If no project details are found in this row, skip it
                 if(!details) return; 
 
-                // 1. Auto-create Client if they don't exist in our CRM
+                // 1. Auto-create Client if they don't exist
                 let client = state.clients.find(c => c.name.toLowerCase().trim() === clientName.toLowerCase().trim());
                 if(!client) {
                     client = { id: 'C-' + Math.floor(Math.random()*9000), name: clientName, ssm: '', contact: '', email: '', address: '', attachedFile: null };
