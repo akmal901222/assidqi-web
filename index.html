@@ -168,7 +168,13 @@
             <div id="view-commercials" class="view-section">
                  <div class="flex justify-between items-center mb-6 no-print">
                     <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices.</p></div>
-                    <button onclick="openInvoiceWizard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-receipt text-lg"></i> Create Document</button>
+                    <div class="flex gap-2">
+                        <!-- Hidden file input for Commercials CSV -->
+                        <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCommercialCSVUpload(event)">
+                        <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
+                        
+                        <button onclick="openInvoiceWizard()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-receipt text-lg"></i> Create Document</button>
+                    </div>
                 </div>
 
                 <div id="print-invoice-container" class="print-only print-container"></div>
@@ -947,6 +953,107 @@
             });
             
             logActivity(`Bulk imported ${addedCount} projects via CSV`, 'file-csv', 'emerald');
+        }
+
+        function handleCommercialCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            Swal.fire({ title: 'Reading CSV File...', text: 'Extracting billing data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet);
+
+                    processCommercialCSVData(json);
+                } catch (error) {
+                    console.error("CSV Read Error:", error);
+                    Swal.fire('Error', 'Failed to read the CSV file. Please ensure it is a valid .csv format.', 'error');
+                }
+                document.getElementById('csv-upload-commercials').value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processCommercialCSVData(data) {
+            let addedCount = 0;
+
+            if (!data || data.length === 0) {
+                return Swal.fire('Empty File', 'No data found. Ensure your CSV file has headers.', 'warning');
+            }
+
+            data.forEach(row => {
+                // Smart search for headers
+                const getValue = (searchKeywords) => {
+                    const rowKeys = Object.keys(row);
+                    for (let key of rowKeys) {
+                        const cleanKey = key.toLowerCase().trim();
+                        if (searchKeywords.some(keyword => cleanKey.includes(keyword))) {
+                            return row[key];
+                        }
+                    }
+                    return null;
+                };
+
+                let typeInput = getValue(['type', 'jenis', 'dokumen']) || 'Invoice';
+                let type = typeInput.toLowerCase().includes('quotation') || typeInput.toLowerCase().includes('sebut') ? 'Quotation' : 'Invoice';
+                
+                let projectIdInput = getValue(['project', 'id projek', 'rujukan']);
+                let poRef = getValue(['po', 'lou', 'reference']) || '';
+                let desc = getValue(['description', 'keterangan', 'item', 'butiran']) || 'Professional Engineering Services';
+                let qty = parseFloat(getValue(['qty', 'kuantiti', 'quantity'])) || 1;
+                let price = parseFloat(getValue(['price', 'harga', 'amount', 'jumlah'])) || 0;
+                let dateStr = getValue(['date', 'tarikh']) || new Date().toLocaleDateString('en-MY');
+                let taxInput = getValue(['tax', 'sst', 'cukai']);
+                let applyTax = taxInput && (taxInput.toString().toLowerCase().includes('y') || taxInput.toString().toLowerCase() === 'true' || taxInput.toString() === '1');
+
+                if (price === 0) return; // Skip rows that don't have a valid monetary amount
+
+                // Smart match project ID: Link invoice to existing project, or fallback to the first active project
+                let matchedProject = null;
+                if (projectIdInput) {
+                    matchedProject = state.projects.find(p => p.id.toLowerCase() === projectIdInput.toString().toLowerCase() || p.details.toLowerCase().includes(projectIdInput.toString().toLowerCase()));
+                }
+                let finalProjectId = matchedProject ? matchedProject.id : (state.projects.length > 0 ? state.projects[0].id : 'PRJ-UNKNOWN');
+
+                let subtotal = qty * price;
+                let tax = applyTax ? subtotal * 0.08 : 0;
+                let total = subtotal + tax;
+
+                const doc = { 
+                    id: (type==='Invoice'?'INV':'QT') + '-' + Math.floor(Math.random()*90000), 
+                    projectId: finalProjectId, 
+                    poRef: poRef, 
+                    type: type, 
+                    items: [{ desc: desc, qty: qty, price: price }], 
+                    subtotal: subtotal, 
+                    tax: tax, 
+                    total: total, 
+                    date: dateStr, 
+                    attachedFile: null 
+                };
+                
+                state.commercials.unshift(doc);
+                addedCount++;
+            });
+
+            saveState(); 
+            renderCommercials(); 
+            renderDashboard(); // Update the RM money figures on the main dashboard
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Billing Data Imported!',
+                text: `Successfully imported ${addedCount} commercial documents.`,
+                confirmButtonColor: '#059669'
+            });
+            
+            logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
         }
 
         window.onload = loadState;
