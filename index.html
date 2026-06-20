@@ -23,7 +23,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .sidebar-item { transition: all 0.2s ease; }
-        .sidebar-item.active { background-color: #042f2e; color: #10b981; border-right: 3px solid #10b981; font-weight: 700; }
+        .sidebar-item.active { background-color: #083344; color: #06b6d4; border-right: 3px solid #06b6d4; font-weight: 700; }
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -43,7 +43,7 @@
         
         /* Login Screen Styles */
         #login-screen {
-            background-image: linear-gradient(to bottom right, #020617, #0f172a, #064e3b);
+            background-image: linear-gradient(to bottom right, #020617, #0f172a, #164e63);
         }
     </style>
 </head>
@@ -63,17 +63,17 @@
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Username</label>
                     <div class="relative">
                         <i class="ph ph-user absolute left-3 top-3 text-slate-400 text-lg"></i>
-                        <input type="text" id="login-user" class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Enter username" required>
+                        <input type="text" id="login-user" class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all" placeholder="Enter username" required>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Password</label>
                     <div class="relative">
                         <i class="ph ph-lock absolute left-3 top-3 text-slate-400 text-lg"></i>
-                        <input type="password" id="login-pass" class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-emerald-500 outline-none transition-all" placeholder="Enter password" required>
+                        <input type="password" id="login-pass" class="w-full border border-slate-300 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none transition-all" placeholder="Enter password" required>
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-xl shadow-lg shadow-emerald-500/30 transition-all text-sm uppercase tracking-wider mt-4">
+                <button type="submit" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-3.5 rounded-xl shadow-lg shadow-cyan-500/30 transition-all text-sm uppercase tracking-wider mt-4">
                     Access Portal <i class="ph ph-arrow-right ml-1"></i>
                 </button>
             </form>
@@ -95,10 +95,10 @@
         <!-- Sidebar -->
         <aside class="w-64 bg-[#020617] text-slate-300 flex flex-col h-full shadow-2xl z-10 no-print border-r border-slate-800">
             <div class="p-6 border-b border-slate-800 flex flex-col items-center">
-                <div class="bg-white rounded-xl p-2 w-full mb-3 shadow-md flex justify-center">
-                    <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="h-10 w-auto object-contain" onerror="this.src='https://placehold.co/400x150/ffffff/0a1128?text=AS-SIDQI';">
+                <div class="bg-white rounded-full p-2 w-24 h-24 mb-3 shadow-md flex justify-center items-center overflow-hidden mx-auto border-2 border-slate-700">
+                    <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/400x150/ffffff/0a1128?text=AS-SIDQI';">
                 </div>
-                <span class="text-[9px] font-black tracking-widest text-emerald-400 border border-emerald-400/30 px-3 py-1 rounded-full bg-emerald-400/10 uppercase w-full text-center">Engineering ERP Hub</span>
+                <span class="text-[9px] font-black tracking-widest text-cyan-400 border border-cyan-400/30 px-3 py-1 rounded-full bg-cyan-400/10 uppercase w-full text-center">Engineering ERP Hub</span>
             </div>
             
             <nav class="flex-1 overflow-y-auto py-4">
@@ -126,7 +126,7 @@
             </nav>
             
             <div class="p-4 border-t border-slate-800 space-y-2">
-                <a href="#" onclick="switchView('settings')" id="nav-settings" class="sidebar-item flex items-center px-6 py-3 text-sm text-emerald-500 hover:text-emerald-400 hover:bg-slate-800/50 rounded-lg">
+                <a href="#" onclick="switchView('settings')" id="nav-settings" class="sidebar-item flex items-center px-6 py-3 text-sm text-cyan-500 hover:text-cyan-400 hover:bg-slate-800/50 rounded-lg">
                     <i class="ph ph-gear text-lg mr-3"></i> Company Setup
                 </a>
                 <a href="#" onclick="logoutApp()" class="flex items-center px-6 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-400/10 rounded-lg transition-colors cursor-pointer">
@@ -150,8 +150,8 @@
                     <button onclick="connectGoogleDrive()" id="drive-btn" class="flex items-center gap-2 bg-slate-100 hover:bg-blue-50 hover:border-blue-200 text-slate-700 hover:text-blue-700 px-5 py-2.5 rounded-full text-sm font-bold transition-all border border-slate-200 shadow-sm">
                         <i class="ph ph-google-drive-logo text-xl text-blue-600"></i> <span id="drive-status">Connect Drive</span>
                     </button>
-                    <div class="h-10 w-10 bg-emerald-100 rounded-full flex items-center justify-center border-2 border-white shadow-md">
-                        <i class="ph ph-user-circle text-xl text-emerald-700"></i>
+                    <div class="h-10 w-10 bg-cyan-100 rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                        <i class="ph ph-user-circle text-xl text-cyan-700"></i>
                     </div>
                 </div>
             </header>
@@ -163,10 +163,10 @@
                 <div id="view-dashboard" class="view-section block">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-coins text-6xl text-emerald-600"></i></div>
+                            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-coins text-6xl text-cyan-600"></i></div>
                             <div class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Total Receivables</div>
                             <div class="text-4xl font-black text-slate-800 mb-2 tracking-tight" id="dash-receivables">RM 0.00</div>
-                            <div class="text-xs text-emerald-600 font-bold flex items-center"><i class="ph ph-trend-up mr-1 text-sm"></i> YTD Invoiced</div>
+                            <div class="text-xs text-cyan-600 font-bold flex items-center"><i class="ph ph-trend-up mr-1 text-sm"></i> YTD Invoiced</div>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-kanban text-6xl text-blue-600"></i></div>
@@ -186,7 +186,7 @@
                         <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                             <div class="flex justify-between items-center mb-6">
                                 <h3 class="text-lg font-black text-slate-800">Revenue Analytics</h3>
-                                <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">2026 FY</span>
+                                <span class="px-3 py-1 bg-cyan-50 text-cyan-700 rounded-full text-xs font-bold">2026 FY</span>
                             </div>
                             <canvas id="revenueChart" height="100"></canvas>
                         </div>
@@ -205,7 +205,7 @@
                         <div><p class="text-sm text-slate-500 mt-1">Manage partners, developers, and agencies.</p></div>
                         <div class="flex gap-3">
                             <button onclick="exportToCSV('clients')" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
-                            <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                            <button onclick="openModal('modal-client')" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-grid"></div>
@@ -251,7 +251,7 @@
                             <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCommercialCSVUpload(event)">
                             <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Import CSV</button>
                             
-                            <button onclick="openInvoiceWizard()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Create Document</button>
+                            <button onclick="openInvoiceWizard()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-xl text-sm font-black transition-all shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Create Document</button>
                         </div>
                     </div>
                     
@@ -299,29 +299,29 @@
                         <p class="text-sm text-slate-500 mt-1">These details will be dynamically injected into your official PDFs and Letterheads.</p>
                     </div>
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-3xl">
-                        <h4 class="text-sm font-black text-slate-800 mb-6 uppercase tracking-widest border-b border-slate-100 pb-3 flex items-center gap-2"><i class="ph ph-buildings text-emerald-600 text-lg"></i> Corporate Identity</h4>
+                        <h4 class="text-sm font-black text-slate-800 mb-6 uppercase tracking-widest border-b border-slate-100 pb-3 flex items-center gap-2"><i class="ph ph-buildings text-cyan-600 text-lg"></i> Corporate Identity</h4>
                         <div class="grid grid-cols-1 gap-5 mb-10">
                             <div>
                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Official Company Name</label>
-                                <input type="text" id="set-company" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold text-slate-800" placeholder="e.g. AS-SIDQI ENGINEERING & SERVICES">
+                                <input type="text" id="set-company" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-bold text-slate-800" placeholder="e.g. AS-SIDQI ENGINEERING & SERVICES">
                             </div>
                             <div class="grid grid-cols-2 gap-5">
                                 <div>
                                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">SSM Registration No.</label>
-                                    <input type="text" id="set-ssm" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-mono text-sm" placeholder="e.g. 202601000000 (000000-X)">
+                                    <input type="text" id="set-ssm" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-mono text-sm" placeholder="e.g. 202601000000 (000000-X)">
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">BEM Practicing No.</label>
-                                    <input type="text" id="set-bem" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-mono text-sm text-indigo-700 font-bold" placeholder="e.g. C116608">
+                                    <input type="text" id="set-bem" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-mono text-sm text-indigo-700 font-bold" placeholder="e.g. C116608">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Official Address (For Letterhead)</label>
-                                <input type="text" id="set-address" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all">
+                                <input type="text" id="set-address" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all">
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Bank Details (For Invoices)</label>
-                                <input type="text" id="set-bank" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold text-slate-700" placeholder="e.g. MAYBANK: 562469316072">
+                                <input type="text" id="set-bank" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-bold text-slate-700" placeholder="e.g. MAYBANK: 562469316072">
                             </div>
                         </div>
 
@@ -354,11 +354,11 @@
                 <button onclick="closeModal('modal-client')" class="text-slate-400 hover:text-slate-600 bg-slate-100 p-2 rounded-full"><i class="ph ph-x"></i></button>
             </div>
             <div class="space-y-4">
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Company Name *</label><input type="text" id="client-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold"></div>
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">SSM Number</label><input type="text" id="client-ssm" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-mono text-sm" placeholder="Optional"></div>
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Contact Person</label><input type="text" id="client-contact" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"></div>
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Email Address</label><input type="email" id="client-email" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"></div>
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Billing Address</label><textarea id="client-address" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all" rows="2"></textarea></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Company Name *</label><input type="text" id="client-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-bold"></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">SSM Number</label><input type="text" id="client-ssm" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-mono text-sm" placeholder="Optional"></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Contact Person</label><input type="text" id="client-contact" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Email Address</label><input type="email" id="client-email" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all"></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Billing Address</label><textarea id="client-address" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all" rows="2"></textarea></div>
                 
                 <div class="border-2 border-dashed border-slate-200 rounded-xl p-5 bg-slate-50 text-center hover:bg-slate-100 transition-colors">
                     <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 cursor-pointer flex flex-col items-center">
@@ -369,7 +369,7 @@
                 </div>
             </div>
             <div class="mt-8 flex justify-end">
-                <button onclick="saveClient()" class="w-full px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-600/30 transition-all text-sm">Save Profile</button>
+                <button onclick="saveClient()" class="w-full px-6 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-cyan-600/30 transition-all text-sm">Save Profile</button>
             </div>
         </div>
     </div>
@@ -384,28 +384,28 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Select Client *</label>
-                    <select id="proj-client" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold text-slate-800"></select>
+                    <select id="proj-client" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-bold text-slate-800"></select>
                 </div>
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Project Details / Scope *</label><textarea id="proj-details" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-medium" rows="2" placeholder="e.g. Cadangan Struktur Papan Iklan Unipole 18m..."></textarea></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Project Details / Scope *</label><textarea id="proj-details" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-medium" rows="2" placeholder="e.g. Cadangan Struktur Papan Iklan Unipole 18m..."></textarea></div>
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Local Council (PBT)</label>
-                        <input type="text" id="proj-pbt" list="pbt-list" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold text-indigo-700" placeholder="e.g. DBKL">
+                        <input type="text" id="proj-pbt" list="pbt-list" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-bold text-indigo-700" placeholder="e.g. DBKL">
                         <datalist id="pbt-list"><option value="DBKL"><option value="MBPJ"><option value="MBSA"><option value="MPKj"><option value="MBSP"></datalist>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Location / GPS</label>
-                        <input type="text" id="proj-gps" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-sm" placeholder="Site Coordinates">
+                        <input type="text" id="proj-gps" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all text-sm" placeholder="Site Coordinates">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-5">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Current Status</label>
-                        <select id="proj-status" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-bold text-slate-700">
+                        <select id="proj-status" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-bold text-slate-700">
                             <option>Site Recce</option><option>Drafting</option><option>PE Endorsement</option><option>OSC Submitted</option><option>Approved</option>
                         </select>
                     </div>
-                    <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">PBT Reference No.</label><input type="text" id="proj-ref" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-mono text-sm" placeholder="Pending..."></div>
+                    <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">PBT Reference No.</label><input type="text" id="proj-ref" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none transition-all font-mono text-sm" placeholder="Pending..."></div>
                 </div>
                 
                 <div class="border-2 border-dashed border-slate-200 rounded-xl p-5 bg-slate-50 text-center hover:bg-slate-100 transition-colors">
@@ -426,7 +426,7 @@
     <div id="modal-invoice" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col transform transition-all overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
-                <h3 class="text-xl font-black text-slate-800 flex items-center gap-2" id="commercial-modal-title"><i class="ph ph-receipt text-emerald-600"></i> Document Builder</h3>
+                <h3 class="text-xl font-black text-slate-800 flex items-center gap-2" id="commercial-modal-title"><i class="ph ph-receipt text-cyan-600"></i> Document Builder</h3>
                 <button onclick="closeModal('modal-invoice')" class="text-slate-400 hover:text-slate-600 bg-white p-2 rounded-full border border-slate-200 shadow-sm"><i class="ph ph-x"></i></button>
             </div>
             
@@ -434,24 +434,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 rounded-2xl border border-slate-200 bg-slate-50/50">
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Document Type</label>
-                        <select id="inv-type" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white font-black text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm">
+                        <select id="inv-type" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white font-black text-slate-800 focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm">
                             <option value="Quotation">Quotation (Sebut Harga)</option>
                             <option value="Invoice">Invoice (Invois)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Link to Project *</label>
-                        <select id="inv-project" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white font-bold text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm"></select>
+                        <select id="inv-project" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white font-bold text-slate-700 focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm"></select>
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Client PO / LOU Ref</label>
-                        <input type="text" id="inv-po" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm font-mono text-sm text-blue-700 font-bold" placeholder="e.g. PO-2026-001">
+                        <input type="text" id="inv-po" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white focus:ring-2 focus:ring-cyan-500 outline-none shadow-sm font-mono text-sm text-blue-700 font-bold" placeholder="e.g. PO-2026-001">
                     </div>
                 </div>
 
                 <div class="mb-4 flex justify-between items-center border-b border-slate-100 pb-2">
                     <h4 class="font-black text-slate-800 uppercase tracking-widest text-sm">Line Items & Scope</h4>
-                    <button onclick="addLineItem()" class="text-xs font-black text-emerald-600 hover:text-white hover:bg-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl transition-colors flex items-center gap-1 border border-emerald-200"><i class="ph ph-plus-circle"></i> Add Row</button>
+                    <button onclick="addLineItem()" class="text-xs font-black text-cyan-600 hover:text-white hover:bg-cyan-600 bg-cyan-50 px-4 py-2 rounded-xl transition-colors flex items-center gap-1 border border-cyan-200"><i class="ph ph-plus-circle"></i> Add Row</button>
                 </div>
                 
                 <datalist id="scope-options">
@@ -480,14 +480,14 @@
                         </div>
                         <div class="flex justify-between items-center mb-4 pb-4 border-b-2 border-slate-200 border-dashed">
                             <label class="flex items-center text-xs font-black text-slate-500 uppercase tracking-widest cursor-pointer group">
-                                <input type="checkbox" id="inv-sst" class="mr-2 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300" onchange="calculateTotals()"> 
-                                <span class="group-hover:text-emerald-600 transition-colors">Add 8% SST</span>
+                                <input type="checkbox" id="inv-sst" class="mr-2 w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" onchange="calculateTotals()"> 
+                                <span class="group-hover:text-cyan-600 transition-colors">Add 8% SST</span>
                             </label>
                             <span class="font-black text-slate-600 font-mono" id="inv-tax">RM 0.00</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-black text-slate-800 uppercase tracking-widest">Grand Total</span>
-                            <span class="text-2xl font-black text-emerald-600 tracking-tight font-mono" id="inv-grand">RM 0.00</span>
+                            <span class="text-2xl font-black text-cyan-600 tracking-tight font-mono" id="inv-grand">RM 0.00</span>
                         </div>
                     </div>
                 </div>
@@ -502,7 +502,7 @@
                     <span id="inv-file-name" class="text-[10px] text-slate-400 font-mono truncate max-w-[150px]">No file selected</span>
                 </div>
                 <div class="flex gap-3">
-                    <button onclick="saveCommercial()" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-600/30 transition-all text-sm flex items-center gap-2"><i class="ph ph-check-circle text-lg"></i> Save Document</button>
+                    <button onclick="saveCommercial()" class="px-8 py-3.5 bg-cyan-600 hover:bg-cyan-500 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-cyan-600/30 transition-all text-sm flex items-center gap-2"><i class="ph ph-check-circle text-lg"></i> Save Document</button>
                 </div>
             </div>
         </div>
@@ -545,7 +545,7 @@
             <div class="space-y-4">
                 <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Full Name</label><input type="text" id="staff-name" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-500 outline-none font-bold text-slate-800"></div>
                 <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Job Role</label><input type="text" id="staff-role" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-500 outline-none" placeholder="e.g. C&S Drafter"></div>
-                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Basic Salary (RM)</label><input type="number" id="staff-salary" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-500 outline-none font-mono font-bold text-emerald-600" min="0" step="100"></div>
+                <div><label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Basic Salary (RM)</label><input type="number" id="staff-salary" class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-slate-500 outline-none font-mono font-bold text-cyan-600" min="0" step="100"></div>
             </div>
             <div class="mt-8 flex justify-end">
                 <button onclick="saveStaff()" class="w-full px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-slate-900/30 transition-all text-sm">Save Employee</button>
@@ -717,7 +717,7 @@
                 type: 'line',
                 data: {
                     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{ label: 'Revenue', data: [0,0,0,0,0,0], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, tension: 0.4, fill: true }]
+                    datasets: [{ label: 'Revenue', data: [0,0,0,0,0,0], borderColor: '#06b6d4', backgroundColor: 'rgba(6, 182, 212, 0.1)', borderWidth: 3, tension: 0.4, fill: true }]
                 },
                 options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
@@ -732,7 +732,7 @@
                 gapi: document.getElementById('set-gapi').value
             };
             saveState();
-            Swal.fire({ title: 'Saved!', text: 'Configuration updated.', icon: 'success', confirmButtonColor: '#10b981' });
+            Swal.fire({ title: 'Saved!', text: 'Configuration updated.', icon: 'success', confirmButtonColor: '#06b6d4' });
         }
 
         // --- Drive API ---
@@ -741,8 +741,8 @@
             const btn = document.getElementById('drive-btn');
             btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl text-blue-600"></i> <span>Connecting...</span>';
             setTimeout(() => {
-                btn.innerHTML = '<i class="ph ph-check-circle text-xl text-emerald-600"></i> <span>Drive Linked</span>';
-                btn.classList.add('border-emerald-200', 'bg-emerald-50');
+                btn.innerHTML = '<i class="ph ph-check-circle text-xl text-cyan-600"></i> <span>Drive Linked</span>';
+                btn.classList.add('border-cyan-200', 'bg-cyan-50');
             }, 1000);
         }
 
@@ -817,7 +817,7 @@
             const tbody = document.getElementById('projects-table'); tbody.innerHTML = '';
             state.projects.forEach(p => {
                 const client = state.clients.find(c => c.id === p.clientId);
-                const colors = {'Site Recce': 'bg-slate-100 text-slate-600', 'Drafting': 'bg-blue-100 text-blue-700', 'PE Endorsement': 'bg-purple-100 text-purple-700', 'OSC Submitted': 'bg-amber-100 text-amber-700', 'Approved': 'bg-emerald-100 text-emerald-700'};
+                const colors = {'Site Recce': 'bg-slate-100 text-slate-600', 'Drafting': 'bg-blue-100 text-blue-700', 'PE Endorsement': 'bg-purple-100 text-purple-700', 'OSC Submitted': 'bg-amber-100 text-amber-700', 'Approved': 'bg-cyan-100 text-cyan-700'};
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group border-b border-slate-100">
                         <td class="p-5">
@@ -867,7 +867,7 @@
         // --- Commercials ---
         let tempLineItems = []; let editDocId = null;
         function openInvoiceWizard() {
-            editDocId = null; document.getElementById('commercial-modal-title').innerHTML = '<i class="ph ph-receipt text-emerald-600"></i> Document Builder';
+            editDocId = null; document.getElementById('commercial-modal-title').innerHTML = '<i class="ph ph-receipt text-cyan-600"></i> Document Builder';
             tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }];
             document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = ''; document.getElementById('inv-sst').checked = false;
             renderLineItems(); openModal('modal-invoice');
@@ -888,8 +888,8 @@
                 cont.innerHTML += `
                     <div class="grid grid-cols-12 gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group">
                         <div class="col-span-12 md:col-span-6">
-                            <input type="text" list="scope-options" value="${item.desc}" onchange="updateItemDesc(${i}, this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none mb-2" placeholder="Scope of Work...">
-                            <textarea id="item-note-${i}" oninput="updateItemNote(${i}, this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none" rows="2" placeholder="Breakdown notes...">${item.note||''}</textarea>
+                            <input type="text" list="scope-options" value="${item.desc}" onchange="updateItemDesc(${i}, this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none mb-2" placeholder="Scope of Work...">
+                            <textarea id="item-note-${i}" oninput="updateItemNote(${i}, this.value)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 focus:bg-white focus:ring-2 focus:ring-cyan-500 outline-none" rows="2" placeholder="Breakdown notes...">${item.note||''}</textarea>
                         </div>
                         <div class="col-span-4 md:col-span-2"><label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Qty</label><input type="number" value="${item.qty}" oninput="updateItemQty(${i}, this.value)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-center font-bold outline-none" min="1"></div>
                         <div class="col-span-8 md:col-span-3"><label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Unit Price (RM)</label><input type="number" value="${item.price}" oninput="updateItemPrice(${i}, this.value)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-right font-mono font-bold outline-none" min="0"></div>
@@ -935,7 +935,7 @@
                         <td class="p-5"><div class="font-black text-slate-800">${client?.name || 'Unknown'}</div><div class="text-xs text-slate-500 mt-1 max-w-[200px] truncate font-medium">${proj?.details || ''}</div>${d.poRef ? `<div class="text-[10px] text-blue-600 mt-1 font-bold">PO: ${d.poRef}</div>` : ''}</td>
                         <td class="p-5 text-right text-sm font-mono text-slate-500">${formatRM(d.subtotal)}</td>
                         <td class="p-5 text-right text-sm font-mono text-slate-400">${d.tax > 0 ? formatRM(d.tax) : '-'}</td>
-                        <td class="p-5 text-right font-mono font-black text-emerald-600">${formatRM(d.total)}</td>
+                        <td class="p-5 text-right font-mono font-black text-cyan-600">${formatRM(d.total)}</td>
                         <td class="p-5 text-right">
                             <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onclick="printCommercial('${d.id}')" class="text-slate-600 hover:bg-slate-200 p-2 rounded-lg"><i class="ph ph-printer text-lg"></i></button>
@@ -954,7 +954,7 @@
                 <div class="flex justify-between items-start mb-12 pb-6 border-b-[4px] border-slate-900">
                     <div class="w-1/2">
                         <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Logo" class="max-w-[220px] h-auto mb-2" onerror="this.src='https://placehold.co/400x150/ffffff/0a1128?text=AS-SIDQI';">
-                        <div class="text-[9px] font-black text-emerald-700 tracking-widest uppercase ml-1">Civil & Structural Consultant</div>
+                        <div class="text-[9px] font-black text-cyan-700 tracking-widest uppercase ml-1">Civil & Structural Consultant</div>
                     </div>
                     <div class="text-right w-1/2">
                         <h1 class="text-lg font-black text-slate-900 mb-1 tracking-tight">${s.company || 'AS-SIDQI ENGINEERING & SERVICES'}</h1>
@@ -998,9 +998,9 @@
                         <p class="text-[10px] font-medium text-slate-600 mt-2 whitespace-pre-wrap">${client?.address || ''}</p>
                     </div>
                 </div>
-                <div class="mb-8 p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
-                    <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Project Reference</p>
-                    <p class="text-sm font-bold text-emerald-900">${proj?.details || ''}</p>
+                <div class="mb-8 p-4 bg-cyan-50/50 border border-cyan-100 rounded-xl">
+                    <p class="text-[9px] font-black text-cyan-600 uppercase tracking-widest mb-1">Project Reference</p>
+                    <p class="text-sm font-bold text-cyan-900">${proj?.details || ''}</p>
                 </div>
                 <table class="w-full text-left mb-8">
                     <thead><tr class="border-b-2 border-slate-900 text-[10px] font-black text-slate-500 uppercase tracking-widest"><th class="py-3">Description / Scope</th><th class="py-3 text-center">Qty</th><th class="py-3 text-right">Unit Price</th><th class="py-3 text-right">Amount</th></tr></thead>
@@ -1008,7 +1008,7 @@
                         ${itemsHtml}
                         <tr class="border-t-2 border-slate-900"><td colspan="3" class="pt-6 pb-2 text-right text-xs font-black text-slate-500 uppercase tracking-widest">Subtotal</td><td class="pt-6 pb-2 text-right text-sm font-mono font-black text-slate-800">${formatRM(doc.subtotal)}</td></tr>
                         ${sstRow}
-                        <tr><td colspan="3" class="py-4 text-right text-lg font-black text-slate-900 uppercase tracking-tighter">Grand Total</td><td class="py-4 text-right text-2xl font-mono font-black text-emerald-600 tracking-tight">${formatRM(doc.total)}</td></tr>
+                        <tr><td colspan="3" class="py-4 text-right text-lg font-black text-slate-900 uppercase tracking-tighter">Grand Total</td><td class="py-4 text-right text-2xl font-mono font-black text-cyan-600 tracking-tight">${formatRM(doc.total)}</td></tr>
                     </tbody>
                 </table>
                 <div class="mt-16 pt-6 border-t border-slate-200">
