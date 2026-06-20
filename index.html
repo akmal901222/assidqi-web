@@ -137,7 +137,10 @@
             <div id="view-clients" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
-                    <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-grid"></div>
             </div>
@@ -147,6 +150,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
                     <div class="flex gap-2">
+                        <button onclick="exportToCSV('projects')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
                         <!-- Hidden file input for CSV -->
                         <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
                         <button onclick="document.getElementById('csv-upload').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
@@ -169,6 +173,7 @@
                  <div class="flex justify-between items-center mb-6 no-print">
                     <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices.</p></div>
                     <div class="flex gap-2">
+                        <button onclick="exportToCSV('commercials')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
                         <!-- Hidden file input for Commercials CSV -->
                         <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCommercialCSVUpload(event)">
                         <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
@@ -231,7 +236,10 @@
             <div id="view-hr" class="view-section">
                 <div class="flex justify-between items-center mb-6">
                     <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculate statutory deductions.</p></div>
-                    <button onclick="openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
+                    <div class="flex gap-2">
+                        <button onclick="exportToCSV('hr')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="staff-grid"></div>
             </div>
@@ -348,6 +356,21 @@
 
                 <div class="border border-slate-200 rounded-xl overflow-hidden">
                     <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Line Items</span><button onclick="addLineItem()" class="text-xs text-emerald-600 font-bold hover:underline">+ Add Row</button></div>
+                    
+                    <datalist id="scope-options">
+                        <option value="Design & Drawing"></option>
+                        <option value="Submission"></option>
+                        <option value="To get approval"></option>
+                        <option value="Drawing only"></option>
+                        <option value="Site Inspection"></option>
+                        <option value="As-built Drawing"></option>
+                        <option value="PE Endorsement"></option>
+                        <option value="Integrity Inspection"></option>
+                        <option value="Final CCC"></option>
+                        <option value="Renew KM"></option>
+                        <option value="Renew License"></option>
+                    </datalist>
+
                     <div class="p-4 space-y-3" id="line-items-container"></div>
                 </div>
 
@@ -553,7 +576,7 @@
 
         let tempLineItems = [];
         function openInvoiceWizard() {
-            tempLineItems = [{ desc: 'Professional Engineering Services for C&S', qty: 1, price: 0 }];
+            tempLineItems = [{ desc: '', qty: 1, price: 0 }];
             renderLineItems(); calculateTotals(); openModal('modal-invoice');
         }
 
@@ -562,9 +585,9 @@
             tempLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex gap-3 items-start">
-                        <input type="text" class="flex-1 border border-slate-300 rounded p-2 text-sm" placeholder="Description" value="${item.desc}" onchange="updateLine(${index}, 'desc', this.value)">
-                        <input type="number" class="w-16 border border-slate-300 rounded p-2 text-sm text-center" placeholder="Qty" value="${item.qty}" onchange="updateLine(${index}, 'qty', this.value)">
-                        <input type="number" class="w-28 border border-slate-300 rounded p-2 text-sm text-right" placeholder="Unit RM" value="${item.price}" onchange="updateLine(${index}, 'price', this.value)">
+                        <input type="text" list="scope-options" class="flex-1 border border-slate-300 rounded p-2 text-sm focus:border-emerald-500 outline-none" placeholder="Select scope of work..." value="${item.desc}" onchange="updateLine(${index}, 'desc', this.value)">
+                        <input type="number" class="w-16 border border-slate-300 rounded p-2 text-sm text-center focus:border-emerald-500 outline-none" placeholder="Qty" value="${item.qty}" onchange="updateLine(${index}, 'qty', this.value)">
+                        <input type="number" class="w-28 border border-slate-300 rounded p-2 text-sm text-right focus:border-emerald-500 outline-none" placeholder="Unit RM" value="${item.price}" onchange="updateLine(${index}, 'price', this.value)">
                         <button onclick="removeLine(${index})" class="text-red-400 hover:text-red-600 p-2"><i class="ph ph-trash"></i></button>
                     </div>`;
             });
@@ -1142,6 +1165,73 @@
             });
             
             logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
+        }
+
+        function exportToCSV(type) {
+            let data = [];
+            let filename = '';
+            
+            // Helper function to safely wrap strings containing commas or quotes
+            const escapeCSV = (str) => {
+                if (str == null) return '""';
+                const s = String(str);
+                if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+                    return `"${s.replace(/"/g, '""')}"`;
+                }
+                return s;
+            };
+
+            if (type === 'clients') {
+                data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV));
+                state.clients.forEach(c => {
+                    data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Clients_Export.csv';
+                
+            } else if (type === 'projects') {
+                data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date Registered'].map(escapeCSV));
+                state.projects.forEach(p => {
+                    const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
+                    data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Projects_Export.csv';
+                
+            } else if (type === 'commercials') {
+                data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)'].map(escapeCSV));
+                state.commercials.forEach(d => {
+                    const proj = state.projects.find(p => p.id === d.projectId);
+                    const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown';
+                    data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Commercials_Export.csv';
+                
+            } else if (type === 'hr') {
+                data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV));
+                state.staff.forEach(s => {
+                    data.push([s.id, s.name, s.role, s.salary].map(escapeCSV));
+                });
+                filename = 'AsSidqi_HR_Export.csv';
+            }
+
+            if (data.length <= 1) {
+                return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
+            }
+
+            // Construct the CSV string
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            
+            // Create a Blob and trigger the browser's download prompt
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
         }
 
         window.onload = loadState;
