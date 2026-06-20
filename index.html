@@ -1412,7 +1412,11 @@
                 }
             }
             refreshAllViews();
-            Swal.fire('Clients Imported!', `Successfully imported ${addedCount} clients to Firebase.`, 'success');
+            if (addedCount === 0) {
+                Swal.fire('No Data Imported', '0 clients added. Ensure you are uploading a Client CSV with correct headers (e.g., Client Name), and that these clients are not already in the system.', 'warning');
+            } else {
+                Swal.fire('Clients Imported!', `Successfully imported ${addedCount} clients to Firebase.`, 'success');
+            }
         }
 
         async function processProjectCSV(data) {
@@ -1449,7 +1453,11 @@
                 addedCount++;
             }
             refreshAllViews();
-            Swal.fire('Data Imported!', `Successfully imported ${addedCount} projects.\nAuto-created ${newClients} new client profiles.`, 'success');
+            if (addedCount === 0) {
+                Swal.fire('No Data Imported', '0 projects found. Please ensure you are uploading a Project CSV, not a Client or Billing CSV.', 'warning');
+            } else {
+                Swal.fire('Data Imported!', `Successfully imported ${addedCount} projects.\nAuto-created ${newClients} new client profiles.`, 'success');
+            }
         }
 
         async function processCommercialCSV(data) {
@@ -1495,8 +1503,12 @@
                 addedCount++;
             }
             refreshAllViews();
-            Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents.`, 'success');
-            logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
+            if (addedCount === 0) {
+                 Swal.fire('No Data Imported', '0 commercial documents found. Ensure you are uploading a Billing CSV, not a Project CSV.', 'warning');
+            } else {
+                 Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents.`, 'success');
+                 logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
+            }
         }
 
         // --- STREAMING_CHUNK:Implementing Dashboard Analytics... ---
