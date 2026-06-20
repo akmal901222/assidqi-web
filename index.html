@@ -1,102 +1,1657 @@
-<!-- ... existing code ... -->
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-coins text-6xl text-cyan-600"></i></div>
-                            <div class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Total Receivables (Pending)</div>
-                            <div class="text-4xl font-black text-slate-800 mb-2 tracking-tight" id="dash-receivables">RM 0.00</div>
-                            <div class="text-xs text-emerald-600 font-bold flex items-center" id="dash-collected"><i class="ph ph-check-circle mr-1 text-sm"></i> RM 0.00 Collected</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PELANTAR | My Company</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar-item { transition: all 0.2s ease; }
+        /* Cyan Theme Active State */
+        .sidebar-item.active { background-color: #ecfeff; color: #0891b2; border-right: 3px solid #0891b2; font-weight: 700; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        /* Cyan Scrollbar Thumb */
+        ::-webkit-scrollbar-thumb { background: #67e8f9; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #22d3ee; }
+
+        /* Modals */
+        .modal { display: none; }
+        .modal.active { display: flex; }
+
+        /* Responsive Table Wrappers */
+        .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            #print-area { display: block !important; width: 100%; }
+            @page { margin: 15mm; }
+        }
+    </style>
+</head>
+<body class="text-slate-800 h-screen overflow-hidden flex relative">
+
+    <!-- Admin Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 bg-[#020617] z-[100] flex items-center justify-center transition-opacity duration-500">
+        <div class="bg-slate-900 p-10 rounded-3xl border border-slate-800 shadow-2xl max-w-sm w-full relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-5"><i class="ph ph-lock-key text-8xl text-cyan-400"></i></div>
+            <div class="flex justify-center mb-6 relative z-10">
+                <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-inner">
+                    <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Logo" class="w-20 h-20 object-contain" onerror="this.src='https://placehold.co/100x100/1e293b/67e8f9?text=AS';">
+                </div>
+            </div>
+            <h2 class="text-2xl font-black text-white text-center mb-2 relative z-10 tracking-tight">Admin Gateway</h2>
+            <p class="text-sm text-slate-400 text-center mb-8 relative z-10">Enter credentials to access ERP</p>
+            <div class="space-y-4 relative z-10">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Username</label>
+                    <div class="relative">
+                        <i class="ph ph-user absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
+                        <input type="text" id="login-user" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors" placeholder="Admin ID">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Password</label>
+                    <div class="relative">
+                        <i class="ph ph-key absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500"></i>
+                        <input type="password" id="login-pass" class="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-cyan-500 transition-colors" placeholder="••••••••">
+                    </div>
+                </div>
+                <button onclick="checkLogin()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-cyan-600/20 mt-4">Authenticate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Header (Visible only on small screens) -->
+    <header class="md:hidden fixed top-0 left-0 right-0 bg-[#020617] text-white p-4 flex justify-between items-center z-[45] shadow-md border-b border-slate-800">
+        <div class="flex items-center gap-3">
+             <div class="bg-white rounded-full p-1 w-8 h-8 flex justify-center items-center overflow-hidden border border-slate-600">
+                <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/50x50/ffffff/0a1128?text=AS';">
+            </div>
+            <h1 class="font-black tracking-tight text-cyan-400">PELANTAR<span class="text-white font-light text-sm">.app</span></h1>
+        </div>
+        <button onclick="toggleSidebar()" class="text-2xl p-1 focus:outline-none text-slate-300 hover:text-white"><i class="ph ph-list"></i></button>
+    </header>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 z-[40] hidden md:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="absolute md:relative top-0 left-0 w-64 bg-[#020617] text-slate-300 flex flex-col h-full shadow-2xl z-[50] no-print border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out pt-16 md:pt-0">
+        <div class="p-6 border-b border-slate-800 flex flex-col items-center">
+            <!-- Rounded Logo Badge -->
+            <div class="bg-white rounded-full p-2 w-28 h-28 mb-4 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
+                <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Company Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
+            </div>
+            <div class="bg-slate-800/80 px-3 py-1 rounded-full border border-slate-700">
+                <p class="text-[10px] font-black text-cyan-400 uppercase tracking-widest">Engineering ERP Hub</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-2">Operations</div>
+            <a href="#" onclick="switchView('dashboard'); toggleSidebarOnMobile()" id="nav-dashboard" class="sidebar-item active flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-squares-four text-xl mr-3 opacity-70"></i> Executive Dashboard
+            </a>
+            <a href="#" onclick="switchView('clients'); toggleSidebarOnMobile()" id="nav-clients" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-address-book text-xl mr-3 opacity-70"></i> Clients & CRM
+            </a>
+            <a href="#" onclick="switchView('projects'); toggleSidebarOnMobile()" id="nav-projects" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-kanban text-xl mr-3 opacity-70"></i> Projects & OSC Tracker
+            </a>
+            <a href="#" onclick="switchView('commercials'); toggleSidebarOnMobile()" id="nav-commercials" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-receipt text-xl mr-3 opacity-70"></i> Billing & Quotations
+            </a>
+            
+            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-6">Administration</div>
+            <a href="#" onclick="switchView('ai-letter'); toggleSidebarOnMobile()" id="nav-ai-letter" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-file-text text-xl mr-3 opacity-70"></i> AI Surat Rasmi
+            </a>
+            <a href="#" onclick="switchView('hr'); toggleSidebarOnMobile()" id="nav-hr" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
+                <i class="ph ph-users text-xl mr-3 opacity-70"></i> HR & Payroll
+            </a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+            <a href="#" onclick="switchView('settings'); toggleSidebarOnMobile()" id="nav-settings" class="flex items-center px-4 py-3 text-sm text-slate-400 hover:text-cyan-400 hover:bg-slate-800 rounded-xl transition-all">
+                <i class="ph ph-gear text-xl mr-3"></i> Company Setup
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full relative pt-16 md:pt-0 no-print">
+        
+        <!-- Topbar -->
+        <header class="glass-panel border-b border-slate-200 px-4 md:px-8 py-4 md:py-5 flex justify-between items-center z-10 hidden md:flex">
+            <div class="flex items-center">
+                <h2 class="text-xl md:text-2xl font-black tracking-tight text-slate-800" id="topbar-title">Executive Dashboard</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-medium text-slate-500 hidden sm:inline" id="current-date"></span>
+                <button onclick="handleDriveAuthClick()" id="btn-drive-connect" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center transition-colors border border-indigo-200 hidden">
+                    <i class="ph ph-google-drive-logo text-lg mr-2"></i> Connect Drive
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic View Container -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+            
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section active">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-money text-6xl text-cyan-600"></i></div>
+                        <div class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Total Receivables (Pending)</div>
+                        <div class="text-3xl md:text-4xl font-black text-slate-800 mb-2 tracking-tight" id="dash-receivables">RM 0.00</div>
+                        <div class="text-xs text-emerald-600 font-bold flex items-center" id="dash-collected"><i class="ph ph-check-circle mr-1 text-sm"></i> RM 0.00 Collected</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-file-text text-6xl text-indigo-600"></i></div>
+                        <div class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active Quotations</div>
+                        <div class="text-3xl md:text-4xl font-black text-slate-800 mb-2 tracking-tight" id="dash-quotes">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Pending Client Approval</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-kanban text-6xl text-blue-600"></i></div>
+                        <div class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Active Projects</div>
+                        <div class="text-3xl md:text-4xl font-black text-slate-800 mb-2 tracking-tight" id="dash-projects">0</div>
+                        <div class="text-xs text-amber-500 font-bold flex items-center" id="dash-pending-pbt"><i class="ph ph-clock mr-1 text-sm"></i> 0 Pending at PBT</div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-users text-6xl text-emerald-600"></i></div>
+                        <div class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Total Clients</div>
+                        <div class="text-3xl md:text-4xl font-black text-slate-800 mb-2 tracking-tight" id="dash-clients">0</div>
+                        <div class="text-xs text-slate-500 font-medium">Registered in CRM</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-6 flex items-center"><i class="ph ph-chart-line-up text-cyan-600 mr-2 text-xl"></i> Revenue Analytics</h4>
+                        <div class="relative h-64 w-full">
+                            <canvas id="revenueChart"></canvas>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-<!-- ... existing code ... -->
-        function renderDashboard() {
-            let totalInvoiced = 0;
-            let totalPaid = 0;
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-4 flex items-center"><i class="ph ph-bell-ringing text-amber-500 mr-2 text-xl"></i> Action Required</h4>
+                        <div class="space-y-3" id="dash-alerts">
+                            <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 text-sm text-slate-500 text-center font-medium italic">No pending actions.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clients View -->
+            <div id="view-clients" class="view-section">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="openModal('modal-client')" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="client-grid"></div>
+            </div>
+
+            <!-- Projects View -->
+            <div id="view-projects" class="view-section">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones to local authority approval.</p></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportToCSV('projects')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <!-- Hidden file input for CSV -->
+                        <input type="file" id="csv-upload" accept=".csv" class="hidden" onchange="handleCSVUpload(event)">
+                        <button onclick="document.getElementById('csv-upload').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
+                        <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Register Project</button>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4 md:p-5">Project Details</th>
+                                    <th class="p-4 md:p-5">PBT & Location</th>
+                                    <th class="p-4 md:p-5">Reference</th>
+                                    <th class="p-4 md:p-5 text-center">Current Status</th>
+                                    <th class="p-4 md:p-5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="project-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commercials View -->
+            <div id="view-commercials" class="view-section">
+                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 no-print gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices.</p></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportToCSV('commercials')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <!-- Hidden file input for Commercials CSV -->
+                        <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCommercialCSVUpload(event)">
+                        <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
+                        <button onclick="openInvoiceWizard()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Create Document</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
+                    <div class="table-responsive">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4 md:p-5">Type & ID</th>
+                                    <th class="p-4 md:p-5">Client & Project</th>
+                                    <th class="p-4 md:p-5 text-right">Subtotal</th>
+                                    <th class="p-4 md:p-5 text-right">SST (8%)</th>
+                                    <th class="p-4 md:p-5 text-right">Grand Total</th>
+                                    <th class="p-4 md:p-5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commercials-table" class="text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Letter View -->
+            <div id="view-ai-letter" class="view-section">
+                <div class="max-w-3xl mx-auto">
+                    <div class="text-center mb-8 no-print">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-cyan-100 text-cyan-600 mb-4"><i class="ph ph-robot text-3xl"></i></div>
+                        <h3 class="text-2xl font-black text-slate-800">AI Surat Rasmi Generator</h3>
+                        <p class="text-slate-500">Instantly draft highly formal Malay correspondence for PBTs.</p>
+                    </div>
+
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 no-print mb-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Select Project</label>
+                                <select id="ai-project" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none"></select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Letter Type</label>
+                                <select id="ai-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none">
+                                    <option value="cover">Surat Iringan (Cover Letter for KM/Borang A)</option>
+                                    <option value="endorsement">Pengesahan Integriti Struktur (P.E. Endorsement)</option>
+                                    <option value="appeal">Surat Rayuan (Appeal Letter)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="generateAILetter()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"><i class="ph ph-magic-wand text-xl"></i> Auto-Draft Letter</button>
+                    </div>
+
+                    <!-- Letter Output Area -->
+                    <div id="ai-output" class="hidden">
+                        <div class="bg-white p-8 md:p-12 rounded-xl shadow-lg border border-slate-200 relative mb-4">
+                            <!-- Standard Header for Letters -->
+                            <div class="border-b-2 border-slate-800 pb-6 mb-8 flex justify-between items-start print-header hidden print:flex">
+                                <div class="w-32 h-32 flex items-center justify-center overflow-hidden">
+                                    <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Company Logo" class="max-w-full max-h-full object-contain" onerror="this.style.display='none'; document.getElementById('ai-logo-text').style.display='block';">
+                                    <h1 id="ai-logo-text" class="text-4xl font-black tracking-tighter text-slate-900 hidden">AS-SIDQI</h1>
+                                </div>
+                                <div class="text-right">
+                                    <h2 class="text-xl font-black text-slate-900 tracking-tight" id="lh-comp-name-ai">AS-SIDQI ENGINEERING & SERVICES</h2>
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Civil & Structural Consultant</p>
+                                    <p class="text-xs text-slate-600 mt-2" id="lh-address-ai">No. 14, Jalan Gunung Tahan U11/5, Bukit Bandaraya,<br>Seksyen U11, 40170 Shah Alam, Selangor</p>
+                                    <div class="mt-2 text-xs font-mono font-medium text-slate-500">SSM: <span id="lh-ssm-ai" class="text-slate-800">SA0613854-V</span> | BEM: <span id="lh-bem-ai" class="text-slate-800">C116608</span></div>
+                                </div>
+                            </div>
+
+                            <textarea id="ai-textarea" rows="20" class="w-full text-sm leading-relaxed outline-none resize-none font-serif text-slate-800 print-content bg-transparent" spellcheck="false"></textarea>
+                        </div>
+                        <div class="flex justify-end gap-3 no-print">
+                            <button onclick="printOfficialLetter()" class="bg-slate-800 text-white hover:bg-slate-900 px-6 py-3 rounded-xl font-bold flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print Official Letterhead</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HR View -->
+            <div id="view-hr" class="view-section">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculate statutory deductions.</p></div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="exportToCSV('hr')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="staff-grid"></div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view-section">
+                <div class="max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-black text-slate-800 mb-2">Company Setup</h3>
+                    <p class="text-sm text-slate-500 mb-8">Configure your official details for auto-generating letterheads and invoices.</p>
+                    
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6">
+                        <h4 class="font-bold text-slate-800 border-b border-slate-100 pb-3">Company Profile & Documents</h4>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Official Company Name</label>
+                            <input type="text" id="set-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none font-bold text-slate-800" placeholder="e.g. As-Sidqi Engineering">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">SSM Registration No.</label>
+                                <input type="text" id="set-ssm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">BEM Practicing No.</label>
+                                <input type="text" id="set-bem" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Official Address (For Letterhead)</label>
+                            <textarea id="set-address" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">Bank Details (For Invoices)</label>
+                            <input type="text" id="set-bank" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 outline-none" placeholder="e.g. MAYBANK: 562469316072">
+                        </div>
+
+                        <div class="pt-6">
+                            <h4 class="font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="ph ph-google-drive-logo text-blue-500"></i> Google Drive API Integration</h4>
+                            <p class="text-xs text-slate-500 mt-3 mb-4">Paste your Google Cloud API credentials here to enable automated PDF uploads to your cloud vault.</p>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">OAuth Client ID</label>
+                                    <input type="text" id="set-gclient" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-mono focus:border-cyan-500 outline-none text-slate-600">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">API Key</label>
+                                    <input type="text" id="set-gapi" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-mono focus:border-cyan-500 outline-none text-slate-600" type="password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="saveSettings()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-4 rounded-xl transition-all shadow-md mt-6">Save Configuration</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Client Modal -->
+    <div id="modal-client" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200" id="mc-content">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-black text-slate-800 text-lg">Client Details</h3>
+                <button onclick="closeModal('modal-client')" class="text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-x-circle text-2xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="client-id">
+                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Company Name *</label><input type="text" id="client-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500"></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">SSM No.</label><input type="text" id="client-ssm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500 font-mono"></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Contact Person</label><input type="text" id="client-contact" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500"></div>
+                </div>
+                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Email Address</label><input type="email" id="client-email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500"></div>
+                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Billing Address</label><textarea id="client-address" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500"></textarea></div>
+                <div class="pt-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block flex items-center gap-1"><i class="ph ph-paperclip"></i> Attach Document (Drive)</label>
+                    <input type="file" id="client-file" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                <button onclick="closeModal('modal-client')" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700">Cancel</button>
+                <button onclick="saveClient()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md shadow-cyan-600/20">Save Client</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="modal-project" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200" id="mp-content">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-black text-slate-800 text-lg">Project Registration</h3>
+                <button onclick="closeModal('modal-project')" class="text-slate-400 hover:text-red-500 transition-colors"><i class="ph ph-x-circle text-2xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <input type="hidden" id="proj-id">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Assign Client *</label>
+                    <select id="proj-client" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500 font-bold text-slate-700"></select>
+                </div>
+                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Project Title / Scope *</label><textarea id="proj-details" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500" placeholder="e.g. Cadangan Struktur Papan Iklan Unipole 18m..."></textarea></div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Local Authority (PBT)</label>
+                        <select id="proj-pbt" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500">
+                            <option value="DBKL">DBKL (Kuala Lumpur)</option><option value="MBPJ">MBPJ (Petaling Jaya)</option><option value="MBSA">MBSA (Shah Alam)</option><option value="MPKj">MPKj (Kajang)</option><option value="MBSP">MBSP (Seberang Perai)</option><option value="Other">Other PBT</option>
+                        </select>
+                    </div>
+                    <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">PBT Reference No.</label><input type="text" id="proj-ref" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500 font-mono text-xs" placeholder="e.g. MBPJ/OSC/26-001"></div>
+                </div>
+                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Location / GPS Details</label><input type="text" id="proj-gps" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500" placeholder="e.g. Lebuhraya LDP KM 5.2"></div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Current Status</label>
+                    <select id="proj-status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-cyan-500 font-bold">
+                        <option value="Site Recce">Site Recce / Preliminary</option><option value="Drafting">C&S Drafting & Analysis</option><option value="PE Endorsement">Pending P.E. Endorsement</option><option value="OSC Submitted">OSC Submitted (Pending PBT)</option><option value="Approved">Permit Issued / Approved</option><option value="Completed">Project Completed (CCC)</option>
+                    </select>
+                </div>
+                <div class="pt-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block flex items-center gap-1"><i class="ph ph-folder-open"></i> Upload Project Files (Drive)</label>
+                    <input type="file" id="proj-file" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" multiple>
+                    <p class="text-[9px] text-slate-400 mt-1">Upload .dwg, SI Reports, or Site Photos</p>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                <button onclick="closeModal('modal-project')" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700">Cancel</button>
+                <button onclick="saveProject()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md">Save Project</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice/Quote Wizard Modal -->
+    <div id="modal-invoice" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 p-2 md:p-6 overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-4xl mx-auto shadow-2xl min-h-[90vh] flex flex-col relative" id="mi-content">
+            <!-- Wizard Header -->
+            <div class="px-4 md:px-8 py-4 md:py-6 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10 rounded-t-3xl">
+                <div><h3 class="font-black text-slate-800 text-xl md:text-2xl">Commercial Document Builder</h3><p class="text-xs text-slate-500">Auto-calculates totals and SST.</p></div>
+                <button onclick="closeModal('modal-invoice')" class="text-slate-400 hover:text-red-500 bg-slate-100 rounded-full p-2"><i class="ph ph-x text-xl"></i></button>
+            </div>
             
-            state.commercials.forEach(c => { 
-                if(c.type === 'Invoice') {
-                    if(c.paymentStatus === 'Paid') {
-                        totalPaid += c.total;
-                    } else {
-                        totalInvoiced += c.total; 
-                    }
-                } 
-            });
+            <div class="p-4 md:p-8 flex-1 bg-slate-50">
+                <!-- Meta Info -->
+                <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Link to Project *</label>
+                        <select id="inv-project" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 font-bold text-slate-800 outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Document Type</label>
+                        <select id="inv-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:border-cyan-500 outline-none">
+                            <option value="Quotation">Quotation (Sebut Harga)</option><option value="Invoice">Tax Invoice</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Client PO / Ref No.</label>
+                        <input type="text" id="inv-po" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono focus:border-cyan-500 outline-none" placeholder="e.g. PO-2026-882">
+                    </div>
+                </div>
+
+                <!-- Line Items Engine -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+                    <div class="bg-slate-800 px-4 md:px-6 py-3 flex justify-between items-center">
+                        <h4 class="font-bold text-white text-sm">Line Items (Scope of Work)</h4>
+                        <button onclick="addLineItem()" class="bg-cyan-500 hover:bg-cyan-400 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"><i class="ph ph-plus"></i> Add Row</button>
+                    </div>
+                    <div class="p-2 md:p-4">
+                        <!-- Header row hidden on very small screens, visible on md+ -->
+                        <div class="hidden md:grid grid-cols-12 gap-4 px-2 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 mb-2">
+                            <div class="col-span-6">Description / Notes</div><div class="col-span-2 text-center">Qty</div><div class="col-span-3 text-right">Unit Price (RM)</div><div class="col-span-1"></div>
+                        </div>
+                        <div id="line-items-container" class="space-y-4 md:space-y-2"></div>
+                    </div>
+                </div>
+                
+                <!-- Financials -->
+                <div class="flex justify-end">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 w-full md:w-80">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold text-slate-500 uppercase">Subtotal</span>
+                            <span class="font-mono font-bold text-slate-800" id="inv-sub">RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
+                            <label class="flex items-center cursor-pointer group">
+                                <div class="relative">
+                                    <input type="checkbox" id="inv-tax-check" class="sr-only" onchange="calculateTotals()">
+                                    <div class="block bg-slate-200 w-10 h-6 rounded-full transition-colors group-hover:bg-slate-300"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform"></div>
+                                </div>
+                                <span class="ml-3 text-xs font-bold text-slate-500 uppercase">Add 8% SST</span>
+                            </label>
+                            <span class="font-mono text-slate-400" id="inv-tax-val">+ RM 0.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-black text-slate-800 uppercase tracking-widest">Grand Total</span>
+                            <span class="text-xl font-mono font-black text-cyan-600" id="inv-grand">RM 0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            document.getElementById('dash-receivables').innerText = formatRM(totalInvoiced);
-            document.getElementById('dash-collected').innerHTML = `<i class="ph ph-check-circle mr-1 text-sm"></i> ${formatRM(totalPaid)} Collected`;
-            
-            let activeProj = state.projects.filter(p => p.status !== 'Approved').length;
-<!-- ... existing code ... -->
-        function saveCommercial() {
-            if(!document.getElementById('inv-project').value) return Swal.fire('Error', 'Link to a project', 'error');
-            const totals = calculateTotals();
-            const data = { projectId: document.getElementById('inv-project').value, type: document.getElementById('inv-type').value, poRef: document.getElementById('inv-po').value, items: tempLineItems, subtotal: totals.sub, tax: totals.tax, total: totals.grand, date: new Date().toLocaleDateString('en-MY'), paymentStatus: 'Pending' };
-            if(editDocId) { 
-                data.id = editDocId; 
-                // Keep the old payment status if editing
-                const oldDoc = state.commercials.find(d => d.id === editDocId);
-                if(oldDoc && oldDoc.paymentStatus) data.paymentStatus = oldDoc.paymentStatus;
-                state.commercials[state.commercials.findIndex(d=>d.id===editDocId)] = data; 
-            }
-            else { data.id = generateId('DOC'); state.commercials.push(data); }
-            saveState(); closeModal('modal-invoice');
+            <!-- Wizard Footer -->
+            <div class="px-4 md:px-8 py-4 border-t border-slate-100 bg-white rounded-b-3xl flex flex-col sm:flex-row justify-between items-center gap-4 sticky bottom-0 z-10">
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <i class="ph ph-paperclip text-slate-400"></i>
+                    <input type="file" id="inv-file" class="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 w-full sm:w-auto">
+                </div>
+                <div class="flex w-full sm:w-auto gap-2">
+                    <button onclick="closeModal('modal-invoice')" class="px-6 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors w-full sm:w-auto">Cancel</button>
+                    <button onclick="saveCommercial()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-cyan-600/20 w-full sm:w-auto">Save & Generate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Area -->
+    <div id="print-area" class="hidden no-print bg-white absolute top-0 left-0 w-full min-h-screen z-[200]"></div>
+
+    <!-- Smart Datalist for Scope of Works -->
+    <datalist id="scope-options">
+        <option value="Design & Drawing"></option><option value="Submission"></option><option value="To get approval"></option><option value="Drawing only"></option><option value="Site inspection"></option><option value="As-built Drawing"></option><option value="PE Endorsement"></option><option value="Integrity Inspection"></option><option value="Final CCC"></option><option value="Renew KM"></option><option value="Renew license"></option>
+    </datalist>
+
+    <!-- App Engine Script -->
+    <script type="module">
+        // Import Firebase core and Firestore
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase Configuration (from your exact credentials)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD2VqWlAqlWWxObSaii7gxGK7pUmEB0no8",
+            authDomain: "as-sidqi-erp-88dc3.firebaseapp.com",
+            projectId: "as-sidqi-erp-88dc3",
+            storageBucket: "as-sidqi-erp-88dc3.firebasestorage.app",
+            messagingSenderId: "126753060139",
+            appId: "1:126753060139:web:f5bb50fa17ad5d4eb2016e",
+            measurementId: "G-X0GCK42KPD"
+        };
+
+        // Initialize Firebase
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("Firebase initialized successfully");
+        } catch (e) {
+            console.error("Firebase initialization error:", e);
+            Swal.fire('Database Error', 'Could not connect to Firebase cloud. Please check console.', 'error');
         }
 
-        function togglePayment(id) {
-            const doc = state.commercials.find(d => d.id === id);
-            if(doc) {
-                doc.paymentStatus = doc.paymentStatus === 'Paid' ? 'Pending' : 'Paid';
-                saveState();
+        // Global State (Mirrors Database)
+        window.state = {
+            clients: [], projects: [], commercials: [], staff: [],
+            settings: {
+                name: 'AS-SIDQI ENGINEERING & SERVICES',
+                ssm: 'SA0613854-V', bem: 'C116608',
+                address: 'No. 14, Jalan Gunung Tahan U11/5, Bukit Bandaraya, Seksyen U11, 40170 Shah Alam, Selangor',
+                bank: 'MAYBANK: 562469316072',
+                gClientId: '767375203888-52ef3pnRgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com',
+                gApiKey: 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY'
+            }
+        };
+
+        let revenueChartInstance = null;
+        let editDocId = null; 
+        
+        // --- Security & Setup ---
+        window.checkLogin = function() {
+            if(document.getElementById('login-user').value === 'assidqi' && document.getElementById('login-pass').value === 'ases5577') {
+                document.getElementById('login-overlay').classList.add('opacity-0');
+                setTimeout(() => document.getElementById('login-overlay').classList.add('hidden'), 500);
+                loadCloudData(); // Load data from Firestore upon login
+            } else {
+                Swal.fire({ icon: 'error', title: 'Access Denied', text: 'Invalid admin credentials.', confirmButtonColor: '#0891b2' });
+            }
+        };
+
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        };
+
+        window.toggleSidebarOnMobile = function() {
+            if(window.innerWidth < 768) { toggleSidebar(); }
+        };
+
+        window.switchView = function(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active', 'block'));
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+            document.getElementById(`view-${viewId}`).classList.add('active', 'block');
+            document.getElementById(`nav-${viewId}`).classList.add('active');
+            
+            // Set dynamic topbar title
+            const titles = { 'dashboard': 'Executive Dashboard', 'clients': 'Clients & CRM', 'projects': 'Project Pipeline', 'commercials': 'Billing & Quotations', 'ai-letter': 'AI Surat Rasmi', 'hr': 'HR & Payroll', 'settings': 'Company Setup' };
+            if(document.getElementById('topbar-title')) document.getElementById('topbar-title').innerText = titles[viewId];
+        };
+
+        // --- Firebase Data Loading ---
+        async function loadCloudData() {
+            try {
+                // Show loading state
+                Swal.fire({ title: 'Syncing with Cloud...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+                // Load Settings (Assuming one settings document for now, creating local if none exists)
+                const settingsSnapshot = await getDocs(collection(db, "settings"));
+                if (!settingsSnapshot.empty) {
+                    state.settings = settingsSnapshot.docs[0].data();
+                }
+
+                // Load Clients
+                const clientsSnapshot = await getDocs(collection(db, "clients"));
+                state.clients = clientsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+                // Load Projects
+                const projectsSnapshot = await getDocs(collection(db, "projects"));
+                state.projects = projectsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+                // Load Commercials
+                const commsSnapshot = await getDocs(collection(db, "commercials"));
+                state.commercials = commsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+                // Load Staff
+                const staffSnapshot = await getDocs(collection(db, "staff"));
+                state.staff = staffSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+                refreshAllViews();
+                Swal.close();
+                logActivity('Cloud database sync complete', 'cloud-check', 'cyan');
+                initGoogleDrive(); // Initialize drive if keys are present
+                
+                // Populate Settings Form
+                document.getElementById('set-name').value = state.settings.name || '';
+                document.getElementById('set-ssm').value = state.settings.ssm || '';
+                document.getElementById('set-bem').value = state.settings.bem || '';
+                document.getElementById('set-address').value = state.settings.address || '';
+                document.getElementById('set-bank').value = state.settings.bank || '';
+                document.getElementById('set-gclient').value = state.settings.gClientId || '';
+                document.getElementById('set-gapi').value = state.settings.gApiKey || '';
+
+            } catch (e) {
+                console.error("Error loading cloud data: ", e);
+                Swal.fire('Sync Error', 'Failed to pull data from Firebase. Check console.', 'error');
             }
         }
+
+        window.saveSettings = async function() {
+            state.settings = {
+                name: document.getElementById('set-name').value, ssm: document.getElementById('set-ssm').value, bem: document.getElementById('set-bem').value,
+                address: document.getElementById('set-address').value, bank: document.getElementById('set-bank').value,
+                gClientId: document.getElementById('set-gclient').value, gApiKey: document.getElementById('set-gapi').value
+            };
+            
+            try {
+                 // For MVP, we'll just write to a known document ID 'global'
+                 const settingsRef = doc(db, "settings", "global");
+                 // Using updateDoc might fail if it doesn't exist, setDoc is better but we'll use addDoc for simplicity in this structure, 
+                 // or just keep settings local if not critical. Let's just keep them in localStorage for now to avoid complex auth rules on a single settings doc
+                 localStorage.setItem('asSidqiSettings', JSON.stringify(state.settings));
+                 Swal.fire({icon: 'success', title: 'Settings Saved', showConfirmButton: false, timer: 1500});
+                 initGoogleDrive();
+            } catch(e) {
+                console.error(e);
+            }
+        };
+
+        function refreshAllViews() {
+            renderClients(); renderProjects(); renderCommercials(); renderDashboard(); renderStaff(); updateDropdowns();
+        }
+
+        function formatRM(num) { return 'RM ' + parseFloat(num).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+        function logActivity(text, icon, color) {
+            const div = document.getElementById('dash-alerts');
+            if(div.innerHTML.includes('No pending actions')) div.innerHTML = '';
+            div.innerHTML = `<div class="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-sm"><div class="text-${color}-500 mt-0.5"><i class="ph ph-${icon} text-lg"></i></div><div><p class="text-slate-700 font-medium">${text}</p><p class="text-[10px] text-slate-400 mt-1">${new Date().toLocaleTimeString('en-MY')}</p></div></div>` + div.innerHTML;
+        }
+
+        window.openModal = function(id) { document.getElementById(id).classList.add('active'); };
+        window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); };
+
+        // --- CRUD Operations (Firebase Powered) ---
+
+        window.saveClient = async function() {
+            const name = document.getElementById('client-name').value;
+            if(!name) return Swal.fire('Error', 'Company Name is required', 'error');
+            
+            const data = { 
+                name, 
+                ssm: document.getElementById('client-ssm').value, 
+                contact: document.getElementById('client-contact').value, 
+                email: document.getElementById('client-email').value, 
+                address: document.getElementById('client-address').value 
+            };
+            const id = document.getElementById('client-id').value;
+
+            Swal.showLoading();
+            try {
+                if(id) {
+                    await updateDoc(doc(db, "clients", id), data);
+                    const index = state.clients.findIndex(c => c.id === id);
+                    if(index > -1) state.clients[index] = { ...data, id };
+                    logActivity(`Updated client: ${name}`, 'buildings', 'blue');
+                } else {
+                    const docRef = await addDoc(collection(db, "clients"), data);
+                    state.clients.push({ ...data, id: docRef.id });
+                    logActivity(`Registered new client: ${name}`, 'buildings', 'cyan');
+                }
+                
+                // Clear form
+                ['id','name','ssm','contact','email','address','file'].forEach(f => document.getElementById(`client-${f}`).value = '');
+                closeModal('modal-client');
+                refreshAllViews();
+                Swal.close();
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to save to cloud.', 'error');
+            }
+        };
+
+        window.saveProject = async function() {
+            const clientId = document.getElementById('proj-client').value;
+            const details = document.getElementById('proj-details').value;
+            if(!clientId || !details) return Swal.fire('Error', 'Client and Scope are required', 'error');
+            
+            const data = { 
+                clientId, 
+                details, 
+                pbt: document.getElementById('proj-pbt').value, 
+                ref: document.getElementById('proj-ref').value, 
+                gps: document.getElementById('proj-gps').value, 
+                status: document.getElementById('proj-status').value, 
+                date: new Date().toLocaleDateString('en-MY') 
+            };
+            const id = document.getElementById('proj-id').value;
+
+            Swal.showLoading();
+            try {
+                if(id) {
+                    await updateDoc(doc(db, "projects", id), data);
+                    const index = state.projects.findIndex(p => p.id === id);
+                    // Keep old date
+                    data.date = state.projects[index].date;
+                    state.projects[index] = { ...data, id };
+                    logActivity(`Updated project status: ${document.getElementById('proj-pbt').value}`, 'kanban', 'blue');
+                } else {
+                    const docRef = await addDoc(collection(db, "projects"), data);
+                    state.projects.push({ ...data, id: docRef.id });
+                    logActivity(`Registered new project in pipeline`, 'kanban', 'cyan');
+                }
+                
+                ['id','details','ref','gps','file'].forEach(f => document.getElementById(`proj-${f}`).value = '');
+                closeModal('modal-project');
+                refreshAllViews();
+                Swal.close();
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to save to cloud.', 'error');
+            }
+        };
+
+        window.deleteData = function(type, id) {
+            Swal.fire({ title: 'Delete record?', text: "This will be permanently removed from the cloud.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete' }).then(async r => {
+                if(r.isConfirmed){
+                    Swal.showLoading();
+                    try {
+                        let collectionName = type + "s"; // client -> clients
+                        if(type === 'commercial') collectionName = 'commercials';
+                        if(type === 'staff') collectionName = 'staff'; // no s
+
+                        await deleteDoc(doc(db, collectionName, id));
+                        
+                        if(type==='client') state.clients = state.clients.filter(c=>c.id!==id);
+                        if(type==='project') state.projects = state.projects.filter(p=>p.id!==id);
+                        if(type==='commercial') state.commercials = state.commercials.filter(d=>d.id!==id);
+                        if(type==='staff') state.staff = state.staff.filter(s=>s.id!==id);
+                        
+                        refreshAllViews();
+                        Swal.fire('Deleted!', 'Record removed from database.', 'success');
+                    } catch (e) {
+                        console.error(e);
+                        Swal.fire('Error', 'Failed to delete from cloud.', 'error');
+                    }
+                }
+            });
+        };
+
+        // --- UI Rendering ---
+
+        function updateDropdowns() {
+            const pClient = document.getElementById('proj-client');
+            const iProject = document.getElementById('inv-project');
+            const aiProject = document.getElementById('ai-project');
+            
+            pClient.innerHTML = '<option value="">-- Select Client --</option>' + state.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            const projOpts = '<option value="">-- Select Project --</option>' + state.projects.map(p => {
+                const client = state.clients.find(c => c.id === p.clientId);
+                return `<option value="${p.id}">${client ? client.name : 'Unknown'} - ${p.details.substring(0,40)}...</option>`;
+            }).join('');
+            
+            iProject.innerHTML = projOpts;
+            aiProject.innerHTML = projOpts;
+        }
+
+        window.editClient = function(id) {
+            const c = state.clients.find(x => x.id === id); if(!c) return;
+            document.getElementById('client-id').value = c.id;
+            document.getElementById('client-name').value = c.name;
+            document.getElementById('client-ssm').value = c.ssm || '';
+            document.getElementById('client-contact').value = c.contact || '';
+            document.getElementById('client-email').value = c.email || '';
+            document.getElementById('client-address').value = c.address || '';
+            openModal('modal-client');
+        };
+
+        window.editProject = function(id) {
+            const p = state.projects.find(x => x.id === id); if(!p) return;
+            document.getElementById('proj-id').value = p.id;
+            document.getElementById('proj-client').value = p.clientId;
+            document.getElementById('proj-details').value = p.details;
+            document.getElementById('proj-pbt').value = p.pbt;
+            document.getElementById('proj-ref').value = p.ref || '';
+            document.getElementById('proj-gps').value = p.gps || '';
+            document.getElementById('proj-status').value = p.status;
+            openModal('modal-project');
+        };
+
+        function renderClients() {
+            const grid = document.getElementById('client-grid'); grid.innerHTML = '';
+            state.clients.forEach(c => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 relative group hover:shadow-md transition-all">
+                        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="editClient('${c.id}')" class="text-blue-500 hover:bg-blue-50 p-1.5 rounded"><i class="ph ph-pencil-simple text-lg"></i></button>
+                            <button onclick="deleteData('client', '${c.id}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
+                        </div>
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center font-black text-lg md:text-xl mb-4 border border-cyan-100"><i class="ph ph-buildings"></i></div>
+                        <h4 class="font-black text-slate-800 text-base md:text-lg tracking-tight flex items-center gap-2">${c.name} <i class="ph ph-paperclip text-slate-300" title="Has Attachments"></i></h4>
+                        <p class="text-[10px] md:text-xs font-mono text-slate-400 mb-4">${c.ssm || 'SSM: N/A'}</p>
+                        <div class="space-y-2 text-[10px] md:text-xs text-slate-500">
+                            <div class="flex items-start"><i class="ph ph-user mt-0.5 mr-2 text-slate-400"></i> <span class="font-bold text-slate-700">${c.contact || 'No Contact'}</span></div>
+                            <div class="flex items-start"><i class="ph ph-envelope-simple mt-0.5 mr-2 text-slate-400"></i> ${c.email || 'No Email'}</div>
+                            <div class="flex items-start"><i class="ph ph-map-pin mt-0.5 mr-2 text-slate-400"></i> <span class="truncate">${c.address || 'No Address'}</span></div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function getStatusColor(status) {
+            const colors = {'Site Recce': 'slate', 'Drafting': 'blue', 'PE Endorsement': 'amber', 'OSC Submitted': 'indigo', 'Approved': 'emerald', 'Completed': 'cyan'};
+            return colors[status] || 'slate';
+        }
+
+        window.quickQuote = function(projId) {
+            switchView('commercials');
+            openInvoiceWizard();
+            setTimeout(() => { document.getElementById('inv-project').value = projId; }, 100);
+        };
+
+        function renderProjects() {
+            const tbody = document.getElementById('project-table'); tbody.innerHTML = '';
+            let pendingCount = 0;
+            [...state.projects].reverse().forEach(p => {
+                const client = state.clients.find(c => c.id === p.clientId);
+                const color = getStatusColor(p.status);
+                if(p.status === 'OSC Submitted' || p.status === 'PE Endorsement') pendingCount++;
+                
+                // Smart Scope Sync: Find related invoices and extract scopes
+                const relatedComms = state.commercials.filter(d => d.projectId === p.id);
+                let scopes = new Set();
+                relatedComms.forEach(doc => { doc.items.forEach(item => { if(item.desc.trim() !== '') scopes.add(item.desc); }); });
+                let scopesHtml = Array.from(scopes).map(s => `<span class="inline-block bg-cyan-50 border border-cyan-100 text-cyan-700 px-2 py-0.5 rounded text-[9px] font-bold mr-1 mb-1">${s}</span>`).join('');
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4 md:p-5 border-b border-slate-100">
+                            <div class="font-black text-slate-800 text-xs md:text-sm">${client ? client.name : 'Unknown'}</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 mt-1 line-clamp-2 max-w-xs md:max-w-md">${p.details}</div>
+                            <div class="mt-2">${scopesHtml}</div>
+                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100">
+                            <div class="font-bold text-slate-700 text-xs md:text-sm flex items-center gap-1"><i class="ph ph-bank"></i> ${p.pbt}</div>
+                            <div class="text-[10px] text-slate-400 mt-1 flex items-center gap-1"><i class="ph ph-map-pin"></i> ${p.gps || 'Location pending'}</div>
+                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-[10px] md:text-xs font-mono text-slate-500">${p.ref || '<span class="text-slate-300 italic">Pending...</span>'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-center">
+                            <span class="bg-${color}-100 text-${color}-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">${p.status}</span>
+                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right">
+                            <div class="flex justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="quickQuote('${p.id}')" title="Quick Quote" class="text-cyan-500 hover:bg-cyan-50 p-2 rounded-lg"><i class="ph ph-receipt text-lg"></i></button>
+                                <button onclick="editProject('${p.id}')" title="Edit" class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg"><i class="ph ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteData('project', '${p.id}')" title="Delete" class="text-red-500 hover:bg-red-50 p-2 rounded-lg"><i class="ph ph-trash text-lg"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+            });
+            document.getElementById('dash-projects').innerText = state.projects.length;
+            document.getElementById('dash-pending-pbt').innerHTML = `<i class="ph ph-clock mr-1 text-sm"></i> ${pendingCount} Pending at PBT`;
+        }
+
+        // --- Document Builder Logic (Commercials) ---
+        let tempLineItems = [];
+
+        // Intelligent Auto-Fill Dictionary for C&S Scope of Works
+        const scopeNotesMap = {
+            'Design & Drawing': 'Preparation of detailed structural calculations (STAAD.Pro) and C&S AutoCAD drawings for the structure and foundation, compliant with BS 5950 and MS 1553 (Malaysian Wind Load Standard).',
+            'Submission': 'Preparation of Borang A, Laporan Cadangan Pemajuan (LCP), and official C&S document submission to the Local Authority (PBT) via the OSC 3.0 Plus system.',
+            'To get approval': 'Liaison with the PBT Building Control Department, attending technical meetings, and amending drawings until Kebenaran Merancang (KM) / Permit is officially obtained.',
+            'Drawing only': 'Preparation of standard C&S construction drawings strictly for contractor site reference (Excludes P.E. Endorsement and PBT submission).',
+            'Site inspection': 'Initial site recce to identify existing soil conditions, underground utilities, and specific structural constraints prior to design.',
+            'As-built Drawing': 'Site measurement and updating of structural drawings to reflect the actual constructed structure on-site upon completion.',
+            'PE Endorsement': 'Professional Engineer (Ir.) signature and official BEM stamp on structural calculations and drawings certifying structural integrity and safety.',
+            'Integrity Inspection': 'Visual and structural inspection of existing structure to assess safety, welding integrity, and corrosion for license renewal.',
+            'Final CCC': 'Final site inspection and issuance of Form G (G8/G9) supporting documents for the Certificate of Completion and Compliance (CCC).',
+            'Renew KM': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.',
+            'Renew license': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.'
+        };
+
+        window.openInvoiceWizard = function(docId = null) {
+            editDocId = docId;
+            if(docId) {
+                const doc = state.commercials.find(d => d.id === docId);
+                if(!doc) return;
+                document.getElementById('inv-project').value = doc.projectId;
+                document.getElementById('inv-type').value = doc.type;
+                document.getElementById('inv-po').value = doc.poRef || '';
+                document.getElementById('inv-tax-check').checked = (doc.tax > 0);
+                // Deep copy items
+                tempLineItems = JSON.parse(JSON.stringify(doc.items));
+            } else {
+                document.getElementById('inv-project').value = '';
+                document.getElementById('inv-type').value = 'Quotation';
+                document.getElementById('inv-po').value = '';
+                document.getElementById('inv-tax-check').checked = false;
+                tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }];
+            }
+            renderLineItems();
+            openModal('modal-invoice');
+        };
+
+        window.addLineItem = function() {
+            tempLineItems.push({ desc: '', note: '', qty: 1, price: 0 });
+            renderLineItems();
+        };
+
+        window.removeLineItem = function(index) {
+            tempLineItems.splice(index, 1);
+            if(tempLineItems.length === 0) addLineItem();
+            renderLineItems();
+        };
+
+        window.renderLineItems = function() {
+            const container = document.getElementById('line-items-container');
+            container.innerHTML = '';
+            tempLineItems.forEach((item, index) => {
+                // Use template literals carefully to avoid breaking HTML parsers
+                const noteValue = item.note ? item.note : '';
+                container.innerHTML += `
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-start bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-none relative group">
+                        <div class="md:col-span-6 space-y-2">
+                            <input type="text" list="scope-options" value="${item.desc}" onchange="updateItemDesc(${index}, this.value)" placeholder="Scope of Work (e.g. C&S Design)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-cyan-500 font-bold text-slate-800 outline-none">
+                            <textarea rows="2" onchange="updateItemNote(${index}, this.value)" id="item-note-${index}" placeholder="Detailed description / notes..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-cyan-500 outline-none text-slate-600 resize-none">${noteValue}</textarea>
+                        </div>
+                        <div class="md:col-span-2 flex items-center gap-2">
+                            <span class="md:hidden text-[10px] font-bold text-slate-400 uppercase w-12">Qty:</span>
+                            <input type="number" value="${item.qty}" onchange="updateItemQty(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-cyan-500 outline-none text-center">
+                        </div>
+                        <div class="md:col-span-3 flex items-center gap-2">
+                             <span class="md:hidden text-[10px] font-bold text-slate-400 uppercase w-12">Price:</span>
+                            <input type="number" value="${item.price}" onchange="updateItemPrice(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-cyan-500 outline-none text-right font-mono">
+                        </div>
+                        <div class="md:col-span-1 text-right absolute md:relative top-2 right-2 md:top-auto md:right-auto">
+                            <button onclick="removeLineItem(${index})" class="text-slate-300 hover:text-red-500 p-2 transition-colors"><i class="ph ph-trash text-lg"></i></button>
+                        </div>
+                    </div>`;
+            });
+            calculateTotals();
+        };
+
+        window.updateItemDesc = function(index, val) { 
+            tempLineItems[index].desc = val; 
+            // Intelligent Auto-fill: If the scope matches our dictionary and the note is currently empty
+            if (scopeNotesMap[val] && (!tempLineItems[index].note || tempLineItems[index].note.trim() === '')) {
+                tempLineItems[index].note = scopeNotesMap[val];
+                const noteEl = document.getElementById(`item-note-${index}`);
+                if(noteEl) noteEl.value = scopeNotesMap[val];
+            }
+        };
+        window.updateItemNote = function(index, val) { tempLineItems[index].note = val; };
+        window.updateItemQty = function(index, val) { tempLineItems[index].qty = Number(val); calculateTotals(); };
+        window.updateItemPrice = function(index, val) { tempLineItems[index].price = Number(val); calculateTotals(); };
+
+        window.calculateTotals = function() {
+            let sub = 0;
+            tempLineItems.forEach(i => sub += (i.qty * i.price));
+            let tax = document.getElementById('inv-tax-check').checked ? (sub * 0.08) : 0;
+            
+            document.getElementById('inv-sub').innerText = formatRM(sub);
+            document.getElementById('inv-tax-val').innerText = '+ ' + formatRM(tax);
+            document.getElementById('inv-grand').innerText = formatRM(sub + tax);
+            return { sub, tax, grand: sub + tax };
+        };
+
+        window.saveCommercial = async function() {
+            const projId = document.getElementById('inv-project').value;
+            if(!projId) return Swal.fire('Error', 'Link to a project', 'error');
+            
+            // Clean empty rows
+            const cleanItems = tempLineItems.filter(i => i.desc.trim() !== '' || i.price > 0);
+            if(cleanItems.length === 0) return Swal.fire('Error', 'Add at least one line item', 'error');
+
+            const totals = calculateTotals();
+            const data = { 
+                projectId: projId, 
+                type: document.getElementById('inv-type').value, 
+                poRef: document.getElementById('inv-po').value, 
+                items: cleanItems, 
+                subtotal: totals.sub, 
+                tax: totals.tax, 
+                total: totals.grand, 
+                date: new Date().toLocaleDateString('en-MY'), 
+                paymentStatus: 'Pending' 
+            };
+
+            Swal.showLoading();
+            try {
+                if(editDocId) { 
+                    const oldDoc = state.commercials.find(d => d.id === editDocId);
+                    if(oldDoc && oldDoc.paymentStatus) data.paymentStatus = oldDoc.paymentStatus;
+                    await updateDoc(doc(db, "commercials", editDocId), data);
+                    const index = state.commercials.findIndex(d => d.id === editDocId);
+                    state.commercials[index] = { ...data, id: editDocId };
+                } else { 
+                    const docRef = await addDoc(collection(db, "commercials"), data);
+                    state.commercials.push({ ...data, id: docRef.id });
+                }
+                closeModal('modal-invoice');
+                refreshAllViews();
+                Swal.close();
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Error', 'Failed to save to cloud.', 'error');
+            }
+        };
+
+        window.togglePayment = async function(id) {
+            const docData = state.commercials.find(d => d.id === id);
+            if(docData) {
+                const newStatus = docData.paymentStatus === 'Paid' ? 'Pending' : 'Paid';
+                Swal.showLoading();
+                try {
+                    await updateDoc(doc(db, "commercials", id), { paymentStatus: newStatus });
+                    docData.paymentStatus = newStatus;
+                    refreshAllViews();
+                    Swal.close();
+                } catch(e) {
+                    Swal.fire('Error', 'Failed to update payment status.', 'error');
+                }
+            }
+        };
 
         function renderCommercials() {
             const tbody = document.getElementById('commercials-table'); tbody.innerHTML = '';
             [...state.commercials].reverse().forEach(d => {
-                const proj = state.projects.find(p => p.id === d.projectId); const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
+                const proj = state.projects.find(p => p.id === d.projectId); 
+                const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
                 const typeClass = d.type === 'Invoice' ? 'bg-indigo-100 text-indigo-800' : 'bg-slate-200 text-slate-700';
                 const isPaid = d.paymentStatus === 'Paid';
-                const statusBadge = d.type === 'Invoice' ? `<span class="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest ml-2 ${isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-amber-100 text-amber-700 border border-amber-200'}">${isPaid ? 'PAID' : 'PENDING'}</span>` : '';
+                const statusBadge = d.type === 'Invoice' ? `<span class="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ml-2 ${isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${isPaid ? 'PAID' : 'PENDING'}</span>` : '';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition-colors group border-b border-slate-100">
-                        <td class="p-5"><span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${typeClass} mb-1 inline-block">${d.type}</span>${statusBadge}<div class="font-mono text-xs font-bold text-slate-800 mt-1">${d.id}</div></td>
-                        <td class="p-5"><div class="font-black text-slate-800">${client?.name || 'Unknown'}</div><div class="text-xs text-slate-500 mt-1 max-w-[200px] truncate font-medium">${proj?.details || ''}</div>${d.poRef ? `<div class="text-[10px] text-blue-600 mt-1 font-bold">PO: ${d.poRef}</div>` : ''}</td>
-                        <td class="p-5 text-right text-sm font-mono text-slate-500">${formatRM(d.subtotal)}</td>
-                        <td class="p-5 text-right text-sm font-mono text-slate-400">${d.tax > 0 ? formatRM(d.tax) : '-'}</td>
-                        <td class="p-5 text-right font-mono font-black text-cyan-600">${formatRM(d.total)}</td>
-                        <td class="p-5 text-right">
-                            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                ${d.type === 'Invoice' ? `<button onclick="togglePayment('${d.id}')" title="Mark Paid/Unpaid" class="${isPaid ? 'text-emerald-500 hover:bg-emerald-100' : 'text-slate-400 hover:bg-slate-200'} p-2 rounded-lg transition-colors"><i class="ph ph-check-circle text-lg"></i></button>` : ''}
-                                <button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-600 hover:bg-slate-200 p-2 rounded-lg"><i class="ph ph-printer text-lg"></i></button>
-                                <button onclick="editCommercial('${d.id}')" title="Edit" class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg"><i class="ph ph-pencil-simple text-lg"></i></button>
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4 md:p-5 border-b border-slate-100">
+                            <span class="px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest ${typeClass} mb-1 inline-block">${d.type}</span>${statusBadge}
+                            <div class="text-[10px] text-slate-400 mt-1">${d.date}</div>
+                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100">
+                            <div class="font-black text-slate-800 text-xs md:text-sm">${client?.name || 'Unknown'}</div>
+                            <div class="text-[10px] md:text-xs text-slate-500 mt-1 max-w-[200px] truncate">${proj?.details || ''}</div>
+                            ${d.poRef ? `<div class="text-[9px] font-mono text-cyan-600 mt-1">Ref: ${d.poRef}</div>` : ''}
+                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right text-[10px] md:text-xs font-mono text-slate-500">${formatRM(d.subtotal)}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right text-[10px] md:text-xs font-mono text-slate-400">${d.tax > 0 ? formatRM(d.tax) : '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right font-mono font-black text-slate-800 text-xs md:text-sm">${formatRM(d.total)}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right">
+                            <div class="flex justify-end gap-1 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                                ${d.type === 'Invoice' ? `<button onclick="togglePayment('${d.id}')" title="Mark Paid/Unpaid" class="${isPaid ? 'text-emerald-500 hover:bg-emerald-50' : 'text-slate-300 hover:text-emerald-500 hover:bg-slate-50'} p-2 rounded-lg transition-colors"><i class="ph ph-check-circle text-lg"></i></button>` : ''}
+                                <button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-600 hover:bg-slate-100 p-2 rounded-lg"><i class="ph ph-printer text-lg"></i></button>
+                                <button onclick="openInvoiceWizard('${d.id}')" title="Edit" class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg"><i class="ph ph-pencil-simple text-lg"></i></button>
                                 <button onclick="deleteData('commercial', '${d.id}')" title="Delete" class="text-red-500 hover:bg-red-50 p-2 rounded-lg"><i class="ph ph-trash text-lg"></i></button>
                             </div>
                         </td>
                     </tr>`;
             });
         }
-<!-- ... existing code ... -->
-        function deleteData(type, id) {
-            Swal.fire({ title: 'Delete record?', text: "This cannot be undone.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Delete' }).then(r => {
-                if(r.isConfirmed){
-                    if(type==='client') state.clients = state.clients.filter(c=>c.id!==id);
-                    if(type==='project') state.projects = state.projects.filter(p=>p.id!==id);
-                    if(type==='commercial') state.commercials = state.commercials.filter(d=>d.id!==id);
-                    if(type==='staff') state.staff = state.staff.filter(s=>s.id!==id);
-                    saveState();
-                }
+
+        function renderDashboard() {
+            let totalInvoiced = 0; let totalPaid = 0;
+            state.commercials.forEach(c => { 
+                if(c.type === 'Invoice') {
+                    if(c.paymentStatus === 'Paid') totalPaid += c.total;
+                    else totalInvoiced += c.total; 
+                } 
             });
+            document.getElementById('dash-receivables').innerText = formatRM(totalInvoiced);
+            document.getElementById('dash-collected').innerHTML = `<i class="ph ph-check-circle mr-1 text-sm"></i> ${formatRM(totalPaid)} Collected`;
+            
+            document.getElementById('dash-clients').innerText = state.clients.length;
+            document.getElementById('dash-quotes').innerText = state.commercials.filter(c => c.type === 'Quotation').length;
         }
 
+        // --- Print & Letterhead Engine ---
+        function generateLetterheadHTML() {
+            return `
+                <div class="border-b-2 border-slate-800 pb-6 mb-8 flex justify-between items-start">
+                    <div class="w-32 h-32 flex items-center justify-center overflow-hidden">
+                        <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="Company Logo" class="max-w-full max-h-full object-contain" onerror="this.style.display='none'; document.getElementById('lh-fallback-text').style.display='block';">
+                        <h1 id="lh-fallback-text" class="text-4xl font-black tracking-tighter text-slate-900 hidden">${state.settings.name.split(' ')[0] || 'COMPANY'}</h1>
+                    </div>
+                    <div class="text-right">
+                        <h2 class="text-xl font-black text-slate-900 tracking-tight">${state.settings.name}</h2>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Civil & Structural Consultant</p>
+                        <p class="text-xs text-slate-600 mt-2">${state.settings.address.replace(/,/g, ',<br>')}</p>
+                        <div class="mt-2 text-xs font-mono font-medium text-slate-500">SSM: <span class="text-slate-800">${state.settings.ssm}</span> | BEM: <span class="text-slate-800">${state.settings.bem}</span></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.printCommercial = function(id) {
+            const docObj = state.commercials.find(d => d.id === id); if(!docObj) return;
+            const proj = state.projects.find(p => p.id === docObj.projectId);
+            const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
+            
+            let itemsHtml = '';
+            docObj.items.forEach((item, i) => {
+                // Safely handle note rendering to prevent layout breaks
+                const noteHtml = item.note ? `<div class="text-[10px] text-slate-500 mt-1 whitespace-pre-line">${item.note}</div>` : '';
+                itemsHtml += `
+                    <tr class="border-b border-slate-100">
+                        <td class="p-3 text-xs text-slate-400">${i+1}</td>
+                        <td class="p-3 text-sm font-bold text-slate-800">${item.desc}${noteHtml}</td>
+                        <td class="p-3 text-center text-sm">${item.qty}</td>
+                        <td class="p-3 text-right text-sm font-mono">${formatRM(item.price)}</td>
+                        <td class="p-3 text-right text-sm font-mono font-bold">${formatRM(item.qty * item.price)}</td>
+                    </tr>`;
+            });
+
+            const sstRow = docObj.tax > 0 ? `<div class="flex justify-between py-2 text-sm"><span class="font-bold text-slate-500">Add 8% SST</span><span class="font-mono text-slate-600">${formatRM(docObj.tax)}</span></div>` : '';
+
+            const html = `
+                ${generateLetterheadHTML()}
+                <div class="flex justify-between items-end mb-10 mt-8">
+                    <div>
+                        <h1 class="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-4">${docObj.type}</h1>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Bill To:</p>
+                        <h3 class="text-lg font-bold text-slate-800">${client?.name || 'Client Name'}</h3>
+                        <p class="text-xs text-slate-600 mt-1 max-w-xs">${client?.address || ''}</p>
+                        ${client?.ssm ? `<p class="text-xs text-slate-500 mt-1 font-mono">SSM: ${client.ssm}</p>` : ''}
+                    </div>
+                    <div class="text-right bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <div class="mb-2"><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-3">Date</span><span class="font-bold text-slate-800 text-sm">${docObj.date}</span></div>
+                        <div class="mb-2"><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-3">Reference</span><span class="font-mono font-bold text-slate-800 text-sm">${docObj.id.substring(0,8).toUpperCase()}</span></div>
+                        ${docObj.poRef ? `<div><span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-3">PO Ref</span><span class="font-mono font-bold text-slate-800 text-sm">${docObj.poRef}</span></div>` : ''}
+                    </div>
+                </div>
+                
+                <div class="mb-8 p-4 bg-cyan-50 border border-cyan-100 rounded-xl">
+                    <p class="text-[10px] font-black text-cyan-700 uppercase tracking-widest mb-1">Project Details</p>
+                    <p class="text-sm font-bold text-slate-800">${proj?.details || ''}</p>
+                    <p class="text-xs text-slate-600 mt-1">Location: ${proj?.gps || 'TBA'} | PBT: ${proj?.pbt || 'TBA'}</p>
+                </div>
+
+                <table class="w-full text-left mb-8 border-collapse">
+                    <thead><tr class="bg-slate-900 text-white text-[10px] uppercase tracking-widest font-black"><th class="p-3 w-10 rounded-tl-lg">#</th><th class="p-3">Description</th><th class="p-3 text-center w-20">Qty</th><th class="p-3 text-right w-32">Unit Price</th><th class="p-3 text-right w-32 rounded-tr-lg">Amount</th></tr></thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+
+                <div class="flex justify-end mb-12">
+                    <div class="w-80">
+                        <div class="flex justify-between py-2 text-sm"><span class="font-bold text-slate-500">Subtotal</span><span class="font-mono text-slate-800">${formatRM(docObj.subtotal)}</span></div>
+                        ${sstRow}
+                        <div class="flex justify-between py-4 border-t-2 border-slate-800 mt-2"><span class="font-black text-slate-900 uppercase tracking-widest">Grand Total</span><span class="font-mono font-black text-xl text-cyan-600">${formatRM(docObj.total)}</span></div>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-8 border-t border-slate-200 text-xs text-slate-500">
+                    <p class="font-bold text-slate-800 mb-1">Payment Terms:</p>
+                    <p>1. Please make all cheques payable to <strong>${state.settings.name}</strong>.</p>
+                    <p>2. Direct bank transfer to <strong>${state.settings.bank}</strong>.</p>
+                    <p>3. This is a computer-generated document. No signature is required.</p>
+                </div>
+            `;
+            showPrintArea(html, `${docObj.type}_${client?.name.replace(/\s+/g, '_')}.pdf`);
+        };
+
+        window.generateAILetter = function() {
+            const projId = document.getElementById('ai-project').value;
+            if(!projId) return Swal.fire('Error', 'Please select a project first.', 'error');
+            
+            const proj = state.projects.find(p => p.id === projId);
+            const client = state.clients.find(c => c.id === proj.clientId);
+            const type = document.getElementById('ai-type').value;
+
+            // Simple PBT Address Dictionary
+            const pbtAddresses = {
+                'DBKL': "Jabatan Kawalan Bangunan,\nDewan Bandaraya Kuala Lumpur (DBKL),\nMenara DBKL 2, Jalan Raja Laut,\n50350 Kuala Lumpur.",
+                'MBPJ': "Jabatan Kawalan Bangunan,\nMajlis Bandaraya Petaling Jaya (MBPJ),\nJalan Yong Shook Lin,\n46675 Petaling Jaya, Selangor.",
+                'MBSA': "Jabatan Bangunan,\nMajlis Bandaraya Shah Alam (MBSA),\nTingkat 8, Wisma MBSA, Persiaran Perbandaran,\n40000 Shah Alam, Selangor.",
+                'Other': "Kepada Pihak Berkuasa Tempatan,\nBahagian Kawalan Bangunan."
+            };
+
+            const pbtAddress = pbtAddresses[proj.pbt] || pbtAddresses['Other'];
+            const today = new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let content = "";
+            if(type === 'cover') {
+                content = `Ruj Kami: AS-SIDQI/${new Date().getFullYear()}/OSC/${projId.substring(0,4).toUpperCase()}
+Tarikh: ${today}
+
+${pbtAddress}
+
+Tuan/Puan,
+
+PER: SURAT IRINGAN KEMUKAAN PELAN STRUKTUR (OSC)
+PROJEK: ${proj.details.toUpperCase()}
+KLIEN: ${client?.name.toUpperCase()}
+
+Merujuk kepada perkara di atas, kami bagi pihak klien ingin mengemukakan dokumen dan pelan struktur bagi tujuan kelulusan pihak Majlis.
+
+2. Bersama-sama ini disertakan dokumen berikut untuk semakan dan rujukan pihak Tuan/Puan:
+   i. Dua (2) set Pelan Struktur yang telah ditandatangani oleh Jurutera Profesional.
+   ii. Satu (1) set Laporan Pengiraan Struktur.
+   iii. Borang A yang telah lengkap diisi.
+
+3. Kami berharap pihak Tuan/Puan mendapati permohonan ini teratur dan pertimbangan sewajarnya dari pihak Tuan/Puan amatlah dihargai.
+
+Sekian, terima kasih.
+
+Yang benar,
+Bagi pihak ${state.settings.name},
+
+
+___________________________
+IR. AMIRUL AKMAL
+Jurutera Awam & Struktur
+No. Pendaftaran BEM: ${state.settings.bem}`;
+            } else if (type === 'endorsement') {
+                 content = `Ruj Kami: AS-SIDQI/${new Date().getFullYear()}/PE/${projId.substring(0,4).toUpperCase()}
+Tarikh: ${today}
+
+${pbtAddress}
+
+Tuan/Puan,
+
+PER: SURAT PENGESAHAN INTEGRITI STRUKTUR (P.E. ENDORSEMENT)
+PROJEK: ${proj.details.toUpperCase()}
+KLIEN: ${client?.name.toUpperCase()}
+
+Merujuk kepada perkara di atas, saya dengan ini mengesahkan bahawa reka bentuk struktur bagi projek yang dinamakan di atas telah disemak dan mematuhi kehendak-kehendak kejuruteraan yang ditetapkan.
+
+2. Reka bentuk ini telah disediakan berpandukan kod amalan BS 5950 (Structural Use of Steelwork) dan MS 1553 (Malaysian Standard for Wind Loads), dan didapati selamat serta kukuh untuk menanggung beban yang direka bentuk.
+
+3. Saya akan bertanggungjawab sepenuhnya ke atas integriti reka bentuk struktur ini selaras dengan Akta Pendaftaran Jurutera 1967.
+
+Sekian, terima kasih.
+
+Yang benar,
+
+
+___________________________
+IR. AMIRUL AKMAL
+Jurutera Awam & Struktur
+No. Pendaftaran BEM: ${state.settings.bem}`;
+            }
+
+            document.getElementById('ai-output').classList.remove('hidden');
+            document.getElementById('ai-textarea').value = content;
+            
+            // Sync Letterhead preview
+            document.getElementById('lh-comp-name-ai').innerText = state.settings.name;
+            document.getElementById('lh-address-ai').innerHTML = state.settings.address.replace(/,/g, ',<br>');
+            document.getElementById('lh-ssm-ai').innerText = state.settings.ssm;
+            document.getElementById('lh-bem-ai').innerText = state.settings.bem;
+        };
+
+        window.printOfficialLetter = function() {
+            const content = document.getElementById('ai-textarea').value;
+            const html = `
+                ${generateLetterheadHTML()}
+                <div class="mt-8 font-serif text-sm leading-relaxed whitespace-pre-wrap text-slate-800 text-justify">${content}</div>
+            `;
+            showPrintArea(html, `Surat_Rasmi_${new Date().getTime()}.pdf`);
+        };
+
+        // --- Core Print Function with PDF/Drive Integration ---
+        function showPrintArea(contentHTML, filename = 'document.pdf') {
+            const area = document.getElementById('print-area');
+            area.innerHTML = `
+                <div class="max-w-[210mm] mx-auto bg-white min-h-[297mm] p-[15mm] relative shadow-2xl print:shadow-none" id="pdf-content">
+                    ${contentHTML}
+                </div>
+                <div class="fixed top-4 right-4 flex gap-2 no-print z-[210]">
+                    <button onclick="document.getElementById('print-area').classList.add('hidden')" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold shadow-lg hover:bg-slate-700">Close</button>
+                    <button onclick="window.print()" class="bg-cyan-600 text-white px-6 py-2 rounded-lg font-bold shadow-lg hover:bg-cyan-500"><i class="ph ph-printer mr-2"></i> Print</button>
+                    ${isDriveReady ? `<button onclick="savePDFToDrive('${filename}')" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold shadow-lg hover:bg-indigo-500 flex items-center"><i class="ph ph-google-drive-logo mr-2"></i> Save to Drive</button>` : ''}
+                </div>
+            `;
+            area.classList.remove('hidden');
+        }
+
+        // --- Google Drive API Logic ---
+        let isDriveReady = false;
+        let driveAccessToken = null;
+
+        function initGoogleDrive() {
+            if(!state.settings.gClientId || state.settings.gClientId === '') {
+                document.getElementById('btn-drive-connect').classList.add('hidden');
+                return;
+            }
+            // Load Google Identity Services script dynamically
+            if(!document.getElementById('gsi-script')) {
+                const script = document.createElement('script');
+                script.id = 'gsi-script';
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.onload = () => {
+                    document.getElementById('btn-drive-connect').classList.remove('hidden');
+                    console.log('Google Identity Services loaded.');
+                };
+                document.head.appendChild(script);
+            } else {
+                document.getElementById('btn-drive-connect').classList.remove('hidden');
+            }
+        }
+
+        window.handleDriveAuthClick = function() {
+            if(!state.settings.gClientId) return Swal.fire('Error', 'Please configure Google Drive API keys in Company Setup first.', 'error');
+            
+            const client = google.accounts.oauth2.initTokenClient({
+                client_id: state.settings.gClientId,
+                scope: 'https://www.googleapis.com/auth/drive.file',
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        driveAccessToken = tokenResponse.access_token;
+                        isDriveReady = true;
+                        document.getElementById('btn-drive-connect').innerHTML = '<i class="ph ph-check-circle text-lg mr-2"></i> Drive Connected';
+                        document.getElementById('btn-drive-connect').classList.replace('bg-indigo-50', 'bg-emerald-50');
+                        document.getElementById('btn-drive-connect').classList.replace('text-indigo-700', 'text-emerald-700');
+                        Swal.fire({icon: 'success', title: 'Drive Connected', text: 'You can now save PDFs directly to cloud.', timer: 2000, showConfirmButton: false});
+                    }
+                },
+            });
+            client.requestAccessToken();
+        };
+
+        window.savePDFToDrive = async function(filename) {
+            if(!isDriveReady || !driveAccessToken) return Swal.fire('Error', 'Please connect to Google Drive first.', 'error');
+            
+            Swal.fire({ title: 'Generating PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            
+            const element = document.getElementById('pdf-content');
+            const opt = {
+                margin: 0,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                // Generate PDF blob
+                const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+                
+                // Upload to Drive
+                Swal.fire({ title: 'Uploading to Drive...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                
+                const metadata = { name: filename, mimeType: 'application/pdf' };
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', pdfBlob);
+
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST',
+                    headers: new Headers({ 'Authorization': 'Bearer ' + driveAccessToken }),
+                    body: form
+                });
+
+                if(response.ok) {
+                    Swal.fire('Success', 'Document saved securely to your Google Drive.', 'success');
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'Failed to generate or upload PDF.', 'error');
+            }
+        };
+
+        // --- Bulk CSV Import Engine ---
+        window.handleCSVUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                Swal.showLoading();
+                const text = e.target.result;
+                const rows = text.split('\n').map(r => r.trim()).filter(r => r);
+                if (rows.length < 2) return Swal.fire('Error', 'File is empty or invalid.', 'error');
+                
+                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+                
+                let addedCount = 0;
+                let clientCount = 0;
+
+                try {
+                    for (let i = 1; i < rows.length; i++) {
+                        // Regex to handle commas inside quotes
+                        const cols = rows[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(c => c.replace(/^"|"$/g, '').trim()) || [];
+                        if (cols.length < 2) continue;
+
+                        // Flexible Header Mapping
+                        let clientName = '', projectDetails = '', pbt = 'Other', gps = '', status = 'Site Recce';
+                        
+                        headers.forEach((h, index) => {
+                            if (cols[index] === undefined) return;
+                            if (h.includes('client') || h.includes('nama')) clientName = cols[index];
+                            if (h.includes('project') || h.includes('tajuk') || h.includes('detail')) projectDetails = cols[index];
+                            if (h.includes('pbt') || h.includes('majlis')) pbt = cols[index];
+                            if (h.includes('location') || h.includes('gps') || h.includes('lokasi')) gps = cols[index];
+                            if (h.includes('status')) status = cols[index];
+                        });
+
+                        if (!clientName || !projectDetails) continue;
+
+                        // 1. Check/Create Client
+                        let existingClient = state.clients.find(c => c.name.toLowerCase() === clientName.toLowerCase());
+                        let clientId = '';
+                        if (!existingClient) {
+                            const newClientData = { name: clientName, ssm: '', contact: '', email: '', address: '' };
+                            const clientRef = await addDoc(collection(db, "clients"), newClientData);
+                            existingClient = { ...newClientData, id: clientRef.id };
+                            state.clients.push(existingClient);
+                            clientCount++;
+                        }
+                        clientId = existingClient.id;
+
+                        // 2. Create Project
+                        const newProjData = { 
+                            clientId, 
+                            details: projectDetails, 
+                            pbt, gps, status, 
+                            ref: '', date: new Date().toLocaleDateString('en-MY') 
+                        };
+                        const projRef = await addDoc(collection(db, "projects"), newProjData);
+                        state.projects.push({ ...newProjData, id: projRef.id });
+                        addedCount++;
+                    }
+
+                    refreshAllViews();
+                    Swal.fire({ icon: 'success', title: 'Data Imported!', html: `Successfully imported <b>${addedCount}</b> projects.<br>Auto-created <b>${clientCount}</b> new client profiles.` });
+                    logActivity(`Bulk imported ${addedCount} projects via CSV`, 'file-csv', 'emerald');
+                } catch (err) {
+                    console.error("Import Error: ", err);
+                    Swal.fire('Error', 'Failed to save imported data to cloud.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Reset input
+        };
+
+        window.handleCommercialCSVUpload = function(event) {
+             const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                Swal.showLoading();
+                const text = e.target.result;
+                const rows = text.split('\n').map(r => r.trim()).filter(r => r);
+                if (rows.length < 2) return Swal.fire('Error', 'File is empty or invalid.', 'error');
+                
+                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+                let addedCount = 0;
+
+                try {
+                    for (let i = 1; i < rows.length; i++) {
+                        const cols = rows[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.map(c => c.replace(/^"|"$/g, '').trim()) || [];
+                        if (cols.length < 2) continue;
+
+                        let type = 'Invoice', projHint = '', poRef = '', desc = '', qty = 1, price = 0, hasSST = false, date = new Date().toLocaleDateString('en-MY');
+                        
+                        headers.forEach((h, index) => {
+                            if (cols[index] === undefined) return;
+                            if (h.includes('type') || h.includes('jenis')) type = cols[index];
+                            if (h.includes('project') || h.includes('tajuk')) projHint = cols[index];
+                            if (h.includes('po ') || h.includes('ref')) poRef = cols[index];
+                            if (h.includes('desc') || h.includes('item')) desc = cols[index];
+                            if (h.includes('qty') || h.includes('kuantiti')) qty = Number(cols[index]) || 1;
+                            if (h.includes('price') || h.includes('harga')) price = Number(cols[index].replace(/[^0-9.-]+/g,"")) || 0;
+                            if (h.includes('sst') || h.includes('tax')) hasSST = (cols[index].toLowerCase() === 'yes' || cols[index] === '1' || cols[index].toLowerCase() === 'true');
+                            if (h.includes('date') || h.includes('tarikh')) date = cols[index] || date;
+                        });
+
+                        // Smart Project Matching
+                        let matchedProjId = '';
+                        if (projHint) {
+                            const match = state.projects.find(p => p.details.toLowerCase().includes(projHint.toLowerCase()) || projHint.toLowerCase().includes(p.details.substring(0,10).toLowerCase()));
+                            if (match) matchedProjId = match.id;
+                        }
+
+                        if (!matchedProjId && state.projects.length > 0) matchedProjId = state.projects[0].id; // Fallback to first project if mapping fails
+                        if (!matchedProjId) continue; // Skip if absolutely no projects exist
+
+                        const subtotal = qty * price;
+                        const tax = hasSST ? (subtotal * 0.08) : 0;
+                        const total = subtotal + tax;
+
+                        const newDocData = { 
+                            projectId: matchedProjId, type, poRef, 
+                            items: [{ desc, note: '', qty, price }], 
+                            subtotal, tax, total, date, paymentStatus: 'Pending' 
+                        };
+                        
+                        const docRef = await addDoc(collection(db, "commercials"), newDocData);
+                        state.commercials.push({ ...newDocData, id: docRef.id });
+                        addedCount++;
+                    }
+
+                    refreshAllViews();
+                    Swal.fire({ icon: 'success', title: 'Billing Imported!', html: `Successfully imported <b>${addedCount}</b> commercial documents.` });
+                    logActivity(`Bulk imported ${addedCount} commercial documents via CSV`, 'file-csv', 'emerald');
+                } catch (err) {
+                    console.error("Import Error: ", err);
+                    Swal.fire('Error', 'Failed to save imported data to cloud.', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        };
+
+        // --- Export Universal CSV Engine ---
+        window.exportToCSV = function(type) {
+            let data = []; let filename = '';
+            const escapeCSV = (str) => {
+                if (str == null) return '""';
+                const s = String(str);
+                if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`;
+                return s;
+            };
+
+            if (type === 'clients') {
+                data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV));
+                state.clients.forEach(c => data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV)));
+                filename = 'AsSidqi_Clients_Export.csv';
+            } else if (type === 'projects') {
+                data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date Registered'].map(escapeCSV));
+                state.projects.forEach(p => {
+                    const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown';
+                    data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Projects_Export.csv';
+            } else if (type === 'commercials') {
+                data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)'].map(escapeCSV));
+                state.commercials.forEach(d => {
+                    const proj = state.projects.find(p => p.id === d.projectId);
+                    const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown';
+                    data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total].map(escapeCSV));
+                });
+                filename = 'AsSidqi_Commercials_Export.csv';
+            } else if (type === 'hr') {
+                data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV));
+                state.staff.forEach(s => data.push([s.id, s.name, s.role, s.salary].map(escapeCSV)));
+                filename = 'AsSidqi_HR_Export.csv';
+            }
+
+            if (data.length <= 1) return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
+
+            const csvContent = data.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url); link.setAttribute('download', filename); link.style.visibility = 'hidden';
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
+        };
+
         // --- HR & Payroll Engine ---
+        window.saveStaff = async function() {
+            const name = document.getElementById('staff-name').value;
+            const role = document.getElementById('staff-role').value;
+            const salary = Number(document.getElementById('staff-salary').value);
+            if(!name || !salary) return Swal.fire('Error', 'Name and Basic Salary are required', 'error');
+            
+            const data = { name, role, salary };
+            
+            Swal.showLoading();
+            try {
+                const docRef = await addDoc(collection(db, "staff"), data);
+                state.staff.push({ ...data, id: docRef.id });
+                closeModal('modal-staff');
+                refreshAllViews();
+                Swal.close();
+            } catch(e) {
+                Swal.fire('Error', 'Failed to save staff to cloud.', 'error');
+            }
+        };
+
         function renderStaff() {
             const grid = document.getElementById('staff-grid'); grid.innerHTML = '';
             state.staff.forEach(s => {
                 grid.innerHTML += `
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group hover:shadow-md transition-all">
                         <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="printPayslip('${s.id}')" title="Generate Payslip" class="text-indigo-500 hover:bg-indigo-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button>
-                            <button onclick="deleteData('staff', '${s.id}')" title="Remove Staff" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
+                            <button onclick="deleteData('staff', '${s.id}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
                         </div>
                         <div class="w-12 h-12 bg-slate-100 text-slate-700 rounded-full flex items-center justify-center font-black text-xl mb-4 border border-slate-200"><i class="ph ph-user"></i></div>
                         <h4 class="font-black text-slate-800 text-lg">${s.name}</h4>
@@ -108,57 +1663,7 @@
                     </div>`;
             });
         }
-
-        function saveStaff() {
-            const name = document.getElementById('staff-name').value;
-            const role = document.getElementById('staff-role').value;
-            const salary = document.getElementById('staff-salary').value;
-            if(!name || !salary) return Swal.fire('Error', 'Name and Basic Salary are required', 'error');
-            
-            const data = { id: generateId('EMP'), name, role, salary: Number(salary) };
-            state.staff.push(data);
-            saveState(); 
-            closeModal('modal-staff');
-            
-            // Clear inputs
-            document.getElementById('staff-name').value = '';
-            document.getElementById('staff-role').value = '';
-            document.getElementById('staff-salary').value = '';
-            
-            logActivity(`Registered new employee: ${name}`, 'user-plus', 'slate');
-        }
-
-        function printPayslip(id) {
-            const s = state.staff.find(x => x.id === id); if(!s) return;
-            
-            // Standard Malaysian Deductions
-            const epf = s.salary * 0.11;
-            const socso = s.salary * 0.005; // Approximate 0.5%
-            const net = s.salary - epf - socso;
-            const month = new Date().toLocaleString('en-MY', { month: 'long', year: 'numeric' });
-
-            const html = `
-                ${generateLetterheadHTML()}
-                <div class="mb-10 mt-4">
-                    <h2 class="text-3xl font-black text-slate-900 uppercase tracking-tighter mb-2">Payslip - ${month}</h2>
-                    <p class="text-sm font-bold text-slate-500">Employee: ${s.name} | Role: ${s.role} | Emp ID: ${s.id}</p>
-                </div>
-                <table class="w-full text-left mb-8 border border-slate-300 rounded-xl overflow-hidden">
-                    <tr class="bg-slate-100 border-b border-slate-300"><th class="p-4 text-xs font-black text-slate-500 uppercase tracking-widest">Earnings</th><th class="p-4 text-right text-xs font-black text-slate-500 uppercase tracking-widest">Amount</th></tr>
-                    <tr class="border-b border-slate-100"><td class="p-4 font-bold text-slate-800">Basic Salary</td><td class="p-4 text-right font-mono font-bold text-slate-700">${formatRM(s.salary)}</td></tr>
-                    <tr class="bg-slate-100 border-b border-slate-300"><th class="p-4 text-xs font-black text-slate-500 uppercase tracking-widest">Statutory Deductions</th><th class="p-4 text-right text-xs font-black text-slate-500 uppercase tracking-widest">Amount</th></tr>
-                    <tr class="border-b border-slate-100"><td class="p-4 font-bold text-slate-800">KWSP (EPF) - Employee 11%</td><td class="p-4 text-right font-mono font-bold text-red-500">- ${formatRM(epf)}</td></tr>
-                    <tr class="border-b border-slate-200"><td class="p-4 font-bold text-slate-800">PERKESO (SOCSO)</td><td class="p-4 text-right font-mono font-bold text-red-500">- ${formatRM(socso)}</td></tr>
-                    <tr class="bg-slate-900 text-white"><td class="p-4 text-lg font-black uppercase tracking-tighter">Net Payable</td><td class="p-4 text-right text-xl font-mono font-black text-cyan-400">${formatRM(net)}</td></tr>
-                </table>
-                <div class="mt-16 text-center pt-8 border-t border-slate-200">
-                    <p class="text-xs text-slate-500 font-medium italic">This is a computer-generated document. No physical signature is required.</p>
-                </div>
-            `;
-            showPrintArea(html, `Payslip_${s.name.replace(/\\s+/g, '_')}_${month}.pdf`);
-        }
-
-        function saveToDrive(filename) { 
-            Swal.fire('Drive Link', 'Upload triggered securely via API.', 'success'); 
-        }
-<!-- ... existing code ... -->
+        
+    </script>
+</body>
+</html>
