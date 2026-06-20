@@ -940,6 +940,40 @@
             }
         }
 
+        // Must define renderDashboard before it is called in refreshAllViews
+        let revChart = null;
+        function renderDashboard() {
+            let out = 0; let col = 0;
+            state.commercials.forEach(d => {
+                if(d.type === 'Invoice') {
+                    if(d.status === 'Paid') col += d.total;
+                    else out += d.total;
+                }
+            });
+            
+            document.getElementById('dash-outstanding').innerText = formatRM(out);
+            document.getElementById('dash-collected').innerText = formatRM(col);
+            document.getElementById('dash-clients').innerText = state.clients.length;
+
+            const ctx = document.getElementById('revenueChart');
+            if(!ctx) return;
+            if(revChart) revChart.destroy();
+            
+            revChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Invoiced Revenue (RM)',
+                        data: [0, 0, 0, col*0.3, col*0.7, col+out],
+                        borderColor: '#0891b2', backgroundColor: 'rgba(8, 145, 178, 0.1)',
+                        borderWidth: 3, tension: 0.4, fill: true
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+            });
+        }
+
         function refreshAllViews() { renderClients(); renderProjects(); renderCommercials(); renderPOs(); renderDashboard(); renderStaff(); renderExpenses(); updateDropdowns(); }
 
         window.saveSettings = async function() {
@@ -1594,7 +1628,188 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         };
 
-        // --- STREAMING_CHUNK:Implementing Print Engines... ---
+        // --- STREAMING_CHUNK:Implementing OCR & AI Expense Scanner... ---
+        window.processReceiptImage = async function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Simple validation to ensure it's an image
+            if (!file.type.startsWith('image/')) {
+                return Swal.fire('Invalid File', 'Please upload an image (JPG/PNG) of the receipt.', 'error');
+            }
+
+            Swal.fire({
+                title: 'AI Scanning...',
+                text: 'Extracting data via Tesseract OCR. This takes a few seconds...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            try {
+                // Initialize Tesseract worker
+                const worker = await Tesseract.createWorker('eng');
+                const ret = await worker.recognize(file);
+                const text = ret.data.text;
+                await worker.terminate();
+
+                console.log("OCR Extracted Text:\n", text); // Helpful for debugging
+
+                // Intelligent Parsing Logic
+                let extractedAmount = 0;
+                let extractedDesc = "AI Extracted Expense";
+
+                // 1. Hunt for the Amount
+                // Looking for RM, TOTAL, or just floating numbers at the bottom
+                const lines = text.split('\n');
+                let foundTotal = false;
+
+                for (let i = lines.length - 1; i >= 0; i--) {
+                    const line = lines[i].toUpperCase();
+                    // If line contains 'TOTAL' or 'RM', grab the numbers
+                    if (line.includes('TOTAL') || line.includes('RM') || line.includes('JUMLAH')) {
+                        const match = line.match(/\d+\.\d{2}/); // Matches 0.00 format
+                        if (match) {
+                            extractedAmount = parseFloat(match[0]);
+                            foundTotal = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Fallback: Just grab the largest currency-looking number found anywhere
+                if(!foundTotal) {
+                     const allNumbers = text.match(/\d+\.\d{2}/g);
+                     if(allNumbers) {
+                         const floats = allNumbers.map(n => parseFloat(n));
+                         extractedAmount = Math.max(...floats);
+                     }
+                }
+
+                // 2. Hunt for the Vendor Name (usually line 1 or 2)
+                const validLines = lines.filter(l => l.trim().length > 3);
+                if (validLines.length > 0) {
+                    extractedDesc = validLines[0].trim(); // Take the first solid line of text as the vendor name
+                }
+
+                // Populate the Form
+                document.getElementById('exp-desc').value = extractedDesc;
+                document.getElementById('exp-amount').value = extractedAmount > 0 ? extractedAmount : '';
+                
+                // Try to guess category based on keywords
+                const tUpper = text.toUpperCase();
+                if(tUpper.includes('TOLL') || tUpper.includes('PLUS') || tUpper.includes('TOUCH')) {
+                    document.getElementById('exp-cat').value = 'Site Mileage / Travel';
+                } else if (tUpper.includes('MAJLIS') || tUpper.includes('DBKL') || tUpper.includes('MBPJ')) {
+                    document.getElementById('exp-cat').value = 'PBT / Authority Fees';
+                }
+
+                Swal.fire({
+                    title: 'Scan Complete!',
+                    text: `Extracted: ${extractedDesc} (RM ${extractedAmount})`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (error) {
+                console.error("OCR Error:", error);
+                Swal.fire('Scan Failed', 'The AI could not read the receipt clearly. Please enter manually.', 'warning');
+            }
+            
+            // Reset input so you can scan another file if needed
+            event.target.value = '';
+        };
+
+        // --- STREAMING_CHUNK:Implementing Export/Import Utilities... ---
+        window.exportToCSV = function(type) {
+            let data = []; let filename = '';
+            const escapeCSV = (str) => { if (str == null) return '""'; const s = String(str); if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`; return s; };
+
+            if (type === 'clients') { data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV)); state.clients.forEach(c => data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV))); filename = 'AsSidqi_Clients.csv'; } 
+            else if (type === 'projects') { data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date'].map(escapeCSV)); state.projects.forEach(p => { const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown'; data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV)); }); filename = 'AsSidqi_Projects.csv'; } 
+            else if (type === 'commercials') { data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)', 'Status'].map(escapeCSV)); state.commercials.forEach(d => { const proj = state.projects.find(p => p.id === d.projectId); const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown'; data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total, d.status].map(escapeCSV)); }); filename = 'AsSidqi_Commercials.csv'; } 
+            else if (type === 'pos') { data.push(['PO ID', 'Date', 'Project ID', 'Vendor Name', 'Vendor Address', 'Subtotal (RM)', 'SST 8% (RM)', 'Total (RM)', 'Status'].map(escapeCSV)); state.pos.forEach(d => data.push([d.id, d.date, d.projectId, d.vendorName, d.vendorAddress, d.subtotal, d.tax, d.total, d.status].map(escapeCSV))); filename = 'AsSidqi_PurchaseOrders.csv'; }
+            else if (type === 'hr') { data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV)); state.staff.forEach(s => data.push([s.id, s.name, s.role, s.salary].map(escapeCSV))); filename = 'AsSidqi_HR.csv'; }
+
+            if (data.length <= 1) return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
+            const csvContent = data.map(row => row.join(',')).join('\n'); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.setAttribute('href', url); link.setAttribute('download', filename); document.body.appendChild(link); link.click(); document.body.removeChild(link); logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
+        };
+
+        window.handleCSVUpload = function(event, type) {
+            const file = event.target.files[0]; if(!file) return;
+            Swal.fire({ title: 'Reading File...', text: 'Parsing data safely...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'}); const sheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[sheetName]; const json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
+                    
+                    // Route to the correct processor based on the button clicked
+                    if(type === 'projects') await processProjectCSV(json); 
+                    else if(type === 'clients') await processClientCSV(json); 
+                    else if(type === 'commercials') await processCommercialCSV(json);
+                } catch (err) { console.error(err); Swal.fire('Import Failed', 'Could not read the CSV file correctly.', 'error'); }
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        async function processClientCSV(data) {
+            let addedCount = 0;
+            // Check if the data looks like Client data
+            if(data.length > 0 && !data[0]['Client Name'] && !data[0]['Company Name']) {
+                Swal.fire('Data Mismatch', 'This file does not look like a Client CSV. Please check your column headers.', 'warning');
+                return;
+            }
+            
+            for(const row of data) {
+                const name = row['Client Name'] || row['Company Name'] || row['Client']; if(!name) continue;
+                const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
+                if(!existing) {
+                    const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' };
+                    const docRef = await addDoc(collection(db, "clients"), clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++;
+                }
+            }
+            refreshAllViews(); if (addedCount === 0) Swal.fire('No New Data', '0 clients added. Ensure you are not uploading duplicates.', 'info'); else { Swal.fire('Clients Imported!', `Successfully imported ${addedCount} clients.`, 'success'); }
+        }
+
+        async function processProjectCSV(data) {
+            let addedCount = 0; let newClients = 0;
+            if(data.length > 0 && !data[0]['Project Details'] && !data[0]['Project']) {
+                 Swal.fire('Data Mismatch', 'This file does not look like a Project CSV. Are you trying to upload Clients here?', 'warning');
+                 return;
+            }
+            
+            for(const row of data) {
+                const clientStr = row['Client Name'] || row['Client'] || row['Klien']; const detailsStr = row['Project Details'] || row['Project'] || row['Tajuk'];
+                if(!clientStr || !detailsStr) continue;
+                let clientId = null; const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
+                if(existingClient) clientId = existingClient.id; else { const newClientRef = await addDoc(collection(db, "clients"), { name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' }); clientId = newClientRef.id; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; }
+                const projData = { clientId: clientId, details: detailsStr, pbt: row['PBT'] || row['Authority'] || 'DBKL', gps: row['Location'] || row['GPS'] || '', status: row['Status'] || 'Drafting', ref: row['Reference'] || '', date: row['Date'] || new Date().toLocaleDateString('en-MY') };
+                const docRef = await addDoc(collection(db, "projects"), projData); state.projects.push({ ...projData, id: docRef.id }); addedCount++;
+            }
+            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Project CSV.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.\nAuto-created ${newClients} client profiles.`, 'success');
+        }
+
+        async function processCommercialCSV(data) {
+            let addedCount = 0; const year = new Date().getFullYear();
+            if(data.length > 0 && !data[0]['Type'] && !data[0]['Amount (RM)']) {
+                 Swal.fire('Data Mismatch', 'This file does not look like a Commercials CSV.', 'warning');
+                 return;
+            }
+            
+            for(const row of data) {
+                const type = row['Type'] || 'Invoice'; const projStr = row['Project']; const descStr = row['Description'] || 'General Engineering Works'; const qty = Number(row['Qty'] || 1); const price = Number(row['Price'] || 0); const applySst = (row['SST'] || '').toLowerCase() === 'yes';
+                if(!projStr || price === 0) continue;
+                let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
+                if(existingProj) projectId = existingProj.id; else { const newProjRef = await addDoc(collection(db, "projects"), { clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); projectId = newProjRef.id; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); }
+                const subtotal = qty * price; const tax = applySst ? (subtotal * 0.08) : 0; const total = subtotal + tax; const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1; const docId = `${prefix}-${year}-${String(count).padStart(3, '0')}`;
+                const docData = { projectId, type, poRef: row['PO Reference'] || '', items: [{ desc: descStr, note: '', qty, price }], subtotal, tax, total, date: row['Date'] || new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
+                await setDoc(doc(db, "commercials", docId), docData); state.commercials.push({ ...docData, id: docId }); addedCount++;
+            }
+            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Billing CSV.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
+        }
+
+        // --- Print Engines ---
         window.printPO = function(id) {
             const docData = state.pos.find(d => d.id === id); if(!docData) return;
             const proj = state.projects.find(p => p.id === docData.projectId);
@@ -1649,130 +1864,6 @@
             
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => { printArea.classList.add('hidden'); document.getElementById('topbar').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('hidden'); switchView('pos'); };
         };
-
-        window.printCommercial = function(id) {
-            const docData = state.commercials.find(d => d.id === id); if(!docData) return;
-            const proj = state.projects.find(p => p.id === docData.projectId); const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
-            
-            let itemsHtml = '';
-            docData.items.forEach((item, i) => {
-                const noteHtml = item.note ? `<div class="text-xs text-slate-500 mt-1 whitespace-pre-line italic border-l-2 border-slate-200 pl-2 ml-1">${item.note}</div>` : '';
-                itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div>${noteHtml}</td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`;
-            });
-
-            const sstRow = docData.tax > 0 ? `<tr class="font-bold text-slate-600 text-sm"><td colspan="4" class="text-right py-2">Add: 8% SST</td><td class="text-right py-2 font-mono">${formatRM(docData.tax)}</td></tr>` : '';
-
-            const printArea = document.getElementById('print-commercial');
-            printArea.innerHTML = `
-                ${getLetterhead()}
-                <div class="flex justify-between mb-12">
-                    <div>
-                        <h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4>
-                        <h2 class="text-xl font-black text-slate-800">${client ? client.name : ''}</h2>
-                        <p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${client ? client.address : ''}</p>
-                        <p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${client ? client.contact : ''}</p>
-                    </div>
-                    <div class="text-right">
-                        <h1 class="text-4xl font-black text-cyan-700 tracking-tighter uppercase mb-2">${docData.type}</h1>
-                        <p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p>
-                        <p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>
-                        ${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${docData.poRef}</span></p>` : ''}
-                    </div>
-                </div>
-                <div class="mb-8"><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Project Details:</h4><p class="text-sm font-bold text-slate-800">${proj ? proj.details : ''}</p></div>
-                <table class="w-full text-left border-collapse mb-8">
-                    <thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead>
-                    <tbody class="text-sm">${itemsHtml}</tbody>
-                </table>
-                <div class="flex justify-end mb-12">
-                    <table class="w-72">
-                        <tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>
-                        ${sstRow}
-                        <tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td><td class="text-right py-3 font-mono text-cyan-700">${formatRM(docData.total)}</td></tr>
-                    </table>
-                </div>
-                <div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2">
-                    <p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p>
-                    <p>1. Payment to be made payable to <strong>${state.settings.name}</strong>.</p>
-                    <p>2. Account Details: <strong>${state.settings.bank}</strong></p>
-                    <p>3. This is a computer-generated document. No signature is required.</p>
-                </div>
-                <div class="mt-8 flex justify-end no-print">
-                    <button onclick="savePDFToDrive('print-commercial', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 mr-4 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button>
-                    <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print PDF</button>
-                </div>`;
-            
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); document.getElementById('ai-chatbot-widget').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => { printArea.classList.add('hidden'); document.getElementById('topbar').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('hidden'); document.getElementById('ai-chatbot-widget').classList.remove('hidden'); switchView('commercials'); };
-        };
-
-        // --- STREAMING_CHUNK:Implementing Export/Import Utilities... ---
-        window.exportToCSV = function(type) {
-            let data = []; let filename = '';
-            const escapeCSV = (str) => { if (str == null) return '""'; const s = String(str); if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`; return s; };
-
-            if (type === 'clients') { data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV)); state.clients.forEach(c => data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV))); filename = 'AsSidqi_Clients.csv'; } 
-            else if (type === 'projects') { data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date'].map(escapeCSV)); state.projects.forEach(p => { const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown'; data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV)); }); filename = 'AsSidqi_Projects.csv'; } 
-            else if (type === 'commercials') { data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)', 'Status'].map(escapeCSV)); state.commercials.forEach(d => { const proj = state.projects.find(p => p.id === d.projectId); const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown'; data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total, d.status].map(escapeCSV)); }); filename = 'AsSidqi_Commercials.csv'; } 
-            else if (type === 'pos') { data.push(['PO ID', 'Date', 'Project ID', 'Vendor Name', 'Vendor Address', 'Subtotal (RM)', 'SST 8% (RM)', 'Total (RM)', 'Status'].map(escapeCSV)); state.pos.forEach(d => data.push([d.id, d.date, d.projectId, d.vendorName, d.vendorAddress, d.subtotal, d.tax, d.total, d.status].map(escapeCSV))); filename = 'AsSidqi_PurchaseOrders.csv'; }
-            else if (type === 'hr') { data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV)); state.staff.forEach(s => data.push([s.id, s.name, s.role, s.salary].map(escapeCSV))); filename = 'AsSidqi_HR.csv'; }
-
-            if (data.length <= 1) return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
-            const csvContent = data.map(row => row.join(',')).join('\n'); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.setAttribute('href', url); link.setAttribute('download', filename); document.body.appendChild(link); link.click(); document.body.removeChild(link); logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
-        };
-
-        window.handleCSVUpload = function(event, type) {
-            const file = event.target.files[0]; if(!file) return;
-            Swal.fire({ title: 'Reading File...', text: 'Parsing data safely...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'}); const sheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[sheetName]; const json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
-                    if(type === 'projects') await processProjectCSV(json); else if(type === 'clients') await processClientCSV(json); else if(type === 'commercials') await processCommercialCSV(json);
-                } catch (err) { console.error(err); Swal.fire('Import Failed', 'Could not read the CSV file correctly.', 'error'); }
-                event.target.value = '';
-            };
-            reader.readAsArrayBuffer(file);
-        };
-
-        async function processClientCSV(data) {
-            let addedCount = 0;
-            for(const row of data) {
-                const name = row['Client Name'] || row['Company Name'] || row['Client']; if(!name) continue;
-                const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
-                if(!existing) {
-                    const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' };
-                    const docRef = await addDoc(collection(db, "clients"), clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++;
-                }
-            }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Client CSV with correct headers.', 'warning'); else { Swal.fire('Clients Imported!', `Successfully imported ${addedCount} clients.`, 'success'); }
-        }
-
-        async function processProjectCSV(data) {
-            let addedCount = 0; let newClients = 0;
-            for(const row of data) {
-                const clientStr = row['Client Name'] || row['Client'] || row['Klien']; const detailsStr = row['Project Details'] || row['Project'] || row['Tajuk'];
-                if(!clientStr || !detailsStr) continue;
-                let clientId = null; const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
-                if(existingClient) clientId = existingClient.id; else { const newClientRef = await addDoc(collection(db, "clients"), { name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' }); clientId = newClientRef.id; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; }
-                const projData = { clientId: clientId, details: detailsStr, pbt: row['PBT'] || row['Authority'] || 'DBKL', gps: row['Location'] || row['GPS'] || '', status: row['Status'] || 'Drafting', ref: row['Reference'] || '', date: new Date().toLocaleDateString('en-MY') };
-                const docRef = await addDoc(collection(db, "projects"), projData); state.projects.push({ ...projData, id: docRef.id }); addedCount++;
-            }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Project CSV.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.\nAuto-created ${newClients} client profiles.`, 'success');
-        }
-
-        async function processCommercialCSV(data) {
-            let addedCount = 0; const year = new Date().getFullYear();
-            for(const row of data) {
-                const type = row['Type'] || 'Invoice'; const projStr = row['Project']; const descStr = row['Description'] || 'General Engineering Works'; const qty = Number(row['Qty'] || 1); const price = Number(row['Price'] || 0); const applySst = (row['SST'] || '').toLowerCase() === 'yes';
-                if(!projStr || price === 0) continue;
-                let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
-                if(existingProj) projectId = existingProj.id; else { const newProjRef = await addDoc(collection(db, "projects"), { clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); projectId = newProjRef.id; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); }
-                const subtotal = qty * price; const tax = applySst ? (subtotal * 0.08) : 0; const total = subtotal + tax; const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1; const docId = `${prefix}-${year}-${String(count).padStart(3, '0')}`;
-                const docData = { projectId, type, poRef: row['PO Reference'] || '', items: [{ desc: descStr, note: '', qty, price }], subtotal, tax, total, date: row['Date'] || new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
-                await setDoc(doc(db, "commercials", docId), docData); state.commercials.push({ ...docData, id: docId }); addedCount++;
-            }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Billing CSV.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
-        }
     </script>
 </body>
 </html>
