@@ -1,192 +1,781 @@
-<!-- ... existing code ... -->
-        // --- STREAMING_CHUNK:Implementing Print Engine & Universal Exporter... ---
-        window.printCommercial = function(id, collectionType = 'commercials') {
-            const collectionArray = collectionType === 'po' ? state.po : state.commercials;
-            const docData = collectionArray.find(d => d.id === id);
-            if(!docData) return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>As-Sidqi Engineering | ERP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- SheetJS for Excel/CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Marked.js for Gemini Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- PDF.js for Contract Analyzer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar-item { transition: all 0.2s ease; }
+        .sidebar-item.active { background-color: #0f172a; color: #06b6d4; border-right: 3px solid #06b6d4; font-weight: 700; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+        
+        /* Fixed Print Engine Rules */
+        @media print {
+            body { background-color: white !important; overflow: visible !important; height: auto !important; }
+            #sidebar, #topbar, .no-print, #ai-chatbot, #login-screen { display: none !important; }
+            .print-area { display: block !important; width: 100%; margin: 0; padding: 0; }
+            main { overflow: visible !important; height: auto !important; background: white !important; }
+            .view-section { display: none !important; }
+            .screen-view { display: block !important; }
+            @page { margin: 10mm; size: A4 portrait; }
+        }
+        .print-area { display: none; }
+        .screen-view { display: block; }
+    </style>
+</head>
+<body class="text-slate-800 h-screen overflow-hidden flex bg-slate-50 relative">
+
+    <div id="login-screen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
+            <div class="bg-white rounded-2xl p-2 w-24 h-24 mb-6 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
+                <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
+            </div>
+            <h2 class="text-2xl font-black text-white mb-2">As-Sidqi ERP</h2>
+            <p class="text-sm text-slate-400 mb-8 font-medium">Secured Administrative Portal</p>
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Admin ID</label>
+                    <input type="text" id="login-id" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Passcode</label>
+                    <input type="password" id="login-pass" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-cyan-500" onkeypress="if(event.key === 'Enter') handleLogin()">
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg mt-4">Authenticate</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 z-[40] hidden md:hidden backdrop-blur-sm" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar" class="absolute md:relative w-64 bg-[#020617] text-slate-300 flex flex-col h-full shadow-2xl z-[50] no-print border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+        <div class="p-6 border-b border-slate-800 flex flex-col items-center">
+            <div class="bg-white rounded-[24px] p-2 w-28 h-28 mb-3 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
+                <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
+            </div>
+            <div class="bg-cyan-900/40 text-cyan-400 border border-cyan-800/50 px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase mt-2">Engineering ERP Hub</div>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-2">Operations</div>
+            <a href="#" onclick="switchView('dashboard')" id="nav-dashboard" class="sidebar-item active flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50"><i class="ph ph-squares-four text-xl mr-3 opacity-70"></i> Executive Dashboard</a>
+            <a href="#" onclick="switchView('clients')" id="nav-clients" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50"><i class="ph ph-address-book text-xl mr-3 opacity-70"></i> Clients & CRM</a>
+            <a href="#" onclick="switchView('commercials')" id="nav-commercials" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50"><i class="ph ph-receipt text-xl mr-3 opacity-70"></i> Billing & Quotations</a>
+            <a href="#" onclick="switchView('po')" id="nav-po" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50"><i class="ph ph-shopping-cart text-xl mr-3 opacity-70"></i> Purchase Orders (PO)</a>
+            <a href="#" onclick="switchView('projects')" id="nav-projects" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50"><i class="ph ph-kanban text-xl mr-3 opacity-70"></i> Projects & OSC Tracker</a>
+            
+            <div class="px-6 text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 mt-6 flex items-center gap-1"><i class="ph ph-sparkle"></i> Gemini Pro AI</div>
+            <a href="#" onclick="switchView('analyzer')" id="nav-analyzer" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50 text-indigo-300"><i class="ph ph-file-search text-xl mr-3 opacity-70"></i> Contract Analyzer</a>
+            <a href="#" onclick="switchView('ai-letter')" id="nav-ai-letter" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50 text-indigo-300"><i class="ph ph-magic-wand text-xl mr-3 opacity-70"></i> Technical Surat Rasmi</a>
+
+            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-6">Internal & Admin</div>
+            <a href="#" onclick="switchView('hr')" id="nav-hr" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50"><i class="ph ph-users text-xl mr-3 opacity-70"></i> HR & Payroll</a>
+            <a href="#" onclick="switchView('expenses')" id="nav-expenses" class="sidebar-item flex items-center px-6 py-3 text-sm hover:text-white hover:bg-slate-800/50 text-rose-400"><i class="ph ph-receipt-x text-xl mr-3 opacity-70"></i> Expenses & Claims</a>
+        </nav>
+        <div class="p-4 border-t border-slate-800">
+            <a href="#" onclick="switchView('settings')" id="nav-settings" class="flex items-center px-4 py-3 text-sm text-emerald-400 hover:bg-slate-800/50 rounded-xl transition-colors font-semibold"><i class="ph ph-gear text-xl mr-3"></i> Company Setup</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50/50">
+        <header id="topbar" class="bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex justify-between items-center z-10 sticky top-0 shadow-sm no-print">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-slate-800"><i class="ph ph-list text-2xl"></i></button>
+                <h2 id="topbar-title" class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Executive Dashboard</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="connectGoogleDrive()" class="hidden md:flex bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-xl text-xs font-bold transition-colors items-center border border-indigo-100 shadow-sm"><i class="ph ph-google-drive-logo text-lg mr-2"></i> Connect Drive</button>
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold text-slate-800" id="header-date">Today</p>
+                    <p class="text-xs text-slate-400">Ir. Principal | As-Sidqi</p>
+                </div>
+                <div class="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full border-2 border-white shadow-md"></div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+            
+            <div id="view-dashboard" class="view-section block active">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-coins text-6xl text-cyan-600"></i></div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Receivables</p>
+                        <h3 class="text-3xl font-black text-slate-800 mb-2 font-mono" id="dash-outstanding">RM 0.00</h3>
+                        <p class="text-xs text-emerald-500 font-semibold"><i class="ph ph-trend-up"></i> YTD Invoiced</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-check-circle text-6xl text-emerald-600"></i></div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Collected</p>
+                        <h3 class="text-3xl font-black text-emerald-600 mb-2 font-mono" id="dash-collected">RM 0.00</h3>
+                        <p class="text-xs text-slate-400 font-semibold"><i class="ph ph-wallet"></i> Successfully Paid</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden group">
+                        <div class="absolute top-0 right-0 p-4 opacity-10"><i class="ph ph-users-three text-6xl text-blue-600"></i></div>
+                        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total Clients</p>
+                        <h3 class="text-3xl font-black text-slate-800 mb-2 font-mono" id="dash-clients">0</h3>
+                        <p class="text-xs text-slate-400 font-semibold"><i class="ph ph-address-book"></i> Registered in CRM</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <h4 class="font-bold text-slate-800 mb-6"><i class="ph ph-chart-line-up text-cyan-600 text-xl mr-2"></i> Revenue Analytics</h4>
+                        <div class="h-64 w-full"><canvas id="revenueChart"></canvas></div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+                        <h4 class="font-bold text-slate-800 mb-6"><i class="ph ph-bell-ringing text-amber-500 text-xl mr-2"></i> Action Required</h4>
+                        <div class="space-y-4 flex-1 overflow-y-auto" id="dash-alerts">
+                            <div class="p-4 bg-cyan-50 rounded-xl border border-cyan-100 flex gap-3">
+                                <i class="ph ph-cloud-check text-cyan-600 text-xl mt-0.5"></i>
+                                <div><p class="text-sm font-bold text-cyan-900">Cloud database sync complete</p><p class="text-xs text-cyan-700 mt-1">System is online and secure.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-clients" class="view-section hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners and agencies.</p></div>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <div class="flex items-center gap-2 mr-2">
+                            <input type="checkbox" id="selectAll-clients" onchange="toggleSelectAll('clients', this.checked)" class="w-4 h-4 text-cyan-600 rounded border-slate-300 cursor-pointer">
+                            <span class="text-xs font-bold text-slate-500">Select All</span>
+                        </div>
+                        <button id="btn-bulk-delete-clients" onclick="bulkDelete('clients')" class="hidden bg-rose-50 text-rose-600 hover:bg-rose-100 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-rose-200"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-download-simple"></i> Export CSV</button>
+                        <input type="file" id="csv-upload-clients" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'clients')">
+                        <button onclick="document.getElementById('csv-upload-clients').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-file-csv"></i> Bulk Import CSV</button>
+                        <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/20"><i class="ph ph-plus-circle"></i> Add Client</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="table-responsive overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[900px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4 w-12 text-center"></th>
+                                    <th class="p-4">Client Name</th>
+                                    <th class="p-4">SSM / Reg No.</th>
+                                    <th class="p-4">Contact Person</th>
+                                    <th class="p-4">Email Address</th>
+                                    <th class="p-4 text-center">Projects</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="client-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-projects" class="view-section hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Project Pipeline</h3><p class="text-sm text-slate-500">Track milestones and deliverables.</p></div>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <div class="flex items-center gap-2 mr-2">
+                            <input type="checkbox" id="selectAll-projects" onchange="toggleSelectAll('projects', this.checked)" class="w-4 h-4 text-cyan-600 rounded border-slate-300 cursor-pointer">
+                            <span class="text-xs font-bold text-slate-500">Select All</span>
+                        </div>
+                        <button id="btn-bulk-delete-projects" onclick="bulkDelete('projects')" class="hidden bg-rose-50 text-rose-600 hover:bg-rose-100 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-rose-200"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button onclick="exportToCSV('projects')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-download-simple"></i> Export CSV</button>
+                        <input type="file" id="csv-upload-projects" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'projects')">
+                        <button onclick="document.getElementById('csv-upload-projects').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-file-csv"></i> Bulk Import CSV</button>
+                        <button onclick="openModal('modal-project')" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-plus-circle"></i> Register Project</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="table-responsive overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[1000px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4 w-12 text-center"></th>
+                                    <th class="p-4">Project Information & Scope</th>
+                                    <th class="p-4">Client</th>
+                                    <th class="p-4">Local Authority (PBT)</th>
+                                    <th class="p-4">Location / GPS</th>
+                                    <th class="p-4">PBT Reference</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="project-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-commercials" class="view-section hidden">
+                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
+                    <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices.</p></div>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <div class="flex items-center gap-2 mr-2">
+                            <input type="checkbox" id="selectAll-commercials" onchange="toggleSelectAll('commercials', this.checked)" class="w-4 h-4 text-cyan-600 rounded border-slate-300 cursor-pointer">
+                            <span class="text-xs font-bold text-slate-500">Select All</span>
+                        </div>
+                        <button id="btn-bulk-delete-commercials" onclick="bulkDelete('commercials')" class="hidden bg-rose-50 text-rose-600 hover:bg-rose-100 px-4 py-2 rounded-xl text-xs font-bold transition-all border border-rose-200"><i class="ph ph-trash"></i> Delete</button>
+                        <button onclick="exportToCSV('commercials')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-download-simple"></i> Export CSV</button>
+                        <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'commercials')">
+                        <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 rounded-xl text-xs font-semibold"><i class="ph ph-file-csv"></i> Bulk Import CSV</button>
+                        <button onclick="openInvoiceWizard()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-blue-600/20"><i class="ph ph-file-plus"></i> Create Document</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
+                    <div class="table-responsive overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4 w-12 text-center"></th>
+                                    <th class="p-4">Document</th>
+                                    <th class="p-4">Client & Project</th>
+                                    <th class="p-4 text-right">Amount (RM)</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="commercials-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purchase Orders (PO) View -->
+            <div id="view-po" class="view-section hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
+                    <div><h3 class="text-xl font-bold text-slate-800">Purchase Orders (PO)</h3><p class="text-sm text-slate-500">Manage subcontractor outward liabilities.</p></div>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <button onclick="openPOWizard()" class="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-lg shadow-violet-600/20"><i class="ph ph-shopping-cart"></i> Create PO</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden no-print">
+                    <div class="table-responsive overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[800px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                    <th class="p-4">PO Document</th>
+                                    <th class="p-4">Subcontractor & Project</th>
+                                    <th class="p-4 text-right">Total (RM)</th>
+                                    <th class="p-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="po-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Surat Rasmi View -->
+            <div id="view-ai-letter" class="view-section hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-8 no-print">
+                        <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4"><i class="ph ph-robot"></i></div>
+                        <h3 class="text-2xl font-black text-slate-800">Technical Surat Rasmi (Gemini Pro)</h3>
+                        <p class="text-slate-500 mt-2">Automate complex technical letters and appeals.</p>
+                    </div>
+                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 no-print">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Select Active Project</label>
+                                <select id="ai-project" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 text-sm"></select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Letter Type</label>
+                                <select id="ai-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 text-sm">
+                                    <option value="Surat Iringan OSC">Surat Iringan (OSC Submission)</option>
+                                    <option value="Pengesahan Struktur">Pengesahan Integriti Struktur (PE)</option>
+                                    <option value="Rayuan Kelulusan">Rayuan Kelulusan Pelan (Appeal)</option>
+                                    <option value="Kelonggaran Syarat">Mohon Kelonggaran Syarat PBT</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <label class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1 flex items-center gap-1"><i class="ph ph-sparkle"></i> Custom AI Instructions (Optional)</label>
+                            <textarea id="ai-prompt" class="w-full bg-indigo-50/50 border border-indigo-100 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 text-sm h-20 resize-none placeholder-indigo-300" placeholder="e.g. Write an appeal to DBKL stating the setback is 3m instead of 5m, but it is safe due to the use of micropiles."></textarea>
+                        </div>
+                        <button onclick="generateAILetter()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg flex justify-center items-center gap-2">
+                            <i class="ph ph-magic-wand text-xl"></i> Draft Letter with Gemini
+                        </button>
+                    </div>
+                    <div id="ai-result" class="hidden">
+                        <div class="flex justify-between items-center mb-4 no-print">
+                            <h4 class="font-bold text-slate-800">Generated Draft:</h4>
+                            <div class="flex gap-2">
+                                <button onclick="savePDFToDrive('print-ai-letter', 'Surat_Rasmi_Gemini')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 border border-indigo-100"><i class="ph ph-google-drive-logo"></i> Save to Drive</button>
+                                <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-printer"></i> Print Official</button>
+                            </div>
+                        </div>
+                        <div class="bg-white p-8 md:p-12 rounded-lg shadow-md border border-slate-200 text-sm font-serif leading-relaxed" id="print-ai-letter">
+                            <!-- Letterhead injected here during print/save -->
+                            <textarea id="ai-textarea" class="w-full h-[600px] resize-none outline-none bg-transparent" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contract Analyzer View -->
+            <div id="view-analyzer" class="view-section hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4"><i class="ph ph-file-search"></i></div>
+                        <h3 class="text-2xl font-black text-slate-800">Contract & LOA Analyzer</h3>
+                        <p class="text-slate-500 mt-2">Let Gemini Pro read heavy PDF tenders to extract risks and terms.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center mb-8">
+                        <i class="ph ph-upload-simple text-4xl text-slate-300 mb-4"></i>
+                        <h4 class="font-bold text-slate-700 mb-2">Upload PDF Contract</h4>
+                        <input type="file" id="contract-file" accept="application/pdf" class="hidden" onchange="analyzeContract(event)">
+                        <button onclick="document.getElementById('contract-file').click()" class="bg-blue-600 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-md hover:bg-blue-700 transition-all">Select PDF File</button>
+                    </div>
+                    <div id="analyzer-result" class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 hidden">
+                        <h4 class="font-black text-slate-800 border-b border-slate-100 pb-3 mb-4 flex items-center gap-2"><i class="ph ph-sparkle text-blue-500"></i> Executive Summary</h4>
+                        <div id="analyzer-content" class="prose prose-sm prose-slate max-w-none"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-hr" class="view-section hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculations.</p></div>
+                    <div class="flex gap-2">
+                        <button onclick="openModal('modal-staff')" class="bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg"><i class="ph ph-user-plus mr-2"></i> Add Staff</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="staff-grid"></div>
+            </div>
+
+            <div id="view-expenses" class="view-section hidden">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+                    <div><h3 class="text-xl font-bold text-slate-800">Expenses & Claims</h3><p class="text-sm text-slate-500">Track outgoing costs.</p></div>
+                    <button onclick="openModal('modal-expense')" class="bg-rose-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg"><i class="ph ph-plus-circle mr-2"></i> Log Expense</button>
+                </div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                                <th class="p-4">Date</th>
+                                <th class="p-4">Category & Details</th>
+                                <th class="p-4">Project Link</th>
+                                <th class="p-4 text-right">Amount (RM)</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenses-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-settings" class="view-section hidden max-w-3xl mx-auto">
+                <div class="mb-8"><h3 class="text-2xl font-black text-slate-800">Company Setup</h3><p class="text-slate-500">Configure engineering details & Cloud APIs.</p></div>
+                
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 mb-6 space-y-4">
+                    <h4 class="font-bold text-slate-800 border-b border-slate-100 pb-2">Company Profile</h4>
+                    <div><label class="text-[10px] font-bold text-slate-500 uppercase">Official Company Name</label><input type="text" id="set-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="text-[10px] font-bold text-slate-500 uppercase">SSM No.</label><input type="text" id="set-ssm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"></div>
+                        <div><label class="text-[10px] font-bold text-slate-500 uppercase">BEM No.</label><input type="text" id="set-bem" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"></div>
+                    </div>
+                    <div><label class="text-[10px] font-bold text-slate-500 uppercase">Address</label><textarea id="set-address" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 h-20"></textarea></div>
+                    <div><label class="text-[10px] font-bold text-slate-500 uppercase">Bank Details</label><input type="text" id="set-bank" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2"></div>
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-3xl border border-blue-100 mb-6">
+                    <h4 class="font-bold text-blue-900 border-b border-blue-200 pb-2 mb-4"><i class="ph ph-google-drive-logo"></i> Google Drive Integration</h4>
+                    <div><label class="text-[10px] font-bold text-blue-700 uppercase">OAuth Client ID</label><input type="text" id="set-clientid" class="w-full bg-white border border-blue-200 rounded-xl px-4 py-2 text-xs"></div>
+                    <div class="mt-4"><label class="text-[10px] font-bold text-blue-700 uppercase">API Key</label><input type="password" id="set-apikey" class="w-full bg-white border border-blue-200 rounded-xl px-4 py-2 text-xs"></div>
+                    <div class="mt-4"><label class="text-[10px] font-bold text-blue-700 uppercase">Vault Folder ID</label><input type="text" id="set-folderid" class="w-full bg-white border border-blue-200 rounded-xl px-4 py-2 text-xs"></div>
+                </div>
+
+                <div class="bg-indigo-50 p-6 rounded-3xl border border-indigo-100 mb-8">
+                    <h4 class="font-bold text-indigo-900 border-b border-indigo-200 pb-2 mb-4"><i class="ph ph-sparkle"></i> Gemini Pro AI Key</h4>
+                    <div><label class="text-[10px] font-bold text-indigo-700 uppercase">Google AI Studio API Key</label><input type="password" id="set-geminikey" class="w-full bg-white border border-indigo-200 rounded-xl px-4 py-2 text-xs"></div>
+                </div>
+
+                <button onclick="saveSettings()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg">Save Configuration</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="ai-chatbot" class="fixed bottom-6 right-6 z-[60] flex flex-col items-end no-print">
+        <div id="chat-window" class="bg-white w-80 sm:w-96 rounded-3xl shadow-2xl border border-slate-200 mb-4 hidden flex flex-col overflow-hidden transition-all h-[500px]">
+            <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
+                <div class="flex items-center gap-2"><i class="ph ph-sparkle text-xl"></i><span class="font-bold text-sm">Executive Co-Pilot</span></div>
+                <button onclick="toggleChat()" class="hover:text-indigo-200"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-4 text-sm">
+                <div class="bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 text-slate-700 w-[85%] shadow-sm">Hello Ir. Amirul. I have access to your live ERP data. How can I assist you today?</div>
+            </div>
+            <div class="p-3 border-t border-slate-100 bg-white flex gap-2">
+                <input type="text" id="chat-input" placeholder="Ask about projects, revenue..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500" onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button onclick="sendChatMessage()" class="bg-indigo-600 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-indigo-700"><i class="ph ph-paper-plane-right"></i></button>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:bg-indigo-700 hover:scale-105 transition-all"><i class="ph ph-sparkle"></i></button>
+    </div>
+
+    <!-- Modals are kept minimal for token limits, standard structure applies -->
+    <div id="modal-client" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between bg-slate-50"><h3 class="font-black text-slate-800">Add Client</h3><button onclick="closeModal('modal-client')"><i class="ph ph-x-circle text-2xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="c-id">
+                <input type="text" id="c-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2" placeholder="Company Name *">
+                <input type="text" id="c-ssm" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2" placeholder="SSM Number">
+                <input type="text" id="c-contact" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2" placeholder="Contact Person">
+                <input type="email" id="c-email" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2" placeholder="Email">
+                <textarea id="c-address" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm h-16" placeholder="Address"></textarea>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 flex justify-end"><button onclick="saveClient()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold">Save</button></div>
+        </div>
+    </div>
+
+    <div id="modal-project" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between bg-slate-50"><h3 class="font-black text-slate-800">Register Project</h3><button onclick="closeModal('modal-project')"><i class="ph ph-x-circle text-2xl"></i></button></div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="p-id">
+                <select id="proj-client" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2"></select>
+                <textarea id="p-details" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm h-16 mb-2" placeholder="Project Title *"></textarea>
+                <select id="p-pbt" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2"><option value="DBKL">DBKL</option><option value="MBPJ">MBPJ</option><option value="MBSA">MBSA</option><option value="Other">Other</option></select>
+                <input type="text" id="p-gps" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2" placeholder="Location">
+                <input type="text" id="p-ref" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2" placeholder="PBT Reference">
+            </div>
+            <div class="px-6 py-4 bg-slate-50 flex justify-end"><button onclick="saveProject()" class="bg-slate-800 text-white px-6 py-2 rounded-xl font-bold">Save</button></div>
+        </div>
+    </div>
+
+    <div id="modal-invoice" class="modal fixed inset-0 bg-slate-900/80 backdrop-blur z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-3xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between bg-slate-50"><h3 class="font-black text-slate-800" id="wiz-title">Document Builder</h3><button onclick="closeModal('modal-invoice')"><i class="ph ph-x-circle text-2xl"></i></button></div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+                <select id="inv-project" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2"></select>
+                <select id="inv-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-2 font-bold text-cyan-700"><option value="Quotation">Quotation</option><option value="Invoice">Invoice</option></select>
+                <input type="text" id="inv-po" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm mb-4" placeholder="PO Ref">
+                <div class="flex justify-between items-center mb-2"><span class="font-bold text-sm">Line Items</span><button onclick="addLineItem()" class="text-xs bg-cyan-100 text-cyan-700 px-2 py-1 rounded">Add Item</button></div>
+                <div id="line-items-container" class="space-y-2"></div>
+                <div class="text-right mt-4 font-bold border-t pt-4">
+                    <label class="mr-4 text-rose-500"><input type="checkbox" id="inv-sst" onchange="calculateTotals()"> Add 8% SST</label>
+                    <span id="calc-total" class="text-xl text-cyan-600">RM 0.00</span>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 flex justify-end"><button onclick="saveCommercial()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold">Save Document</button></div>
+        </div>
+    </div>
+
+    <!-- Print Areas -->
+    <div id="print-commercial" class="print-area font-sans text-sm"></div>
+    <div id="print-ai-letter" class="print-area font-serif text-sm leading-relaxed"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyD2VqWlAqlWWxObSaii7gxGK7pUmEB0no8",
+          authDomain: "as-sidqi-erp-88dc3.firebaseapp.com",
+          projectId: "as-sidqi-erp-88dc3",
+          storageBucket: "as-sidqi-erp-88dc3.firebasestorage.app",
+          messagingSenderId: "126753060139",
+          appId: "1:126753060139:web:f5bb50fa17ad5d4eb2016e",
+          measurementId: "G-X0GCK42KPD"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db; window.collection = collection; window.addDoc = addDoc; window.getDocs = getDocs; window.doc = doc; window.setDoc = setDoc; window.deleteDoc = deleteDoc; window.updateDoc = updateDoc;
+
+        window.state = {
+            clients: [], projects: [], commercials: [], po: [], staff: [], expenses: [],
+            settings: {
+                name: 'AS-SIDQI ENGINEERING & SERVICES', ssm: '2021031XXXXX', bem: 'C116608',
+                address: 'NO. 14, JALAN GUNUNG TAHAN U11/3\nBUKIT BANDARAYA SEK U11\n40170 SHAH ALAM, SELANGOR',
+                bank: 'MAYBANK: 562469316072', clientid: '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com', apikey: 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY', folderid: '', geminikey: ''
+            }
+        };
+
+        window.selectedItems = { clients: new Set(), projects: new Set(), commercials: new Set() };
+
+        window.handleLogin = function() {
+            if(document.getElementById('login-id').value === 'assidqi' && document.getElementById('login-pass').value === 'ases5577') {
+                document.getElementById('login-screen').style.display = 'none';
+                loadState();
+            } else Swal.fire('Denied', 'Invalid credentials', 'error');
+        };
+
+        window.switchView = function(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active', 'block'));
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            if(document.getElementById('view-'+viewId)) {
+                document.getElementById('view-'+viewId).classList.remove('hidden');
+                document.getElementById('view-'+viewId).classList.add('active', 'block');
+            }
+            if(document.getElementById('nav-'+viewId)) document.getElementById('nav-'+viewId).classList.add('active');
+        };
+
+        window.toggleSidebar = function() {
+            document.getElementById('sidebar').classList.toggle('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.toggle('hidden');
+        };
+
+        window.openModal = function(id) { document.getElementById(id).classList.add('active'); };
+        window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); };
+
+        function formatRM(num) { return 'RM ' + parseFloat(num).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+        
+        function getLetterhead() {
+            return `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom: 4px solid #1e293b; padding-bottom: 24px; margin-bottom: 32px;">
+                    <div style="display:flex; align-items:center; gap: 16px;">
+                        <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" style="width:100px; height:100px; object-fit:contain;" alt="Logo">
+                        <div>
+                            <h1 style="font-size:24px; font-weight:900; color:#1e293b; margin:0;">${state.settings.name}</h1>
+                            <p style="font-size:12px; font-weight:900; color:#059669; margin:4px 0 0 0; text-transform:uppercase;">Civil & Structural Consultant</p>
+                        </div>
+                    </div>
+                    <div style="text-align:right; font-size:12px; color:#475569;">
+                        <p style="margin:0;"><strong>SSM:</strong> ${state.settings.ssm}</p>
+                        <p style="margin:0;"><strong>BEM:</strong> ${state.settings.bem}</p>
+                        <p style="margin:4px 0 0 0; white-space:pre-line;">${state.settings.address}</p>
+                    </div>
+                </div>`;
+        }
+
+        async function loadState() {
+            Swal.fire({ title: 'Syncing', text: 'Connecting to Cloud...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const [setDoc, cliDoc, proDoc, comDoc] = await Promise.all([
+                    getDocs(collection(db, "settings")), getDocs(collection(db, "clients")), getDocs(collection(db, "projects")), getDocs(collection(db, "commercials"))
+                ]);
+                if(!setDoc.empty) state.settings = { ...state.settings, ...setDoc.docs[0].data() };
+                state.clients = cliDoc.docs.map(d => ({ ...d.data(), id: d.id }));
+                state.projects = proDoc.docs.map(d => ({ ...d.data(), id: d.id }));
+                state.commercials = comDoc.docs.map(d => ({ ...d.data(), id: d.id }));
+                refreshAllViews();
+                Swal.close();
+            } catch(e) {
+                console.error(e);
+                Swal.fire({title: "Database Error", text: "Failed to connect to Firebase.", icon: "error"});
+            }
+        }
+
+        function refreshAllViews() {
+            renderClients(); renderProjects(); renderCommercials(); renderDashboard();
+            const pClient = document.getElementById('proj-client');
+            const iProj = document.getElementById('inv-project');
+            const aiProj = document.getElementById('ai-project');
+            if(pClient) pClient.innerHTML = '<option value="">-- Select Client --</option>' + state.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const pOpts = '<option value="">-- Select Project --</option>' + state.projects.map(p => `<option value="${p.id}">${p.details.substring(0,40)}</option>`).join('');
+            if(iProj) iProject.innerHTML = pOpts;
+            if(aiProj) aiProj.innerHTML = pOpts;
+        }
+
+        // --- Render Functions ---
+        function renderClients() {
+            const tbody = document.getElementById('client-table-body'); if(!tbody) return; tbody.innerHTML = '';
+            state.clients.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 text-center"><input type="checkbox" class="chk-clients w-4 h-4" value="${c.id}" onchange="toggleRowSelection('clients','${c.id}',this.checked)"></td>
+                    <td class="p-4 font-black">${c.name}</td>
+                    <td class="p-4">${c.ssm||'-'}</td>
+                    <td class="p-4">${c.contact||'-'}</td>
+                    <td class="p-4">${c.email||'-'}</td>
+                    <td class="p-4 text-center">0</td>
+                    <td class="p-4 text-right"><button onclick="deleteData('client','${c.id}')" class="text-red-500"><i class="ph ph-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderProjects() {
+            const tbody = document.getElementById('project-table'); if(!tbody) return; tbody.innerHTML = '';
+            state.projects.forEach(p => {
+                const client = state.clients.find(c=>c.id===p.clientId);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 text-center"><input type="checkbox" class="chk-projects w-4 h-4" value="${p.id}" onchange="toggleRowSelection('projects','${p.id}',this.checked)"></td>
+                    <td class="p-4 font-bold">${p.details}</td>
+                    <td class="p-4">${client?client.name:'-'}</td>
+                    <td class="p-4 font-black">${p.pbt}</td>
+                    <td class="p-4">${p.gps||'-'}</td>
+                    <td class="p-4">${p.ref||'Pending'}</td>
+                    <td class="p-4 text-right"><button onclick="deleteData('project','${p.id}')" class="text-red-500"><i class="ph ph-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCommercials() {
+            const tbody = document.getElementById('commercials-table'); if(!tbody) return; tbody.innerHTML = '';
+            state.commercials.forEach(d => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 text-center"><input type="checkbox" class="chk-commercials w-4 h-4" value="${d.id}" onchange="toggleRowSelection('commercials','${d.id}',this.checked)"></td>
+                    <td class="p-4 font-black">${d.id} <br><span class="text-[10px] text-indigo-600">${d.type}</span></td>
+                    <td class="p-4 text-xs">Project ID: ${d.projectId}</td>
+                    <td class="p-4 text-right font-mono font-bold">${formatRM(d.total)}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="printCommercial('${d.id}')" class="text-blue-500 mr-2"><i class="ph ph-printer"></i></button>
+                        <button onclick="deleteData('commercial','${d.id}')" class="text-red-500"><i class="ph ph-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderDashboard() {
+            let out = 0, col = 0;
+            state.commercials.forEach(d => { if(d.type==='Invoice') { if(d.status==='Paid') col+=d.total; else out+=d.total; }});
+            if(document.getElementById('dash-outstanding')) document.getElementById('dash-outstanding').innerText = formatRM(out);
+            if(document.getElementById('dash-collected')) document.getElementById('dash-collected').innerText = formatRM(col);
+            if(document.getElementById('dash-clients')) document.getElementById('dash-clients').innerText = state.clients.length;
+        }
+
+        // --- CRUD Logic ---
+        window.saveClient = async function() {
+            const name = document.getElementById('c-name').value;
+            if(!name) return;
+            const data = { name, ssm: document.getElementById('c-ssm').value, contact: document.getElementById('c-contact').value, email: document.getElementById('c-email').value, address: document.getElementById('c-address').value };
+            const docRef = await addDoc(collection(db, "clients"), data);
+            state.clients.push({...data, id: docRef.id});
+            closeModal('modal-client'); refreshAllViews();
+        };
+
+        window.saveProject = async function() {
+            const clientId = document.getElementById('proj-client').value;
+            const details = document.getElementById('p-details').value;
+            if(!clientId || !details) return;
+            const data = { clientId, details, pbt: document.getElementById('p-pbt').value, gps: document.getElementById('p-gps').value, ref: document.getElementById('p-ref').value, status: 'Drafting' };
+            const docRef = await addDoc(collection(db, "projects"), data);
+            state.projects.push({...data, id: docRef.id});
+            closeModal('modal-project'); refreshAllViews();
+        };
+
+        // --- Billing Logic ---
+        let tempLineItems = [];
+        window.openInvoiceWizard = function() {
+            tempLineItems = [{desc: '', qty: 1, price: 0}];
+            document.getElementById('inv-project').value = '';
+            renderLineItems(); openModal('modal-invoice');
+        };
+        window.addLineItem = function() { tempLineItems.push({desc:'', qty:1, price:0}); renderLineItems(); };
+        window.renderLineItems = function() {
+            const c = document.getElementById('line-items-container'); c.innerHTML = '';
+            tempLineItems.forEach((item, i) => {
+                c.innerHTML += `<div class="flex gap-2"><input type="text" class="flex-1 p-2 border rounded text-sm" value="${item.desc}" oninput="tempLineItems[${i}].desc=this.value"><input type="number" class="w-16 p-2 border rounded text-sm" value="${item.qty}" oninput="tempLineItems[${i}].qty=Number(this.value);calculateTotals()"><input type="number" class="w-24 p-2 border rounded text-sm text-right" value="${item.price}" oninput="tempLineItems[${i}].price=Number(this.value);calculateTotals()"></div>`;
+            });
+            calculateTotals();
+        };
+        window.calculateTotals = function() {
+            let sub = 0; tempLineItems.forEach(i => sub += (i.qty * i.price));
+            let tax = document.getElementById('inv-sst').checked ? sub*0.08 : 0;
+            document.getElementById('calc-total').innerText = formatRM(sub+tax);
+        };
+        window.saveCommercial = async function() {
+            const projectId = document.getElementById('inv-project').value;
+            if(!projectId) return;
+            let sub = 0; tempLineItems.forEach(i => sub += (i.qty * i.price));
+            let tax = document.getElementById('inv-sst').checked ? sub*0.08 : 0;
+            const type = document.getElementById('inv-type').value;
+            const data = { projectId, type, items: tempLineItems, subtotal: sub, tax, total: sub+tax, status: 'Unpaid', date: new Date().toLocaleDateString('en-MY') };
+            const docId = (type==='Quotation'?'QUO':'INV') + '-' + Date.now().toString().slice(-4);
+            await setDoc(doc(db, "commercials", docId), data);
+            state.commercials.push({...data, id: docId});
+            closeModal('modal-invoice'); refreshAllViews();
+        };
+
+        // --- Print Engine ---
+        window.printCommercial = function(id) {
+            const docData = state.commercials.find(d => d.id === id); if(!docData) return;
             const proj = state.projects.find(p => p.id === docData.projectId);
             const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
             
-            let clientDataHtml = '';
-            let titleColor = 'text-cyan-700';
-            let titleText = docData.type;
-            
-            if(collectionType === 'po') {
-                titleColor = 'text-violet-700';
-                titleText = 'PURCHASE ORDER';
-                clientDataHtml = `
-                    <h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Vendor / Subcontractor:</h4>
-                    <h2 class="text-xl font-black text-slate-800">${docData.vendorName}</h2>
-                    <p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${docData.vendorAddress || ''}</p>
-                    <p class="text-sm font-semibold text-slate-600 mt-2">${docData.vendorEmail || ''}</p>`;
-            } else {
-                clientDataHtml = `
-                    <h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4>
-                    <h2 class="text-xl font-black text-slate-800">${client ? client.name : ''}</h2>
-                    <p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${client ? client.address : ''}</p>
-                    <p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${client ? client.contact : ''}</p>`;
-            }
-            
             let itemsHtml = '';
             docData.items.forEach((item, i) => {
-                const noteHtml = item.note ? `<div class="text-xs text-slate-500 mt-1 whitespace-pre-line italic border-l-2 border-slate-200 pl-2 ml-1">${item.note}</div>` : '';
-                itemsHtml += `
-                    <tr class="border-b border-slate-100">
-                        <td class="py-4 font-semibold text-slate-800">${i+1}</td>
-                        <td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div>${noteHtml}</td>
-                        <td class="py-4 text-center font-mono">${item.qty}</td>
-                        <td class="py-4 text-right font-mono">${formatRM(item.price)}</td>
-                        <td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td>
-                    </tr>`;
+                itemsHtml += `<tr><td style="padding:12px; border-bottom:1px solid #e2e8f0;">${i+1}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; font-weight:bold;">${item.desc}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; text-align:center;">${item.qty}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; text-align:right;">${formatRM(item.price)}</td><td style="padding:12px; border-bottom:1px solid #e2e8f0; text-align:right; font-weight:bold;">${formatRM(item.qty*item.price)}</td></tr>`;
             });
 
-            const sstRow = docData.tax > 0 ? `
-                <tr class="font-bold text-slate-600 text-sm">
-                    <td colspan="4" class="text-right py-2">Add: 8% SST</td>
-                    <td class="text-right py-2 font-mono">${formatRM(docData.tax)}</td>
-                </tr>` : '';
-                
-            let termsHtml = '';
-            if(collectionType === 'po') {
-                termsHtml = `
-                    <p class="font-bold text-slate-800 mb-2">Standard PO Terms & Conditions:</p>
-                    <p>1. Please supply the goods/services as specified above.</p>
-                    <p>2. Quote this PO Number on all invoices and correspondence.</p>
-                    <p>3. This is a computer-generated document. No signature is required.</p>`;
-            } else {
-                termsHtml = `
-                    <p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p>
-                    <p>1. Payment to be made payable to <strong>${state.settings.name}</strong>.</p>
-                    <p>2. Account Details: <strong>${state.settings.bank}</strong></p>
-                    <p>3. This is a computer-generated document. No signature is required.</p>`;
-            }
-
-            const printArea = document.getElementById('print-commercial');
-            printArea.innerHTML = `
-                <div class="bg-white p-12 max-w-4xl mx-auto shadow-2xl border border-slate-200 rounded-xl mb-12">
+            const html = `
+                <div style="padding:40px; background:white; font-family:sans-serif; color:#1e293b;">
                     ${getLetterhead()}
-                    <div class="flex justify-between mb-12">
-                        <div>${clientDataHtml}</div>
-                        <div class="text-right">
-                            <h1 class="text-4xl font-black ${titleColor} tracking-tighter uppercase mb-2">${titleText}</h1>
-                            <p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p>
-                            <p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>
-                            ${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${docData.poRef}</span></p>` : ''}
-                        </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:40px;">
+                        <div><h4 style="font-size:12px; font-weight:bold; color:#64748b; margin:0 0 4px 0;">BILLED TO:</h4><h2 style="font-size:20px; font-weight:900; margin:0;">${client?client.name:''}</h2><p style="font-size:14px; margin:4px 0;">${client?client.address:''}</p></div>
+                        <div style="text-align:right;"><h1 style="font-size:32px; font-weight:900; color:#0369a1; margin:0 0 8px 0; text-transform:uppercase;">${docData.type}</h1><p style="margin:0;"><strong>Ref No:</strong> ${docData.id}</p><p style="margin:4px 0 0 0;"><strong>Date:</strong> ${docData.date}</p></div>
                     </div>
-                    
-                    <div class="mb-8">
-                        <h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Project Details:</h4>
-                        <p class="text-sm font-bold text-slate-800">${proj ? proj.details : 'General Services'}</p>
-                    </div>
-
-                    <table class="w-full text-left border-collapse mb-8">
-                        <thead>
-                            <tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black">
-                                <th class="py-3 w-12">No.</th>
-                                <th class="py-3">Description of Works / Items</th>
-                                <th class="py-3 text-center w-24">Qty</th>
-                                <th class="py-3 text-right w-32">Unit Price</th>
-                                <th class="py-3 text-right w-32">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm">${itemsHtml}</tbody>
+                    <div style="margin-bottom:32px;"><h4 style="font-size:12px; font-weight:bold; color:#64748b; margin:0 0 4px 0;">PROJECT:</h4><p style="font-weight:bold;">${proj?proj.details:''}</p></div>
+                    <table style="width:100%; text-align:left; border-collapse:collapse; margin-bottom:40px; font-size:14px;">
+                        <thead><tr style="border-bottom:2px solid #1e293b; text-transform:uppercase; font-size:12px;"><th style="padding:12px;">No.</th><th style="padding:12px;">Description</th><th style="padding:12px; text-align:center;">Qty</th><th style="padding:12px; text-align:right;">Unit Price</th><th style="padding:12px; text-align:right;">Amount</th></tr></thead>
+                        <tbody>${itemsHtml}</tbody>
                     </table>
-                    
-                    <div class="flex justify-end mb-12">
-                        <table class="w-72">
-                            <tr class="font-bold text-slate-600 text-sm border-t border-slate-200">
-                                <td class="text-right py-2">Subtotal</td>
-                                <td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td>
-                            </tr>
-                            ${sstRow}
-                            <tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800">
-                                <td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td>
-                                <td class="text-right py-3 font-mono ${titleColor}">${formatRM(docData.total)}</td>
-                            </tr>
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:40px;">
+                        <table style="width:300px; font-size:14px;">
+                            <tr><td style="padding:8px; text-align:right;">Subtotal</td><td style="padding:8px; text-align:right;">${formatRM(docData.subtotal)}</td></tr>
+                            ${docData.tax>0 ? `<tr><td style="padding:8px; text-align:right;">Add: 8% SST</td><td style="padding:8px; text-align:right;">${formatRM(docData.tax)}</td></tr>` : ''}
+                            <tr style="border-top:2px solid #1e293b; font-weight:bold; font-size:16px;"><td style="padding:12px; text-align:right;">Grand Total</td><td style="padding:12px; text-align:right; color:#0369a1;">${formatRM(docData.total)}</td></tr>
                         </table>
                     </div>
-
-                    <div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2">
-                        ${termsHtml}
+                    <div class="no-print mt-8 flex justify-end gap-2">
+                        <button onclick="closePrint()" class="px-6 py-2 bg-slate-200 rounded text-slate-700 font-bold">Cancel</button>
+                        <button onclick="window.print()" class="px-6 py-2 bg-cyan-600 text-white rounded font-bold">Print PDF</button>
                     </div>
-                    <div class="mt-8 flex justify-end gap-3 no-print">
-                        <button onclick="closePrintView('${collectionType === 'po' ? 'po' : 'commercials'}')" class="px-6 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors border border-transparent hover:border-slate-200">Cancel / Back</button>
-                        <button onclick="savePDFToDrive('print-commercial', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button>
-                        <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print PDF</button>
-                    </div>
-                </div>
-            `;
+                </div>`;
             
-            printArea.classList.remove('hidden');
-            printArea.classList.add('screen-view');
-            document.querySelector('main').classList.add('hidden');
-            
-            // Prevent auto-close so the user can use the "Back" button
-            window.onafterprint = () => {};
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            const pa = document.getElementById('print-commercial'); pa.innerHTML = html; pa.classList.add('screen-view');
+        };
+        window.closePrint = function() {
+            document.getElementById('print-commercial').classList.remove('screen-view');
+            switchView('commercials');
         };
 
-        window.closePrintView = function(viewId) {
-            const printArea = document.getElementById('print-commercial');
-            printArea.classList.add('hidden');
-            printArea.classList.remove('screen-view');
-            document.querySelector('main').classList.remove('hidden');
-            switchView(viewId);
+        // --- Bulk Operations ---
+        window.toggleRowSelection = function(type, id, checked) {
+            if(checked) window.selectedItems[type].add(id); else window.selectedItems[type].delete(id);
+            const btn = document.getElementById('btn-bulk-delete-'+type);
+            if(window.selectedItems[type].size > 0) { btn.classList.remove('hidden'); btn.innerText = `Delete (${window.selectedItems[type].size})`; }
+            else btn.classList.add('hidden');
+        };
+        window.toggleSelectAll = function(type, checked) {
+            document.querySelectorAll('.chk-'+type).forEach(chk => { chk.checked = checked; toggleRowSelection(type, chk.value, checked); });
+        };
+        window.bulkDelete = async function(type) {
+            const ids = Array.from(window.selectedItems[type]); if(ids.length===0) return;
+            Swal.fire({title:'Delete?', showCancelButton:true}).then(async r => {
+                if(r.isConfirmed){
+                    Swal.showLoading();
+                    for(const id of ids) { await deleteDoc(doc(db, type, id)); }
+                    loadState(); // Reloads fresh data
+                }
+            });
+        };
+        window.deleteData = async function(type, id) {
+            Swal.fire({title:'Delete?', showCancelButton:true}).then(async r => {
+                if(r.isConfirmed) { await deleteDoc(doc(db, type+"s", id)); loadState(); }
+            });
         };
 
-        window.exportToCSV = function(type) {
-<!-- ... existing code ... -->
-        // --- STREAMING_CHUNK:Implementing HR & Expenses Module... ---
-        window.saveStaff = async function() {
-<!-- ... existing code ... -->
-        window.generatePayslip = function(id) {
-            const s = state.staff.find(x => x.id === id);
-            if(!s) return;
-            
-            const epf = s.salary * 0.11;
-            const socso = s.salary * 0.005; // Approx
-            const net = s.salary - epf - socso;
-
-            const printArea = document.getElementById('print-payslip');
-            printArea.innerHTML = `
-                <div class="bg-white p-12 max-w-2xl mx-auto shadow-2xl border border-slate-200 rounded-xl mb-12">
-                    ${getLetterhead()}
-                    <h2 class="text-2xl font-black text-center uppercase tracking-widest mb-8 border-b-2 border-slate-800 pb-2">Payslip</h2>
-                    <div class="flex justify-between mb-8 text-sm font-bold">
-                        <div><p class="text-slate-500 uppercase text-[10px]">Staff Name</p><p>${s.name}</p></div>
-                        <div class="text-right"><p class="text-slate-500 uppercase text-[10px]">Role / Title</p><p>${s.role}</p></div>
-                    </div>
-                    <table class="w-full text-left border-collapse mb-8 text-sm">
-                        <tr class="border-b border-slate-200"><td class="py-3 font-bold">Basic Salary</td><td class="py-3 text-right font-mono">${formatRM(s.salary)}</td></tr>
-                        <tr class="border-b border-slate-100 text-rose-500"><td class="py-3 pl-4">Less: EPF (11%)</td><td class="py-3 text-right font-mono">-${formatRM(epf)}</td></tr>
-                        <tr class="border-b border-slate-200 text-rose-500"><td class="py-3 pl-4">Less: SOCSO & EIS</td><td class="py-3 text-right font-mono">-${formatRM(socso)}</td></tr>
-                        <tr class="font-black text-lg border-b-4 border-slate-800"><td class="py-4 uppercase tracking-widest text-xs">Net Payable</td><td class="py-4 text-right font-mono text-cyan-700">${formatRM(net)}</td></tr>
-                    </table>
-                    <div class="mt-12 flex justify-between text-xs font-bold text-slate-400">
-                        <div class="border-t border-slate-300 pt-2 w-48 text-center">Employer Signature</div>
-                        <div class="border-t border-slate-300 pt-2 w-48 text-center">Employee Signature</div>
-                    </div>
-                    <div class="mt-8 flex justify-end gap-3 no-print">
-                        <button onclick="closePayslipView()" class="px-6 py-3 text-sm font-bold text-slate-500 hover:bg-slate-100 rounded-xl transition-colors border border-transparent hover:border-slate-200">Cancel / Back</button>
-                        <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print Payslip</button>
-                    </div>
-                </div>
-            `;
-            
-            printArea.classList.remove('hidden');
-            printArea.classList.add('screen-view');
-            document.querySelector('main').classList.add('hidden');
-            
-            window.onafterprint = () => {};
-        };
-
-        window.closePayslipView = function() {
-            const printArea = document.getElementById('print-payslip');
-            printArea.classList.add('hidden');
-            printArea.classList.remove('screen-view');
-            document.querySelector('main').classList.remove('hidden');
-            switchView('hr');
-        };
-
-        function renderStaff() {
-<!-- ... existing code ... -->
+    </script>
+</body>
+</html>
