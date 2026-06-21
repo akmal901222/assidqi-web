@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>As-Sidqi Engineering | ERP</title>
+    <title>Pelantar | As-Sidqi Engineering ERP</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -61,7 +61,7 @@
     <div id="login-screen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
-            <div class="bg-white rounded-full p-2 w-28 h-28 mb-6 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
+            <div class="bg-white rounded-[24px] p-2 w-28 h-28 mb-6 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
                 <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
             </div>
             <h2 class="text-2xl font-black text-white mb-2">As-Sidqi ERP</h2>
@@ -87,7 +87,7 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="absolute md:relative w-64 bg-[#020617] text-slate-300 flex flex-col h-full shadow-2xl z-[50] no-print border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <div class="p-6 border-b border-slate-800 flex flex-col items-center">
-            <div class="bg-white rounded-full p-2 w-28 h-28 mb-3 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
+            <div class="bg-white rounded-[24px] p-2 w-28 h-28 mb-3 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
                 <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
             </div>
             <div class="bg-cyan-900/40 text-cyan-400 border border-cyan-800/50 px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase mt-2">Engineering ERP Hub</div>
@@ -803,7 +803,7 @@
                 driveClientId: '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com',
                 driveApiKey: 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY',
                 driveFolderId: '',
-                geminiKey: '' // Added for Gemini Pro
+                geminiKey: ''
             }
         };
 
@@ -821,13 +821,13 @@
             'Renew license': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.'
         };
 
-        // Setup PDF.js Worker for Contract Analyzer
+        // Setup PDF.js Worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         window.db = db; window.collection = collection; window.addDoc = addDoc; window.getDocs = getDocs; 
         window.doc = doc; window.setDoc = setDoc; window.deleteDoc = deleteDoc; window.updateDoc = updateDoc;
 
-        // --- Core UI & Navigation Logic ---
+        // --- Core UI Logic ---
         window.handleLogin = function() {
             const id = document.getElementById('login-id').value;
             const pass = document.getElementById('login-pass').value;
@@ -850,22 +850,14 @@
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             document.getElementById(`view-${viewId}`).classList.add('active', 'block');
             if(document.getElementById(`nav-${viewId}`)) document.getElementById(`nav-${viewId}`).classList.add('active');
-            
-            const titles = { 'dashboard': 'Executive Dashboard', 'clients': 'Clients & CRM', 'projects': 'Project Pipeline', 'commercials': 'Billing & Quotations', 'pos': 'Purchase Orders (PO)', 'ai-analyzer': 'Contract Analyzer', 'ai-letter': 'Technical Surat Rasmi', 'hr': 'HR & Payroll', 'expenses': 'Expenses & Claims', 'settings': 'Company Setup' };
-            if(document.getElementById('topbar-title')) document.getElementById('topbar-title').innerText = titles[viewId];
         };
 
         window.openModal = function(id) { document.getElementById(id).classList.add('active'); };
         window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); };
         
         window.logActivity = function(msg, icon, color) {
-            const alertBox = document.getElementById('dash-alerts');
-            if(!alertBox) return;
-            const html = `
-                <div class="p-4 bg-${color}-50 rounded-xl border border-${color}-100 flex gap-3 animation-fade-in">
-                    <i class="ph ph-${icon} text-${color}-600 text-xl mt-0.5"></i>
-                    <div><p class="text-sm font-bold text-${color}-900">${msg}</p><p class="text-[10px] text-${color}-600 uppercase tracking-widest mt-1 font-black">Just now</p></div>
-                </div>`;
+            const alertBox = document.getElementById('dash-alerts'); if(!alertBox) return;
+            const html = `<div class="p-4 bg-${color}-50 rounded-xl border border-${color}-100 flex gap-3 animation-fade-in"><i class="ph ph-${icon} text-${color}-600 text-xl mt-0.5"></i><div><p class="text-sm font-bold text-${color}-900">${msg}</p></div></div>`;
             alertBox.insertAdjacentHTML('afterbegin', html);
         };
 
@@ -890,7 +882,7 @@
                 </div>`;
         }
 
-        // --- STREAMING_CHUNK:Loading Firebase Data... ---
+        // --- Firebase Loading ---
         async function loadState() {
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'short' });
             Swal.fire({ title: 'Syncing with Cloud', text: 'Pulling your ERP data from Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -922,55 +914,34 @@
                 logActivity('ERP authenticated and synchronized with Firebase', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
-                // Enhanced Error Reporting to Screen
                 Swal.fire({
                     title: 'Connection Blocked', 
-                    html: `
-                        <p class="text-sm text-slate-600 mb-2">Your browser or network is blocking the database.</p>
-                        <div class="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-lg font-mono mb-4 text-left break-words">
-                            Error: ${e.message}
-                        </div>
-                        <p class="text-sm font-bold text-slate-800">Please send this error message to the developer!</p>
-                    `, 
+                    html: `<p class="text-sm">Your browser or network is blocking the database.</p><div class="bg-red-50 text-red-600 text-xs p-3 rounded-lg font-mono mb-4 text-left">Error: ${e.message}</div><p class="text-sm font-bold">Please check console or disable adblockers!</p>`, 
                     icon: 'error',
                     confirmButtonText: 'Enter Offline Mode'
-                }).then(() => {
-                    refreshAllViews(); // Let you into the app anyway so it isn't frozen
-                });
+                }).then(() => refreshAllViews());
             }
         }
 
-        // Must define renderDashboard before it is called in refreshAllViews
+        // --- Render Functions ---
         let revChart = null;
         function renderDashboard() {
             let out = 0; let col = 0;
             state.commercials.forEach(d => {
                 if(d.type === 'Invoice') {
-                    if(d.status === 'Paid') col += d.total;
-                    else out += d.total;
+                    if(d.status === 'Paid') col += d.total; else out += d.total;
                 }
             });
-            
             document.getElementById('dash-outstanding').innerText = formatRM(out);
             document.getElementById('dash-collected').innerText = formatRM(col);
             document.getElementById('dash-clients').innerText = state.clients.length;
 
-            const ctx = document.getElementById('revenueChart');
-            if(!ctx) return;
+            const ctx = document.getElementById('revenueChart'); if(!ctx) return;
             if(revChart) revChart.destroy();
-            
             revChart = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Invoiced Revenue (RM)',
-                        data: [0, 0, 0, col*0.3, col*0.7, col+out],
-                        borderColor: '#0891b2', backgroundColor: 'rgba(8, 145, 178, 0.1)',
-                        borderWidth: 3, tension: 0.4, fill: true
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' } }, x: { grid: { display: false } } } }
+                data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'Invoiced Revenue (RM)', data: [0, 0, 0, col*0.3, col*0.7, col+out], borderColor: '#0891b2', backgroundColor: 'rgba(8, 145, 178, 0.1)', borderWidth: 3, tension: 0.4, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
             });
         }
 
@@ -981,64 +952,36 @@
             ['name', 'ssm', 'bem', 'address', 'bank', 'clientid', 'apikey', 'folderid', 'geminikey'].forEach(k => { newSettings[k] = document.getElementById('set-'+k).value; });
             state.settings = { ...state.settings, ...newSettings };
             Swal.showLoading();
-            try {
-                await setDoc(doc(db, "settings", "master"), state.settings);
-                Swal.fire('Saved!', 'Company settings updated securely.', 'success');
-            } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
+            try { await setDoc(doc(db, "settings", "master"), state.settings); Swal.fire('Saved!', 'Company settings updated securely.', 'success'); } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
         };
 
         function updateDropdowns() {
-            const pClient = document.getElementById('proj-client');
-            const invClient = document.getElementById('inv-client');
-            const iProject = document.getElementById('inv-project');
-            const poProject = document.getElementById('po-project');
-            const aiProject = document.getElementById('ai-project');
-            const expProject = document.getElementById('exp-project');
-            
             const clientOpts = '<option value="">-- Select Client --</option>' + state.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-            if(pClient) pClient.innerHTML = clientOpts;
-            if(invClient) invClient.innerHTML = clientOpts;
+            if(document.getElementById('proj-client')) document.getElementById('proj-client').innerHTML = clientOpts;
+            if(document.getElementById('inv-client')) document.getElementById('inv-client').innerHTML = clientOpts;
             
             const projOpts = '<option value="">-- Select Project --</option>' + state.projects.map(p => {
-                const client = state.clients.find(c => c.id === p.clientId);
-                return `<option value="${p.id}">${client ? client.name : 'Unknown'} - ${p.details.substring(0,40)}...</option>`;
+                const client = state.clients.find(c => c.id === p.clientId); return `<option value="${p.id}">${client ? client.name : 'Unknown'} - ${p.details.substring(0,40)}...</option>`;
             }).join('');
-            
-            const projOptsWithNew = '<option value="NEW">➕ Create New Project from this Quote</option>' + state.projects.map(p => {
-                const client = state.clients.find(c => c.id === p.clientId);
-                return `<option value="${p.id}">${client ? client.name : 'Unknown'} - ${p.details.substring(0,40)}...</option>`;
-            }).join('');
+            const projOptsWithNew = '<option value="NEW">➕ Create New Project from this Quote</option>' + projOpts;
 
-            if(iProject) iProject.innerHTML = projOptsWithNew;
-            if(poProject) poProject.innerHTML = projOpts;
-            if(aiProject) aiProject.innerHTML = projOpts;
-            if(expProject) expProject.innerHTML = projOpts;
+            if(document.getElementById('inv-project')) document.getElementById('inv-project').innerHTML = projOptsWithNew;
+            if(document.getElementById('po-project')) document.getElementById('po-project').innerHTML = projOpts;
+            if(document.getElementById('ai-project')) document.getElementById('ai-project').innerHTML = projOpts;
+            if(document.getElementById('exp-project')) document.getElementById('exp-project').innerHTML = projOpts;
         }
 
-        // --- STREAMING_CHUNK:Implementing Client CRM Logic... ---
+        // --- Client Logic ---
         window.saveClient = async function() {
             const id = document.getElementById('c-id').value;
             const name = document.getElementById('c-name').value;
-            const ssm = document.getElementById('c-ssm').value;
-            const contact = document.getElementById('c-contact').value;
-            const email = document.getElementById('c-email').value;
-            const address = document.getElementById('c-address').value;
-            const fileInput = document.getElementById('c-file');
-            
             if(!name) return Swal.fire('Error', 'Company Name is required', 'error');
-            const clientData = { name, ssm, contact, email, address };
+            const clientData = { name, ssm: document.getElementById('c-ssm').value, contact: document.getElementById('c-contact').value, email: document.getElementById('c-email').value, address: document.getElementById('c-address').value };
             Swal.showLoading();
             try {
-                if(id) {
-                    await updateDoc(doc(db, "clients", id), clientData);
-                    const index = state.clients.findIndex(c => c.id === id);
-                    if(index !== -1) state.clients[index] = { ...clientData, id };
-                } else {
-                    const docRef = await addDoc(collection(db, "clients"), clientData);
-                    state.clients.push({ ...clientData, id: docRef.id });
-                    logActivity(`Added new client: ${name}`, 'buildings', 'emerald');
-                }
-                if(fileInput.files.length > 0) await uploadFileToDrive(fileInput.files[0], name + ' - SSM/Profile');
+                if(id) { await updateDoc(doc(db, "clients", id), clientData); const index = state.clients.findIndex(c => c.id === id); if(index !== -1) state.clients[index] = { ...clientData, id }; } 
+                else { const docRef = await addDoc(collection(db, "clients"), clientData); state.clients.push({ ...clientData, id: docRef.id }); logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); }
+                if(document.getElementById('c-file').files.length > 0) await uploadFileToDrive(document.getElementById('c-file').files[0], name + ' - SSM/Profile');
                 ['c-id', 'c-name', 'c-ssm', 'c-contact', 'c-email', 'c-address', 'c-file'].forEach(f => document.getElementById(f).value = '');
                 closeModal('modal-client'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
@@ -1046,9 +989,7 @@
 
         window.editClient = function(id) {
             const c = state.clients.find(x => x.id === id); if(!c) return;
-            document.getElementById('c-id').value = c.id; document.getElementById('c-name').value = c.name;
-            document.getElementById('c-ssm').value = c.ssm || ''; document.getElementById('c-contact').value = c.contact || '';
-            document.getElementById('c-email').value = c.email || ''; document.getElementById('c-address').value = c.address || '';
+            document.getElementById('c-id').value = c.id; document.getElementById('c-name').value = c.name; document.getElementById('c-ssm').value = c.ssm || ''; document.getElementById('c-contact').value = c.contact || ''; document.getElementById('c-email').value = c.email || ''; document.getElementById('c-address').value = c.address || '';
             openModal('modal-client');
         };
 
@@ -1057,169 +998,99 @@
             if (state.clients.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400">No clients registered.</td></tr>'; return; }
             state.clients.forEach(c => {
                 const projCount = state.projects.filter(p => p.clientId === c.id).length;
-                const row = document.createElement('tr'); row.className = "hover:bg-slate-50 transition-colors group";
-                row.innerHTML = `
-                    <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800">${c.name}</td>
-                    <td class="p-4 md:p-5 border-b border-slate-100 font-mono text-slate-500 text-xs">${c.ssm || '-'}</td>
-                    <td class="p-4 md:p-5 border-b border-slate-100 text-slate-600">${c.contact || '-'}</td>
-                    <td class="p-4 md:p-5 border-b border-slate-100 text-indigo-600">${c.email || '-'}</td>
-                    <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800 text-center">${projCount}</td>
-                    <td class="p-4 md:p-5 border-b border-slate-100 text-right">
-                        <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="editClient('${c.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
-                            <button onclick="deleteData('client', '${c.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
-                        </div>
-                    </td>`;
-                tbody.appendChild(row);
-            });
-        }
-
-        // --- STREAMING_CHUNK:Implementing Project Logic... ---
-        window.saveProjectUpdate = async function() {
-            const id = document.getElementById('p-id').value;
-            const clientId = document.getElementById('proj-client').value;
-            const details = document.getElementById('p-details').value;
-            const pbt = document.getElementById('p-pbt').value;
-            const ref = document.getElementById('p-ref').value;
-            const gps = document.getElementById('p-gps').value;
-            const fileInput = document.getElementById('p-file');
-            
-            if(!id || !clientId || !details) return Swal.fire('Error', 'Client and Details required', 'error');
-            const projData = { clientId, details, pbt, ref, gps };
-            Swal.showLoading();
-            try {
-                await updateDoc(doc(db, "projects", id), projData);
-                const index = state.projects.findIndex(p => p.id === id);
-                if(index !== -1) state.projects[index] = { ...state.projects[index], ...projData };
-                if(fileInput.files.length > 0) await uploadFileToDrive(fileInput.files[0], 'Vault - ' + details.substring(0,20));
-                closeModal('modal-project'); refreshAllViews(); Swal.close();
-            } catch(e) { Swal.fire('Error', 'Failed to update project.', 'error'); }
-        };
-
-        window.editProject = function(id) {
-            const p = state.projects.find(x => x.id === id); if(!p) return;
-            document.getElementById('p-id').value = p.id;
-            document.getElementById('proj-client').value = p.clientId;
-            document.getElementById('p-details').value = p.details;
-            document.getElementById('p-pbt').value = p.pbt || 'TBD';
-            document.getElementById('p-ref').value = p.ref || '';
-            document.getElementById('p-gps').value = p.gps || '';
-            openModal('modal-project');
-        };
-
-        window.toggleScopeStatus = async function(projectId, scopeName, currentStatus) {
-            let newStatus = 'Pending';
-            if(currentStatus === 'Pending') newStatus = 'In Progress';
-            else if(currentStatus === 'In Progress') newStatus = 'Completed';
-            
-            const projIndex = state.projects.findIndex(p => p.id === projectId);
-            if(projIndex === -1) return;
-            
-            if(!state.projects[projIndex].scopeStatuses) state.projects[projIndex].scopeStatuses = {};
-            state.projects[projIndex].scopeStatuses[scopeName] = newStatus;
-            
-            renderProjects(); // Instant UI update
-            try { await updateDoc(doc(db, "projects", projectId), { [`scopeStatuses.${scopeName}`]: newStatus }); } 
-            catch (e) { console.error("Failed to sync scope status", e); }
-        };
-
-        window.quickQuote = function(projectId) {
-            switchView('commercials'); openInvoiceWizard();
-            document.getElementById('inv-project').value = projectId;
-            toggleNewProjectFields(projectId);
-        };
-
-        function renderProjects() {
-            const tbody = document.getElementById('project-table'); tbody.innerHTML = '';
-            
-            [...state.projects].reverse().forEach(p => {
-                const client = state.clients.find(c => c.id === p.clientId);
-                const relatedQuotes = state.commercials.filter(d => d.projectId === p.id && d.type === 'Quotation');
-                
-                let scopesHtml = ''; let progressHtml = '';
-                
-                if(relatedQuotes.length > 0) {
-                    let uniqueScopes = new Set();
-                    relatedQuotes.forEach(q => q.items.forEach(item => { if(item.desc) uniqueScopes.add(item.desc); }));
-                    
-                    if(uniqueScopes.size > 0) {
-                        let total = uniqueScopes.size; let completed = 0;
-                        scopesHtml += `<div class="flex flex-wrap gap-1.5 mt-3">`;
-                        uniqueScopes.forEach(scope => {
-                            const status = (p.scopeStatuses && p.scopeStatuses[scope]) ? p.scopeStatuses[scope] : 'Pending';
-                            if(status === 'Completed') completed++;
-                            
-                            let colorClass = 'bg-slate-100 text-slate-500 border-slate-200'; let icon = 'ph-circle';
-                            if(status === 'In Progress') { colorClass = 'bg-amber-100 text-amber-700 border-amber-200'; icon = 'ph-spinner-gap animate-spin'; }
-                            if(status === 'Completed') { colorClass = 'bg-emerald-100 text-emerald-700 border-emerald-200'; icon = 'ph-check-circle-fill'; }
-                            
-                            scopesHtml += `<button onclick="toggleScopeStatus('${p.id}', '${scope}', '${status}')" class="${colorClass} border px-2 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 hover:brightness-95 transition-all shadow-sm" title="Click to update status"><i class="ph ${icon} text-sm"></i> ${scope}</button>`;
-                        });
-                        scopesHtml += `</div>`;
-                        
-                        let pct = Math.round((completed / total) * 100);
-                        let barColor = pct === 100 ? 'bg-emerald-500' : (pct > 0 ? 'bg-amber-400' : 'bg-slate-300');
-                        let textClass = pct === 100 ? 'text-emerald-600' : 'text-slate-600';
-                        
-                        progressHtml = `
-                            <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-1.5"><span class="${textClass}">${pct === 100 ? 'Completed' : 'In Progress'}</span><span class="${textClass}">${pct}%</span></div>
-                            <div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden shadow-inner"><div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div>`;
-                    } else { scopesHtml = `<span class="text-xs text-slate-400 italic">No scopes defined in quote.</span>`; }
-                } else {
-                    progressHtml = `<div class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5">Unbilled Project</div>`;
-                    scopesHtml = `<span class="text-[9px] bg-rose-50 text-rose-500 px-2 py-1 rounded border border-rose-100 font-bold uppercase tracking-widest">No Quotation Linked</span>`;
-                }
-
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group">
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top">
-                            <div class="font-bold text-slate-800 text-sm mb-1.5 leading-snug">${p.details}</div>
-                            <div class="text-xs font-bold text-indigo-600 flex items-center gap-1.5 mb-1"><i class="ph ph-buildings text-sm"></i> ${client ? client.name : 'Unknown Client'}</div>
-                            <div class="text-[10px] text-slate-400 font-medium flex items-center gap-1"><i class="ph ph-calendar-blank text-sm"></i> Registered: ${p.date}</div>
-                        </td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top">
-                            <div class="font-black text-slate-800 text-xs flex items-center gap-1.5"><i class="ph ph-bank text-sm text-cyan-600"></i> ${p.pbt || 'TBD'}</div>
-                            <div class="text-[11px] font-mono font-bold text-slate-500 mt-2 mb-2 px-2 py-0.5 bg-slate-100 rounded inline-block border border-slate-200">Ref: ${p.ref || 'Pending...'}</div>
-                            <div class="text-[10px] font-medium text-slate-500 flex items-start gap-1.5 leading-tight"><i class="ph ph-map-pin text-sm text-rose-400 mt-0.5"></i> <span>${p.gps || 'Location TBD'}</span></div>
-                        </td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top">${progressHtml}${scopesHtml}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top text-right">
-                            <div class="flex justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="quickQuote('${p.id}')" title="Quick Quote" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded border border-transparent hover:border-cyan-100 transition-all"><i class="ph ph-receipt text-lg"></i></button>
-                                <button onclick="editProject('${p.id}')" title="Edit Metadata" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-pencil text-lg"></i></button>
-                                <button onclick="deleteData('project', '${p.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-trash text-lg"></i></button>
+                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800">${c.name}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 font-mono text-slate-500 text-xs">${c.ssm || '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-slate-600">${c.contact || '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-indigo-600">${c.email || '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800 text-center">${projCount}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right">
+                            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editClient('${c.id}')" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
+                                <button onclick="deleteData('client', '${c.id}')" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
                             </div>
                         </td>
                     </tr>`;
             });
         }
 
-        // --- STREAMING_CHUNK:Implementing Billing & Quotation Logic... ---
-        let tempLineItems = []; let editingDocId = null;
-
-        window.toggleNewProjectFields = function(val) {
-            const fields = document.getElementById('new-proj-fields');
-            if(val === 'NEW') fields.classList.remove('hidden');
-            else fields.classList.add('hidden');
+        // --- Project Logic ---
+        window.saveProjectUpdate = async function() {
+            const id = document.getElementById('p-id').value; const clientId = document.getElementById('proj-client').value; const details = document.getElementById('p-details').value;
+            if(!id || !clientId || !details) return Swal.fire('Error', 'Client and Details required', 'error');
+            const projData = { clientId, details, pbt: document.getElementById('p-pbt').value, ref: document.getElementById('p-ref').value, gps: document.getElementById('p-gps').value };
+            Swal.showLoading();
+            try {
+                await updateDoc(doc(db, "projects", id), projData);
+                const index = state.projects.findIndex(p => p.id === id); if(index !== -1) state.projects[index] = { ...state.projects[index], ...projData };
+                if(document.getElementById('p-file').files.length > 0) await uploadFileToDrive(document.getElementById('p-file').files[0], 'Vault - ' + details.substring(0,20));
+                closeModal('modal-project'); refreshAllViews(); Swal.close();
+            } catch(e) { Swal.fire('Error', 'Failed to update project.', 'error'); }
         };
 
+        window.editProject = function(id) {
+            const p = state.projects.find(x => x.id === id); if(!p) return;
+            document.getElementById('p-id').value = p.id; document.getElementById('proj-client').value = p.clientId; document.getElementById('p-details').value = p.details; document.getElementById('p-pbt').value = p.pbt || 'TBD'; document.getElementById('p-ref').value = p.ref || ''; document.getElementById('p-gps').value = p.gps || '';
+            openModal('modal-project');
+        };
+
+        window.toggleScopeStatus = async function(projectId, scopeName, currentStatus) {
+            let newStatus = 'Pending'; if(currentStatus === 'Pending') newStatus = 'In Progress'; else if(currentStatus === 'In Progress') newStatus = 'Completed';
+            const projIndex = state.projects.findIndex(p => p.id === projectId); if(projIndex === -1) return;
+            if(!state.projects[projIndex].scopeStatuses) state.projects[projIndex].scopeStatuses = {};
+            state.projects[projIndex].scopeStatuses[scopeName] = newStatus;
+            renderProjects();
+            try { await updateDoc(doc(db, "projects", projectId), { [`scopeStatuses.${scopeName}`]: newStatus }); } catch (e) { console.error(e); }
+        };
+
+        window.quickQuote = function(projectId) { switchView('commercials'); openInvoiceWizard(); document.getElementById('inv-project').value = projectId; toggleNewProjectFields(projectId); };
+
+        function renderProjects() {
+            const tbody = document.getElementById('project-table'); if(!tbody) return; tbody.innerHTML = '';
+            [...state.projects].reverse().forEach(p => {
+                const client = state.clients.find(c => c.id === p.clientId);
+                const relatedQuotes = state.commercials.filter(d => d.projectId === p.id && d.type === 'Quotation');
+                let scopesHtml = ''; let progressHtml = '';
+                
+                if(relatedQuotes.length > 0) {
+                    let uniqueScopes = new Set(); relatedQuotes.forEach(q => q.items.forEach(item => { if(item.desc) uniqueScopes.add(item.desc); }));
+                    if(uniqueScopes.size > 0) {
+                        let total = uniqueScopes.size; let completed = 0;
+                        scopesHtml += `<div class="flex flex-wrap gap-1.5 mt-3">`;
+                        uniqueScopes.forEach(scope => {
+                            const status = (p.scopeStatuses && p.scopeStatuses[scope]) ? p.scopeStatuses[scope] : 'Pending';
+                            if(status === 'Completed') completed++;
+                            let colorClass = status === 'In Progress' ? 'bg-amber-100 text-amber-700 border-amber-200' : (status === 'Completed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200');
+                            let icon = status === 'In Progress' ? 'ph-spinner-gap animate-spin' : (status === 'Completed' ? 'ph-check-circle-fill' : 'ph-circle');
+                            scopesHtml += `<button onclick="toggleScopeStatus('${p.id}', '${scope}', '${status}')" class="${colorClass} border px-2 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 shadow-sm"><i class="ph ${icon} text-sm"></i> ${scope}</button>`;
+                        });
+                        scopesHtml += `</div>`;
+                        let pct = Math.round((completed / total) * 100);
+                        let barColor = pct === 100 ? 'bg-emerald-500' : (pct > 0 ? 'bg-amber-400' : 'bg-slate-300');
+                        progressHtml = `<div class="flex justify-between text-[10px] font-black uppercase mb-1.5 text-slate-600"><span>${pct === 100 ? 'Completed' : 'In Progress'}</span><span>${pct}%</span></div><div class="w-full bg-slate-100 rounded-full h-1.5 border border-slate-200 overflow-hidden"><div class="${barColor} h-1.5 rounded-full" style="width: ${pct}%"></div></div>`;
+                    }
+                } else { progressHtml = `<div class="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5">Unbilled Project</div>`; scopesHtml = `<span class="text-[9px] bg-rose-50 text-rose-500 px-2 py-1 rounded border border-rose-100 font-bold uppercase tracking-widest">No Quotation Linked</span>`; }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top"><div class="font-bold text-slate-800 text-sm mb-1.5 leading-snug">${p.details}</div><div class="text-xs font-bold text-indigo-600 flex items-center gap-1.5 mb-1"><i class="ph ph-buildings text-sm"></i> ${client ? client.name : 'Unknown'}</div><div class="text-[10px] text-slate-400 font-medium">Registered: ${p.date}</div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top"><div class="font-black text-slate-800 text-xs flex items-center gap-1.5"><i class="ph ph-bank text-sm text-cyan-600"></i> ${p.pbt || 'TBD'}</div><div class="text-[11px] font-mono font-bold text-slate-500 mt-2 mb-2 px-2 py-0.5 bg-slate-100 rounded inline-block border border-slate-200">Ref: ${p.ref || 'Pending...'}</div><div class="text-[10px] font-medium text-slate-500 flex items-start gap-1.5"><i class="ph ph-map-pin text-sm text-rose-400"></i> <span>${p.gps || 'Location TBD'}</span></div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top">${progressHtml}${scopesHtml}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="quickQuote('${p.id}')" title="Quick Quote" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button><button onclick="editProject('${p.id}')" title="Edit Metadata" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button><button onclick="deleteData('project', '${p.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button></div></td>
+                    </tr>`;
+            });
+        }
+
+        // --- Billing Logic ---
+        let tempLineItems = []; let editingDocId = null;
+        window.toggleNewProjectFields = function(val) { document.getElementById('new-proj-fields').classList.toggle('hidden', val !== 'NEW'); };
         window.openInvoiceWizard = function(docId = null) {
             editingDocId = docId; document.getElementById('new-proj-fields').classList.add('hidden');
             if(docId) {
                 const d = state.commercials.find(x => x.id === docId);
-                if(d) {
-                    document.getElementById('inv-project').value = d.projectId;
-                    document.getElementById('inv-type').value = d.type;
-                    document.getElementById('inv-po').value = d.poRef || '';
-                    document.getElementById('inv-sst').checked = d.tax > 0;
-                    tempLineItems = JSON.parse(JSON.stringify(d.items)); 
-                }
-            } else {
-                document.getElementById('inv-project').value = 'NEW'; toggleNewProjectFields('NEW');
-                document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = '';
-                document.getElementById('inv-sst').checked = false;
-                tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }];
-            }
+                if(d) { document.getElementById('inv-project').value = d.projectId; document.getElementById('inv-type').value = d.type; document.getElementById('inv-po').value = d.poRef || ''; document.getElementById('inv-sst').checked = d.tax > 0; tempLineItems = JSON.parse(JSON.stringify(d.items)); }
+            } else { document.getElementById('inv-project').value = 'NEW'; toggleNewProjectFields('NEW'); document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = ''; document.getElementById('inv-sst').checked = false; tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }]; }
             renderLineItems(); openModal('modal-invoice');
         };
 
@@ -1228,25 +1099,16 @@
             tempLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-0 relative group">
-                        <div class="col-span-12 md:col-span-6 w-full space-y-1">
-                            <label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">Scope of Work</label>
-                            <input type="text" value="${item.desc}" oninput="updateItemDesc(${index}, this.value)" list="scope-options" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-cyan-500" placeholder="e.g. PE Endorsement">
-                            <textarea id="item-note-${index}" oninput="updateItemNote(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none focus:border-cyan-500 h-16 resize-none" placeholder="Notes / Breakdown...">${item.note || ''}</textarea>
-                        </div>
-                        <div class="col-span-6 md:col-span-2 w-full"><label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">Qty</label><input type="number" value="${item.qty}" oninput="updateItemQty(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-cyan-500"></div>
-                        <div class="col-span-6 md:col-span-3 w-full"><label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">Unit Price (RM)</label><input type="number" value="${item.price}" oninput="updateItemPrice(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-cyan-500" placeholder="0.00"></div>
+                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${item.desc}" oninput="updateItemDesc(${index}, this.value)" list="scope-options" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-cyan-500" placeholder="e.g. PE Endorsement"><textarea id="item-note-${index}" oninput="updateItemNote(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none focus:border-cyan-500 h-16 resize-none" placeholder="Notes / Breakdown...">${item.note || ''}</textarea></div>
+                        <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="updateItemQty(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-cyan-500"></div>
+                        <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="updateItemPrice(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-cyan-500" placeholder="0.00"></div>
                         <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="removeLineItem(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
                     </div>`;
             });
             calculateTotals();
         };
 
-        window.updateItemDesc = function(index, val) { 
-            tempLineItems[index].desc = val;
-            if(scopeNotesMap[val] && (!tempLineItems[index].note || tempLineItems[index].note.trim() === '')) {
-                tempLineItems[index].note = scopeNotesMap[val]; document.getElementById(`item-note-${index}`).value = scopeNotesMap[val];
-            }
-        };
+        window.updateItemDesc = function(index, val) { tempLineItems[index].desc = val; if(scopeNotesMap[val] && (!tempLineItems[index].note || tempLineItems[index].note.trim() === '')) { tempLineItems[index].note = scopeNotesMap[val]; document.getElementById(`item-note-${index}`).value = scopeNotesMap[val]; } };
         window.updateItemNote = function(index, val) { tempLineItems[index].note = val; };
         window.updateItemQty = function(index, val) { tempLineItems[index].qty = Number(val); calculateTotals(); };
         window.updateItemPrice = function(index, val) { tempLineItems[index].price = Number(val); calculateTotals(); };
@@ -1254,38 +1116,25 @@
         window.removeLineItem = function(index) { if(tempLineItems.length > 1) { tempLineItems.splice(index, 1); renderLineItems(); } };
 
         window.calculateTotals = function() {
-            let sub = 0; tempLineItems.forEach(i => sub += (i.qty * i.price));
-            let tax = document.getElementById('inv-sst').checked ? (sub * 0.08) : 0;
-            document.getElementById('calc-sub').innerText = formatRM(sub);
-            document.getElementById('calc-tax').innerText = formatRM(tax);
-            document.getElementById('calc-total').innerText = formatRM(sub + tax);
+            let sub = 0; tempLineItems.forEach(i => sub += (i.qty * i.price)); let tax = document.getElementById('inv-sst').checked ? (sub * 0.08) : 0;
+            document.getElementById('calc-sub').innerText = formatRM(sub); document.getElementById('calc-tax').innerText = formatRM(tax); document.getElementById('calc-total').innerText = formatRM(sub + tax);
         };
 
         window.saveCommercial = async function() {
-            let projectId = document.getElementById('inv-project').value;
-            const type = document.getElementById('inv-type').value;
-            const poRef = document.getElementById('inv-po').value;
+            let projectId = document.getElementById('inv-project').value; const type = document.getElementById('inv-type').value; const poRef = document.getElementById('inv-po').value;
             if(tempLineItems.some(i => !i.desc)) return Swal.fire('Error', 'All items must have a description.', 'error');
             Swal.showLoading();
-
             try {
                 if (projectId === 'NEW') {
                     const clientId = document.getElementById('inv-client').value; const details = document.getElementById('inv-proj-details').value;
-                    if(!clientId || !details) return Swal.fire('Error', 'Please select a Client and enter Project Details.', 'error');
-                    const projData = { clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
-                    const projRef = await addDoc(collection(db, "projects"), projData);
-                    projectId = projRef.id; state.projects.push({ ...projData, id: projectId });
+                    if(!clientId || !details) return Swal.fire('Error', 'Client and Details required for new project.', 'error');
+                    const projRef = await addDoc(collection(db, "projects"), { clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} });
+                    projectId = projRef.id; state.projects.push({ clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {}, id: projectId });
                 }
-
-                let subtotal = 0; tempLineItems.forEach(i => subtotal += (i.qty * i.price));
-                let tax = document.getElementById('inv-sst').checked ? (subtotal * 0.08) : 0;
-                
-                const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const year = new Date().getFullYear();
-                const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1;
+                let subtotal = 0; tempLineItems.forEach(i => subtotal += (i.qty * i.price)); let tax = document.getElementById('inv-sst').checked ? (subtotal * 0.08) : 0;
+                const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const year = new Date().getFullYear(); const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1;
                 const docId = editingDocId || `${prefix}-${year}-${String(count).padStart(3, '0')}`;
-
                 const docData = { projectId, type, poRef, items: tempLineItems, subtotal, tax, total: subtotal+tax, date: new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
-
                 if(editingDocId) { await updateDoc(doc(db, "commercials", editingDocId), docData); const index = state.commercials.findIndex(d => d.id === editingDocId); if(index !== -1) state.commercials[index] = { ...docData, id: editingDocId }; } 
                 else { await setDoc(doc(db, "commercials", docId), docData); state.commercials.push({ ...docData, id: docId }); logActivity(`Generated new ${type} for ${formatRM(docData.total)}`, 'receipt', 'cyan'); }
                 closeModal('modal-invoice'); refreshAllViews(); Swal.close();
@@ -1295,444 +1144,197 @@
         window.togglePaidStatus = async function(id) {
             const docIndex = state.commercials.findIndex(d => d.id === id); if(docIndex === -1) return;
             const newStatus = state.commercials[docIndex].status === 'Paid' ? 'Unpaid' : 'Paid';
-            try { await updateDoc(doc(db, "commercials", id), { status: newStatus }); state.commercials[docIndex].status = newStatus; refreshAllViews(); if(newStatus === 'Paid') logActivity(`Invoice ${id} marked as PAID`, 'check-circle', 'emerald'); } 
-            catch(e) { Swal.fire('Error', 'Failed to update status', 'error'); }
+            try { await updateDoc(doc(db, "commercials", id), { status: newStatus }); state.commercials[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); }
         };
 
         function renderCommercials() {
-            const tbody = document.getElementById('commercials-table'); tbody.innerHTML = '';
+            const tbody = document.getElementById('commercials-table'); if(!tbody) return; tbody.innerHTML = '';
             [...state.commercials].reverse().forEach(d => {
                 const proj = state.projects.find(p => p.id === d.projectId); const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
                 const typeBadge = d.type === 'Quotation' ? `<span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest">Quote</span>` : `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest">Invoice</span>`;
                 const paidBtnClass = d.status === 'Paid' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50';
-                
+                const paidIcon = d.status === 'Paid' ? 'ph-check-circle-fill' : 'ph-check-circle';
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-black text-slate-800">${d.id}</div><div class="flex items-center gap-2 mt-1">${typeBadge}<span class="text-[10px] text-slate-400 font-medium">${d.date}</span></div></td>
                         <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-slate-700 text-xs">${client ? client.name : 'Unknown'}</div><div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px] md:max-w-xs">${proj ? proj.details : 'Unknown Project'}</div></td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-xs font-mono text-slate-500">${d.poRef || '-'}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="font-black font-mono ${d.type==='Invoice' ? 'text-cyan-600' : 'text-slate-700'}">${formatRM(d.total)}</div>${d.tax > 0 ? `<div class="text-[9px] text-rose-500 uppercase tracking-widest font-bold mt-0.5">+ 8% SST</div>` : ''}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-right">
-                            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                ${d.type === 'Invoice' ? `<button onclick="togglePaidStatus('${d.id}')" title="Mark Paid" class="${paidBtnClass} p-1.5 rounded transition-colors"><i class="ph ph-check-circle${d.status==='Paid'?'-fill':''} text-lg"></i></button>` : ''}
-                                <button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button>
-                                <button onclick="openInvoiceWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
-                                <button onclick="deleteData('commercial', '${d.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
-                            </div>
-                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">${d.type === 'Invoice' ? `<button onclick="togglePaidStatus('${d.id}')" title="Mark Paid" class="${paidBtnClass} p-1.5 rounded transition-colors"><i class="ph ${paidIcon} text-lg"></i></button>` : ''}<button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button><button onclick="openInvoiceWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button><button onclick="deleteData('commercial', '${d.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button></div></td>
                     </tr>`;
             });
         }
 
-        // --- STREAMING_CHUNK:Implementing Purchase Order (PO) Logic... ---
+        // --- PO Logic ---
         let tempPOLineItems = []; let editingPOId = null;
-
         window.openPOWizard = function(docId = null) {
             editingPOId = docId;
-            if(docId) {
-                const d = state.pos.find(x => x.id === docId);
-                if(d) {
-                    document.getElementById('po-project').value = d.projectId; document.getElementById('po-vendor-name').value = d.vendorName || '';
-                    document.getElementById('po-vendor-address').value = d.vendorAddress || ''; document.getElementById('po-sst').checked = d.tax > 0;
-                    tempPOLineItems = JSON.parse(JSON.stringify(d.items)); 
-                }
-            } else {
-                document.getElementById('po-project').value = ''; document.getElementById('po-vendor-name').value = '';
-                document.getElementById('po-vendor-address').value = ''; document.getElementById('po-sst').checked = false;
-                tempPOLineItems = [{ desc: '', qty: 1, price: 0 }];
-            }
+            if(docId) { const d = state.pos.find(x => x.id === docId); if(d) { document.getElementById('po-project').value = d.projectId; document.getElementById('po-vendor-name').value = d.vendorName || ''; document.getElementById('po-vendor-address').value = d.vendorAddress || ''; document.getElementById('po-sst').checked = d.tax > 0; tempPOLineItems = JSON.parse(JSON.stringify(d.items)); } }
+            else { document.getElementById('po-project').value = ''; document.getElementById('po-vendor-name').value = ''; document.getElementById('po-vendor-address').value = ''; document.getElementById('po-sst').checked = false; tempPOLineItems = [{ desc: '', qty: 1, price: 0 }]; }
             renderPOLineItems(); openModal('modal-po');
         };
-
         window.renderPOLineItems = function() {
             const container = document.getElementById('po-line-items-container'); container.innerHTML = '';
             tempPOLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-0 relative group">
-                        <div class="col-span-12 md:col-span-6 w-full space-y-1">
-                            <label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">Description</label>
-                            <input type="text" value="${item.desc}" oninput="updateItemDescPO(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="e.g. Soil Investigation Borehole">
-                        </div>
-                        <div class="col-span-6 md:col-span-2 w-full"><label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">Qty</label><input type="number" value="${item.qty}" oninput="updateItemQtyPO(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-indigo-500"></div>
-                        <div class="col-span-6 md:col-span-3 w-full"><label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">Unit Price (RM)</label><input type="number" value="${item.price}" oninput="updateItemPricePO(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-500" placeholder="0.00"></div>
+                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${item.desc}" oninput="updateItemDescPO(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="e.g. Soil Investigation Borehole"></div>
+                        <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="updateItemQtyPO(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-indigo-500"></div>
+                        <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="updateItemPricePO(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-500" placeholder="0.00"></div>
                         <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="removeLineItemPO(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
                     </div>`;
             });
             calculateTotalsPO();
         };
-
-        window.updateItemDescPO = function(index, val) { tempPOLineItems[index].desc = val; };
-        window.updateItemQtyPO = function(index, val) { tempPOLineItems[index].qty = Number(val); calculateTotalsPO(); };
-        window.updateItemPricePO = function(index, val) { tempPOLineItems[index].price = Number(val); calculateTotalsPO(); };
-        window.addLineItemPO = function() { tempPOLineItems.push({ desc: '', qty: 1, price: 0 }); renderPOLineItems(); };
-        window.removeLineItemPO = function(index) { if(tempPOLineItems.length > 1) { tempPOLineItems.splice(index, 1); renderPOLineItems(); } };
-
-        window.calculateTotalsPO = function() {
-            let sub = 0; tempPOLineItems.forEach(i => sub += (i.qty * i.price));
-            let tax = document.getElementById('po-sst').checked ? (sub * 0.08) : 0;
-            document.getElementById('po-calc-sub').innerText = formatRM(sub);
-            document.getElementById('po-calc-tax').innerText = formatRM(tax);
-            document.getElementById('po-calc-total').innerText = formatRM(sub + tax);
-        };
-
+        window.updateItemDescPO = function(index, val) { tempPOLineItems[index].desc = val; }; window.updateItemQtyPO = function(index, val) { tempPOLineItems[index].qty = Number(val); calculateTotalsPO(); }; window.updateItemPricePO = function(index, val) { tempPOLineItems[index].price = Number(val); calculateTotalsPO(); }; window.addLineItemPO = function() { tempPOLineItems.push({ desc: '', qty: 1, price: 0 }); renderPOLineItems(); }; window.removeLineItemPO = function(index) { if(tempPOLineItems.length > 1) { tempPOLineItems.splice(index, 1); renderPOLineItems(); } };
+        window.calculateTotalsPO = function() { let sub = 0; tempPOLineItems.forEach(i => sub += (i.qty * i.price)); let tax = document.getElementById('po-sst').checked ? (sub * 0.08) : 0; document.getElementById('po-calc-sub').innerText = formatRM(sub); document.getElementById('po-calc-tax').innerText = formatRM(tax); document.getElementById('po-calc-total').innerText = formatRM(sub + tax); };
         window.savePO = async function() {
-            const projectId = document.getElementById('po-project').value; const vendorName = document.getElementById('po-vendor-name').value;
-            const vendorAddress = document.getElementById('po-vendor-address').value;
-            if(!projectId) return Swal.fire('Error', 'Please link to a Project.', 'error');
-            if(!vendorName) return Swal.fire('Error', 'Vendor name is required.', 'error');
+            const projectId = document.getElementById('po-project').value; const vendorName = document.getElementById('po-vendor-name').value; const vendorAddress = document.getElementById('po-vendor-address').value;
+            if(!projectId || !vendorName) return Swal.fire('Error', 'Project and Vendor required.', 'error');
             if(tempPOLineItems.some(i => !i.desc)) return Swal.fire('Error', 'All items must have a description.', 'error');
-
             Swal.showLoading();
             try {
-                let subtotal = 0; tempPOLineItems.forEach(i => subtotal += (i.qty * i.price));
-                let tax = document.getElementById('po-sst').checked ? (subtotal * 0.08) : 0;
-                
-                const year = new Date().getFullYear();
-                const count = state.pos.filter(d => d.id.includes(year)).length + 1;
-                const docId = editingPOId || `PO-${year}-${String(count).padStart(3, '0')}`;
-
+                let subtotal = 0; tempPOLineItems.forEach(i => subtotal += (i.qty * i.price)); let tax = document.getElementById('po-sst').checked ? (subtotal * 0.08) : 0;
+                const year = new Date().getFullYear(); const count = state.pos.filter(d => d.id.includes(year)).length + 1; const docId = editingPOId || `PO-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, vendorName, vendorAddress, items: tempPOLineItems, subtotal, tax, total: subtotal+tax, date: new Date().toLocaleDateString('en-MY'), status: 'Pending' };
-
                 if(editingPOId) { await updateDoc(doc(db, "pos", editingPOId), docData); const index = state.pos.findIndex(d => d.id === editingPOId); if(index !== -1) state.pos[index] = { ...docData, id: editingPOId }; } 
                 else { await setDoc(doc(db, "pos", docId), docData); state.pos.push({ ...docData, id: docId }); logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); }
                 closeModal('modal-po'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save PO.', 'error'); }
         };
-
-        window.togglePOSettled = async function(id) {
-            const docIndex = state.pos.findIndex(d => d.id === id); if(docIndex === -1) return;
-            const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled';
-            try { await updateDoc(doc(db, "pos", id), { status: newStatus }); state.pos[docIndex].status = newStatus; refreshAllViews(); } 
-            catch(e) { Swal.fire('Error', 'Failed to update status', 'error'); }
-        };
-
+        window.togglePOSettled = async function(id) { const docIndex = state.pos.findIndex(d => d.id === id); if(docIndex === -1) return; const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled'; try { await updateDoc(doc(db, "pos", id), { status: newStatus }); state.pos[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); } };
         function renderPOs() {
             const tbody = document.getElementById('pos-table'); if(!tbody) return; tbody.innerHTML = '';
             [...state.pos].reverse().forEach(d => {
-                const proj = state.projects.find(p => p.id === d.projectId);
-                const settledClass = d.status === 'Settled' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50';
-                
+                const proj = state.projects.find(p => p.id === d.projectId); const settledClass = d.status === 'Settled' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-300 hover:text-emerald-500 hover:bg-emerald-50';
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-black text-slate-800">${d.id}</div><div class="text-[10px] text-slate-400 font-medium mt-1">${d.date}</div></td>
                         <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-indigo-700 text-xs">${d.vendorName}</div><div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px] md:max-w-xs"><i class="ph ph-link"></i> ${proj ? proj.details : 'Unknown Project'}</div></td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="font-black font-mono text-slate-700">${formatRM(d.total)}</div>${d.tax > 0 ? `<div class="text-[9px] text-rose-500 uppercase tracking-widest font-bold mt-0.5">+ 8% SST</div>` : ''}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-right">
-                            <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="togglePOSettled('${d.id}')" title="Mark Settled" class="${settledClass} p-1.5 rounded transition-colors"><i class="ph ph-check-circle${d.status==='Settled'?'-fill':''} text-lg"></i></button>
-                                <button onclick="printPO('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button>
-                                <button onclick="openPOWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
-                                <button onclick="deleteData('po', '${d.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
-                            </div>
-                        </td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="togglePOSettled('${d.id}')" title="Mark Settled" class="${settledClass} p-1.5 rounded transition-colors"><i class="ph ph-check-circle${d.status==='Settled'?'-fill':''} text-lg"></i></button><button onclick="printPO('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button><button onclick="openPOWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button><button onclick="deleteData('po', '${d.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button></div></td>
                     </tr>`;
             });
         }
 
-        // --- STREAMING_CHUNK:Configuring Gemini AI Modules... ---
-        async function askGemini(promptText) {
-            if (!state.settings.geminikey) {
-                Swal.fire('Gemini AI Not Configured', 'Please paste your Google AI Studio API Key in the Company Setup tab.', 'warning');
-                return null;
-            }
+        // --- HR & Staff Logic (CRITICAL FIX: Definitive Inclusion) ---
+        window.saveStaff = async function() {
+            const id = document.getElementById('s-id').value;
+            const name = document.getElementById('s-name').value;
+            const role = document.getElementById('s-role').value;
+            const salary = Number(document.getElementById('s-salary').value);
+            if(!name || !salary) return Swal.fire('Error', 'Name and Salary required', 'error');
+            const staffData = { name, role, salary };
+            Swal.showLoading();
             try {
-                const genAI = new GoogleGenerativeAI(state.settings.geminikey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                const result = await model.generateContent(promptText);
-                return result.response.text();
-            } catch (error) {
-                console.error("Gemini Error:", error);
-                Swal.fire('Gemini API Error', 'Failed to connect to Google AI. Please check your API key.', 'error');
-                return null;
-            }
+                if(id) {
+                    await updateDoc(doc(db, "staff", id), staffData);
+                    const index = state.staff.findIndex(s => s.id === id);
+                    if(index !== -1) state.staff[index] = { ...staffData, id };
+                } else {
+                    const docRef = await addDoc(collection(db, "staff"), staffData);
+                    state.staff.push({ ...staffData, id: docRef.id });
+                }
+                ['s-id', 's-name', 's-role', 's-salary'].forEach(f => document.getElementById(f).value = '');
+                closeModal('modal-staff'); refreshAllViews(); Swal.close();
+            } catch(e) { Swal.fire('Error', 'Failed to save staff.', 'error'); }
+        };
+
+        window.generatePayslip = function(id) {
+            const s = state.staff.find(x => x.id === id); if(!s) return;
+            const epf = s.salary * 0.11; const socso = s.salary * 0.005; const net = s.salary - epf - socso;
+            const printArea = document.getElementById('print-payslip');
+            printArea.innerHTML = `
+                ${getLetterhead()}
+                <h2 class="text-2xl font-black text-center uppercase tracking-widest mb-8 border-b-2 border-slate-800 pb-2">Payslip</h2>
+                <div class="flex justify-between mb-8 text-sm font-bold"><div><p class="text-slate-500 uppercase text-[10px]">Staff Name</p><p>${s.name}</p></div><div class="text-right"><p class="text-slate-500 uppercase text-[10px]">Role / Title</p><p>${s.role}</p></div></div>
+                <table class="w-full text-left border-collapse mb-8 text-sm">
+                    <tr class="border-b border-slate-200"><td class="py-3 font-bold">Basic Salary</td><td class="py-3 text-right font-mono">${formatRM(s.salary)}</td></tr>
+                    <tr class="border-b border-slate-100 text-rose-500"><td class="py-3 pl-4">Less: EPF (11%)</td><td class="py-3 text-right font-mono">-${formatRM(epf)}</td></tr>
+                    <tr class="border-b border-slate-200 text-rose-500"><td class="py-3 pl-4">Less: SOCSO & EIS</td><td class="py-3 text-right font-mono">-${formatRM(socso)}</td></tr>
+                    <tr class="font-black text-lg border-b-4 border-slate-800"><td class="py-4 uppercase tracking-widest text-xs">Net Payable</td><td class="py-4 text-right font-mono text-cyan-700">${formatRM(net)}</td></tr>
+                </table>
+                <div class="mt-12 flex justify-between text-xs font-bold text-slate-400"><div class="border-t border-slate-300 pt-2 w-48 text-center">Employer Signature</div><div class="border-t border-slate-300 pt-2 w-48 text-center">Employee Signature</div></div>
+                <div class="mt-8 flex justify-end no-print"><button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print Payslip</button></div>
+            `;
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => { printArea.classList.add('hidden'); document.getElementById('topbar').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('hidden'); switchView('hr'); };
+        };
+
+        function renderStaff() {
+            const grid = document.getElementById('staff-grid'); if(!grid) return; grid.innerHTML = '';
+            state.staff.forEach(s => {
+                grid.innerHTML += `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group hover:shadow-md transition-all">
+                        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="generatePayslip('${s.id}')" title="Generate Payslip" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button>
+                            <button onclick="deleteData('staff', '${s.id}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
+                        </div>
+                        <div class="w-12 h-12 bg-slate-100 text-slate-700 rounded-full flex items-center justify-center font-black text-xl mb-4 border border-slate-200"><i class="ph ph-user"></i></div>
+                        <h4 class="font-black text-slate-800 text-lg">${s.name}</h4>
+                        <p class="text-xs font-bold text-slate-500 mb-4">${s.role}</p>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Basic Salary</p><p class="font-mono font-black text-cyan-600">${formatRM(s.salary)}</p></div>
+                    </div>`;
+            });
         }
 
-        window.analyzeContract = async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            if (file.type !== "application/pdf") return Swal.fire('Invalid File', 'Please upload a PDF document.', 'error');
-            
-            Swal.fire({ title: 'Gemini is reading...', text: 'Extracting text from PDF for analysis...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-
+        // --- Expenses Logic ---
+        window.saveExpense = async function() {
+            const category = document.getElementById('exp-cat').value; const desc = document.getElementById('exp-desc').value; const amount = Number(document.getElementById('exp-amount').value); const projectId = document.getElementById('exp-project').value;
+            if(!desc || !amount) return Swal.fire('Error', 'Description and Amount required', 'error');
+            const expData = { category, desc, amount, projectId, date: new Date().toLocaleDateString('en-MY') };
+            Swal.showLoading();
             try {
-                // 1. Extract text using PDF.js
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                let extractedText = "";
-                
-                // Read up to first 10 pages to avoid context limits
-                const maxPages = Math.min(pdf.numPages, 10);
-                for (let i = 1; i <= maxPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const textContent = await page.getTextContent();
-                    extractedText += textContent.items.map(item => item.str).join(' ') + "\n";
-                }
-
-                if (!extractedText.trim()) throw new Error("Could not extract readable text from this PDF.");
-
-                Swal.fire({ title: 'Gemini is analyzing...', text: 'Processing legal clauses and engineering scopes...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-
-                // 2. Send to Gemini
-                const prompt = `You are a Senior Project Manager for a Civil & Structural Engineering firm. Analyze the following contract/LOA text. 
-                Please provide a clean, highly professional executive summary focusing ONLY on:
-                1. Project Title & Exact Scope of Work
-                2. Payment Terms & Milestones
-                3. Liquidated Ascertained Damages (LAD) or Penalty Clauses
-                4. Key Risks or unusual obligations for the Engineer/Contractor.
-                
-                Keep it concise and format it using markdown (bolding, bullet points).
-                
-                Contract Text:
-                ${extractedText.substring(0, 30000)}`; // limit chars to avoid token limits
-
-                const aiResponse = await askGemini(prompt);
-                
-                if (aiResponse) {
-                    const resultDiv = document.getElementById('ai-contract-result');
-                    // Parse markdown to HTML
-                    resultDiv.innerHTML = marked.parse(aiResponse);
-                    resultDiv.classList.remove('hidden');
-                    Swal.close();
-                    logActivity('Analyzed new contract document with Gemini Pro', 'file-magnifying-glass', 'indigo');
-                }
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Analysis Failed', 'Could not process the PDF. Ensure it contains readable text and not just scanned images.', 'error');
-            }
-            event.target.value = ''; // Reset input
+                const docRef = await addDoc(collection(db, "expenses"), expData); state.expenses.push({ ...expData, id: docRef.id });
+                ['exp-desc', 'exp-amount'].forEach(f => document.getElementById(f).value = ''); document.getElementById('exp-project').value = ''; closeModal('modal-expense'); refreshAllViews(); Swal.close();
+            } catch(e) { Swal.fire('Error', 'Failed to log expense.', 'error'); }
         };
 
-        window.generateAILetter = async function() {
-            const pId = document.getElementById('ai-project').value;
-            const type = document.getElementById('ai-type').value;
-            const customPrompt = document.getElementById('ai-custom-prompt').value;
-            if(!pId) return Swal.fire('Error', 'Please select a project.', 'error');
-            
-            const p = state.projects.find(x => x.id === pId);
-            const client = state.clients.find(c => c.id === p.clientId);
-            const date = new Date().toLocaleDateString('ms-MY', { day: 'numeric', month: 'long', year: 'numeric' });
-            
-            // Check if Gemini is enabled, else fallback to basic templates
-            if (!state.settings.geminikey) {
-                Swal.fire({ title: 'Using Basic Template', text: 'Gemini API not configured. Falling back to static templates.', icon: 'info', timer: 1500, showConfirmButton: false });
-                let pbtAddress = '';
-                if(p.pbt === 'DBKL') pbtAddress = "Dewan Bandaraya Kuala Lumpur\nMenara DBKL 1, Jalan Raja Laut\n50350 Kuala Lumpur";
-                else if(p.pbt === 'MBPJ') pbtAddress = "Majlis Bandaraya Petaling Jaya\nJalan Yong Shook Lin\n46675 Petaling Jaya, Selangor";
-                else pbtAddress = `Pihak Berkuasa Tempatan (${p.pbt})\n[Alamat PBT]`;
-
-                let body = '';
-                if(type === 'Surat Iringan OSC') body = `Merujuk kepada perkara di atas, kami bagi pihak klien ${client ? client.name : ''} ingin mengemukakan permohonan kelulusan pelan struktur bagi projek tersebut.\n\n2. Bersama-sama surat ini, disertakan dokumen sokongan seperti Borang A, Laporan Cadangan Pemajuan (LCP), dan dua (2) set pelan struktur yang telah disahkan oleh Jurutera Profesional (C&S) untuk tindakan dan semakan pihak tuan selanjutnya.\n\nKerjasama dan keprihatinan pihak tuan amatlah dihargai.`;
-                else if(type === 'Pengesahan Struktur') body = `Merujuk kepada perkara di atas, saya, Ir. [Nama Anda] (No. Pendaftaran BEM: ${state.settings.bem}), mengesahkan bahawa reka bentuk struktur bagi paparan iklan tersebut telah direka bentuk mengikut kod amalan piawaian kejuruteraan (BS 5950 & MS 1553).\n\n2. Struktur tersebut disahkan selamat dan stabil untuk dibina serta mampu menampung beban angin dan beban mati seperti yang dinyatakan dalam lukisan struktur.`;
-                else body = `Merujuk kepada perkara di atas, pihak kami memohon pertimbangan semula untuk kelulusan bagi projek tersebut... (Sila tambah butiran rayuan anda)`;
-
-                const letterHtml = `
-                    ${getLetterhead()}
-                    <div class="mt-8 font-serif">
-                        <p class="mb-4">Tarikh: <strong>${date}</strong></p>
-                        <p class="whitespace-pre-line mb-6 font-semibold">${pbtAddress}</p>
-                        <p class="mb-4">Tuan/Puan,</p>
-                        <p class="font-bold uppercase mb-4 border-b border-slate-800 pb-1">PER: ${p.details}</p>
-                        <p class="whitespace-pre-line mb-8 leading-relaxed">${body}</p>
-                        <p class="mb-12">Yang benar,</p>
-                        <p class="font-bold">Ir. Principal</p>
-                        <p>Jurutera Perunding Awam & Struktur</p>
-                        <p>${state.settings.name}</p>
-                    </div>`;
-
-                document.getElementById('print-ai-letter').innerHTML = letterHtml;
-                document.getElementById('ai-result').classList.remove('hidden');
-                document.getElementById('ai-result').classList.add('block');
-                return;
-            }
-
-            // Gemini Pro Advanced Generation
-            Swal.fire({ title: 'Gemini is drafting...', html: 'Applying engineering context...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-            
-            const prompt = `You are a Professional Civil & Structural Engineer in Malaysia. Write a highly formal official letter (Surat Rasmi) in Bahasa Malaysia.
-            Do NOT include the letterhead (my system will add that). Start directly with the Date, Address, Salutation, Subject (PER), Body, and Sign-off.
-            
-            Context:
-            - Client: ${client ? client.name : 'Unknown'}
-            - Project Title: ${p.details}
-            - Local Authority (PBT): ${p.pbt}
-            - Letter Type: ${type}
-            - Today's Date: ${date}
-            
-            Additional Instructions from Principal Engineer: ${customPrompt || 'Write standard professional content for this type of letter.'}
-            
-            Format it using basic HTML tags (<p>, <strong>) so it renders nicely in my app. Do not wrap it in a code block.`;
-
-            const aiResponse = await askGemini(prompt);
-            
-            if (aiResponse) {
-                const letterHtml = `${getLetterhead()}<div class="mt-8 font-serif text-[15px] leading-relaxed">${aiResponse}</div>`;
-                document.getElementById('print-ai-letter').innerHTML = letterHtml;
-                document.getElementById('ai-result').classList.remove('hidden');
-                document.getElementById('ai-result').classList.add('block');
-                Swal.close();
-                logActivity(`Gemini drafted custom ${type} for ${p.pbt}`, 'magic-wand', 'indigo');
-            }
-        };
-
-        window.toggleChatbot = function() {
-            const window = document.getElementById('ai-chat-window');
-            window.classList.toggle('hidden');
-            window.classList.toggle('flex');
-            if(!window.classList.contains('hidden')) {
-                document.getElementById('ai-chat-input').focus();
-            }
-        };
-
-        window.sendChatMessage = async function() {
-            const inputEl = document.getElementById('ai-chat-input');
-            const message = inputEl.value.trim();
-            if(!message) return;
-            
-            const chatBox = document.getElementById('ai-chat-messages');
-            
-            // Append User Message
-            chatBox.innerHTML += `<div class="bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none self-end shadow-sm max-w-[85%] mt-3">${message}</div>`;
-            inputEl.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Show typing indicator
-            const typingId = 'typing-' + Date.now();
-            chatBox.innerHTML += `<div id="${typingId}" class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-500 self-start shadow-sm max-w-[85%] mt-3 flex items-center gap-2"><i class="ph ph-spinner-gap animate-spin"></i> Gemini is thinking...</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Prepare Database Context (Minimize data to save tokens)
-            const dbSummary = {
-                clients: state.clients.map(c => ({ id: c.id, name: c.name })),
-                projects: state.projects.map(p => ({ id: p.id, details: p.details, status: p.status, client: state.clients.find(c=>c.id===p.clientId)?.name })),
-                invoices: state.commercials.map(c => ({ id: c.id, type: c.type, total: c.total, status: c.status, project: state.projects.find(p=>p.id===c.projectId)?.details }))
-            };
-
-            const prompt = `You are the Executive AI Co-Pilot for the As-Sidqi Engineering ERP system. 
-            Answer the user's question concisely based ONLY on the following JSON database summary. If the answer is not in the data, say so.
-            Format your answer in Markdown.
-            
-            Database JSON: ${JSON.stringify(dbSummary)}
-            
-            User Question: "${message}"`;
-
-            const responseText = await askGemini(prompt);
-            
-            // Remove typing indicator and append response
-            document.getElementById(typingId).remove();
-            
-            if(responseText) {
-                chatBox.innerHTML += `<div class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-800 self-start shadow-sm max-w-[85%] mt-3 prose prose-sm">${marked.parse(responseText)}</div>`;
-            } else {
-                chatBox.innerHTML += `<div class="bg-rose-50 border border-rose-200 text-rose-600 p-3 rounded-lg rounded-tl-none self-start shadow-sm max-w-[85%] mt-3">Connection error. Please check your API key.</div>`;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        };
-
-        // --- STREAMING_CHUNK:Implementing OCR & AI Expense Scanner... ---
-        window.processReceiptImage = async function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // Simple validation to ensure it's an image
-            if (!file.type.startsWith('image/')) {
-                return Swal.fire('Invalid File', 'Please upload an image (JPG/PNG) of the receipt.', 'error');
-            }
-
-            Swal.fire({
-                title: 'AI Scanning...',
-                text: 'Extracting data via Tesseract OCR. This takes a few seconds...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
+        function renderExpenses() {
+            const tbody = document.getElementById('expenses-table'); if(!tbody) return; tbody.innerHTML = '';
+            [...state.expenses].reverse().forEach(e => {
+                let projName = '-'; if(e.projectId) { const p = state.projects.find(x => x.id === e.projectId); if(p) projName = p.details.substring(0, 30) + '...'; }
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-[10px] text-slate-400">${e.date}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-slate-800 text-sm">${e.desc}</div><div class="text-[10px] font-black uppercase tracking-widest text-rose-500 mt-1">${e.category}</div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs text-slate-500">${projName}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right font-mono font-black text-rose-600">${formatRM(e.amount)}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><button onclick="deleteData('expense', '${e.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="ph ph-trash text-lg"></i></button></td>
+                    </tr>`;
             });
+        }
 
-            try {
-                // Initialize Tesseract worker
-                const worker = await Tesseract.createWorker('eng');
-                const ret = await worker.recognize(file);
-                const text = ret.data.text;
-                await worker.terminate();
-
-                console.log("OCR Extracted Text:\n", text); // Helpful for debugging
-
-                // Intelligent Parsing Logic
-                let extractedAmount = 0;
-                let extractedDesc = "AI Extracted Expense";
-
-                // 1. Hunt for the Amount
-                // Looking for RM, TOTAL, or just floating numbers at the bottom
-                const lines = text.split('\n');
-                let foundTotal = false;
-
-                for (let i = lines.length - 1; i >= 0; i--) {
-                    const line = lines[i].toUpperCase();
-                    // If line contains 'TOTAL' or 'RM', grab the numbers
-                    if (line.includes('TOTAL') || line.includes('RM') || line.includes('JUMLAH')) {
-                        const match = line.match(/\d+\.\d{2}/); // Matches 0.00 format
-                        if (match) {
-                            extractedAmount = parseFloat(match[0]);
-                            foundTotal = true;
-                            break;
-                        }
-                    }
+        window.deleteData = function(type, id) {
+            Swal.fire({ title: 'Delete record?', text: "Permanent cloud deletion.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' }).then(async r => {
+                if(r.isConfirmed){
+                    Swal.showLoading();
+                    try {
+                        let colName = type + "s"; if(type==='staff') colName='staff'; else if(type==='po') colName='pos';
+                        await deleteDoc(doc(db, colName, id));
+                        if(type==='client') state.clients = state.clients.filter(c=>c.id!==id);
+                        if(type==='project') state.projects = state.projects.filter(p=>p.id!==id);
+                        if(type==='commercial') state.commercials = state.commercials.filter(d=>d.id!==id);
+                        if(type==='po') state.pos = state.pos.filter(d=>d.id!==id);
+                        if(type==='staff') state.staff = state.staff.filter(s=>s.id!==id);
+                        if(type==='expense') state.expenses = state.expenses.filter(e=>e.id!==id);
+                        refreshAllViews(); Swal.fire('Deleted!', 'Record removed.', 'success');
+                    } catch(e) { Swal.fire('Error', 'Failed to delete.', 'error'); }
                 }
-                
-                // Fallback: Just grab the largest currency-looking number found anywhere
-                if(!foundTotal) {
-                     const allNumbers = text.match(/\d+\.\d{2}/g);
-                     if(allNumbers) {
-                         const floats = allNumbers.map(n => parseFloat(n));
-                         extractedAmount = Math.max(...floats);
-                     }
-                }
-
-                // 2. Hunt for the Vendor Name (usually line 1 or 2)
-                const validLines = lines.filter(l => l.trim().length > 3);
-                if (validLines.length > 0) {
-                    extractedDesc = validLines[0].trim(); // Take the first solid line of text as the vendor name
-                }
-
-                // Populate the Form
-                document.getElementById('exp-desc').value = extractedDesc;
-                document.getElementById('exp-amount').value = extractedAmount > 0 ? extractedAmount : '';
-                
-                // Try to guess category based on keywords
-                const tUpper = text.toUpperCase();
-                if(tUpper.includes('TOLL') || tUpper.includes('PLUS') || tUpper.includes('TOUCH')) {
-                    document.getElementById('exp-cat').value = 'Site Mileage / Travel';
-                } else if (tUpper.includes('MAJLIS') || tUpper.includes('DBKL') || tUpper.includes('MBPJ')) {
-                    document.getElementById('exp-cat').value = 'PBT / Authority Fees';
-                }
-
-                Swal.fire({
-                    title: 'Scan Complete!',
-                    text: `Extracted: ${extractedDesc} (RM ${extractedAmount})`,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-
-            } catch (error) {
-                console.error("OCR Error:", error);
-                Swal.fire('Scan Failed', 'The AI could not read the receipt clearly. Please enter manually.', 'warning');
-            }
-            
-            // Reset input so you can scan another file if needed
-            event.target.value = '';
+            });
         };
 
-        // --- STREAMING_CHUNK:Implementing Export/Import Utilities... ---
+        // --- Export & Data Import Logic ---
         window.exportToCSV = function(type) {
             let data = []; let filename = '';
             const escapeCSV = (str) => { if (str == null) return '""'; const s = String(str); if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`; return s; };
-
             if (type === 'clients') { data.push(['Client ID', 'Company Name', 'SSM', 'Contact', 'Email', 'Address'].map(escapeCSV)); state.clients.forEach(c => data.push([c.id, c.name, c.ssm, c.contact, c.email, c.address].map(escapeCSV))); filename = 'AsSidqi_Clients.csv'; } 
             else if (type === 'projects') { data.push(['Project ID', 'Client Name', 'Details/Scope', 'PBT', 'Location/GPS', 'Status', 'Reference', 'Date'].map(escapeCSV)); state.projects.forEach(p => { const clientName = state.clients.find(c => c.id === p.clientId)?.name || 'Unknown'; data.push([p.id, clientName, p.details, p.pbt, p.gps, p.status, p.ref, p.date].map(escapeCSV)); }); filename = 'AsSidqi_Projects.csv'; } 
             else if (type === 'commercials') { data.push(['Doc ID', 'Date', 'Project ID', 'Client Name', 'Type', 'PO Reference', 'Subtotal (RM)', 'SST 8% (RM)', 'Grand Total (RM)', 'Status'].map(escapeCSV)); state.commercials.forEach(d => { const proj = state.projects.find(p => p.id === d.projectId); const clientName = proj ? (state.clients.find(c => c.id === proj.clientId)?.name || 'Unknown') : 'Unknown'; data.push([d.id, d.date, d.projectId, clientName, d.type, d.poRef, d.subtotal, d.tax, d.total, d.status].map(escapeCSV)); }); filename = 'AsSidqi_Commercials.csv'; } 
-            else if (type === 'pos') { data.push(['PO ID', 'Date', 'Project ID', 'Vendor Name', 'Vendor Address', 'Subtotal (RM)', 'SST 8% (RM)', 'Total (RM)', 'Status'].map(escapeCSV)); state.pos.forEach(d => data.push([d.id, d.date, d.projectId, d.vendorName, d.vendorAddress, d.subtotal, d.tax, d.total, d.status].map(escapeCSV))); filename = 'AsSidqi_PurchaseOrders.csv'; }
+            else if (type === 'pos') { data.push(['PO ID', 'Date', 'Project ID', 'Vendor Name', 'Vendor Address', 'Subtotal (RM)', 'SST 8% (RM)', 'Total (RM)', 'Status'].map(escapeCSV)); state.pos.forEach(d => data.push([d.id, d.date, d.projectId, d.vendorName, d.vendorAddress, d.subtotal, d.tax, d.total, d.status].map(escapeCSV))); filename = 'AsSidqi_POs.csv'; }
             else if (type === 'hr') { data.push(['Staff ID', 'Name', 'Role', 'Basic Salary (RM)'].map(escapeCSV)); state.staff.forEach(s => data.push([s.id, s.name, s.role, s.salary].map(escapeCSV))); filename = 'AsSidqi_HR.csv'; }
 
             if (data.length <= 1) return Swal.fire('No Data', `There is no ${type} data to export yet.`, 'info');
-            const csvContent = data.map(row => row.join(',')).join('\n'); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.setAttribute('href', url); link.setAttribute('download', filename); document.body.appendChild(link); link.click(); document.body.removeChild(link); logActivity(`Exported ${type} database to CSV`, 'download-simple', 'blue');
+            const csvContent = data.map(row => row.join(',')).join('\n'); const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.setAttribute('href', url); link.setAttribute('download', filename); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         };
 
         window.handleCSVUpload = function(event, type) {
@@ -1742,127 +1344,144 @@
             reader.onload = async function(e) {
                 try {
                     const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, {type: 'array'}); const sheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[sheetName]; const json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
-                    
-                    // Route to the correct processor based on the button clicked
-                    if(type === 'projects') await processProjectCSV(json); 
-                    else if(type === 'clients') await processClientCSV(json); 
-                    else if(type === 'commercials') await processCommercialCSV(json);
-                } catch (err) { console.error(err); Swal.fire('Import Failed', 'Could not read the CSV file correctly.', 'error'); }
+                    if(type === 'projects') await processProjectCSV(json); else if(type === 'clients') await processClientCSV(json); else if(type === 'commercials') await processCommercialCSV(json);
+                } catch (err) { Swal.fire('Import Failed', 'Could not read the CSV file correctly.', 'error'); }
                 event.target.value = '';
             };
             reader.readAsArrayBuffer(file);
         };
 
         async function processClientCSV(data) {
-            let addedCount = 0;
-            // Check if the data looks like Client data
-            if(data.length > 0 && !data[0]['Client Name'] && !data[0]['Company Name']) {
-                Swal.fire('Data Mismatch', 'This file does not look like a Client CSV. Please check your column headers.', 'warning');
-                return;
-            }
-            
-            for(const row of data) {
+            let addedCount = 0; for(const row of data) {
                 const name = row['Client Name'] || row['Company Name'] || row['Client']; if(!name) continue;
                 const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
-                if(!existing) {
-                    const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' };
-                    const docRef = await addDoc(collection(db, "clients"), clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++;
-                }
+                if(!existing) { const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' }; const docRef = await addDoc(collection(db, "clients"), clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++; }
             }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No New Data', '0 clients added. Ensure you are not uploading duplicates.', 'info'); else { Swal.fire('Clients Imported!', `Successfully imported ${addedCount} clients.`, 'success'); }
+            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 clients added.', 'warning'); else Swal.fire('Clients Imported!', `Imported ${addedCount} clients.`, 'success');
         }
 
         async function processProjectCSV(data) {
-            let addedCount = 0; let newClients = 0;
-            if(data.length > 0 && !data[0]['Project Details'] && !data[0]['Project']) {
-                 Swal.fire('Data Mismatch', 'This file does not look like a Project CSV. Are you trying to upload Clients here?', 'warning');
-                 return;
-            }
-            
-            for(const row of data) {
-                const clientStr = row['Client Name'] || row['Client'] || row['Klien']; const detailsStr = row['Project Details'] || row['Project'] || row['Tajuk'];
-                if(!clientStr || !detailsStr) continue;
+            let addedCount = 0; let newClients = 0; for(const row of data) {
+                const clientStr = row['Client Name'] || row['Client'] || row['Klien']; const detailsStr = row['Project Details'] || row['Project'] || row['Tajuk']; if(!clientStr || !detailsStr) continue;
                 let clientId = null; const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
                 if(existingClient) clientId = existingClient.id; else { const newClientRef = await addDoc(collection(db, "clients"), { name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' }); clientId = newClientRef.id; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; }
                 const projData = { clientId: clientId, details: detailsStr, pbt: row['PBT'] || row['Authority'] || 'DBKL', gps: row['Location'] || row['GPS'] || '', status: row['Status'] || 'Drafting', ref: row['Reference'] || '', date: row['Date'] || new Date().toLocaleDateString('en-MY') };
                 const docRef = await addDoc(collection(db, "projects"), projData); state.projects.push({ ...projData, id: docRef.id }); addedCount++;
             }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Project CSV.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.\nAuto-created ${newClients} client profiles.`, 'success');
+            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 projects found.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.`, 'success');
         }
 
         async function processCommercialCSV(data) {
-            let addedCount = 0; const year = new Date().getFullYear();
-            if(data.length > 0 && !data[0]['Type'] && !data[0]['Amount (RM)']) {
-                 Swal.fire('Data Mismatch', 'This file does not look like a Commercials CSV.', 'warning');
-                 return;
-            }
-            
-            for(const row of data) {
+            let addedCount = 0; const year = new Date().getFullYear(); for(const row of data) {
                 const type = row['Type'] || 'Invoice'; const projStr = row['Project']; const descStr = row['Description'] || 'General Engineering Works'; const qty = Number(row['Qty'] || 1); const price = Number(row['Price'] || 0); const applySst = (row['SST'] || '').toLowerCase() === 'yes';
-                if(!projStr || price === 0) continue;
-                let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
+                if(!projStr || price === 0) continue; let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
                 if(existingProj) projectId = existingProj.id; else { const newProjRef = await addDoc(collection(db, "projects"), { clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); projectId = newProjRef.id; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); }
                 const subtotal = qty * price; const tax = applySst ? (subtotal * 0.08) : 0; const total = subtotal + tax; const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1; const docId = `${prefix}-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, type, poRef: row['PO Reference'] || '', items: [{ desc: descStr, note: '', qty, price }], subtotal, tax, total, date: row['Date'] || new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
                 await setDoc(doc(db, "commercials", docId), docData); state.commercials.push({ ...docData, id: docId }); addedCount++;
             }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data Imported', 'Ensure you are uploading a Billing CSV.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
+            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 documents found.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
         }
 
-        // --- Print Engines ---
+        // --- Print & Drive Engine ---
+        window.printCommercial = function(id) {
+            const docData = state.commercials.find(d => d.id === id); if(!docData) return;
+            const proj = state.projects.find(p => p.id === docData.projectId); const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
+            let itemsHtml = ''; docData.items.forEach((item, i) => { const noteHtml = item.note ? `<div class="text-xs text-slate-500 mt-1 whitespace-pre-line italic border-l-2 border-slate-200 pl-2 ml-1">${item.note}</div>` : ''; itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div>${noteHtml}</td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`; });
+            const sstRow = docData.tax > 0 ? `<tr class="font-bold text-slate-600 text-sm"><td colspan="4" class="text-right py-2">Add: 8% SST</td><td class="text-right py-2 font-mono">${formatRM(docData.tax)}</td></tr>` : '';
+            const printArea = document.getElementById('print-commercial');
+            printArea.innerHTML = `${getLetterhead()}<div class="flex justify-between mb-12"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4><h2 class="text-xl font-black text-slate-800">${client ? client.name : ''}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${client ? client.address : ''}</p><p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${client ? client.contact : ''}</p></div><div class="text-right"><h1 class="text-4xl font-black text-cyan-700 tracking-tighter uppercase mb-2">${docData.type}</h1><p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${docData.poRef}</span></p>` : ''}</div></div><div class="mb-8"><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Project Details:</h4><p class="text-sm font-bold text-slate-800">${proj ? proj.details : ''}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td><td class="text-right py-3 font-mono text-cyan-700">${formatRM(docData.total)}</td></tr></table></div><div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Payment to be made payable to <strong>${state.settings.name}</strong>.</p><p>2. Account Details: <strong>${state.settings.bank}</strong></p><p>3. This is a computer-generated document. No signature is required.</p></div><div class="mt-8 flex justify-end no-print"><button onclick="savePDFToDrive('print-commercial', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 mr-4 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button><button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print PDF</button></div>`;
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => { printArea.classList.add('hidden'); document.getElementById('topbar').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('hidden'); switchView('commercials'); };
+        };
+
         window.printPO = function(id) {
             const docData = state.pos.find(d => d.id === id); if(!docData) return;
             const proj = state.projects.find(p => p.id === docData.projectId);
-            
-            let itemsHtml = '';
-            docData.items.forEach((item, i) => {
-                itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div></td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`;
-            });
-
+            let itemsHtml = ''; docData.items.forEach((item, i) => { itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div></td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`; });
             const sstRow = docData.tax > 0 ? `<tr class="font-bold text-slate-600 text-sm"><td colspan="4" class="text-right py-2">Add: 8% SST</td><td class="text-right py-2 font-mono">${formatRM(docData.tax)}</td></tr>` : '';
-
             const printArea = document.getElementById('print-po');
-            printArea.innerHTML = `
-                ${getLetterhead()}
-                <div class="flex justify-between mb-12">
-                    <div>
-                        <h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Vendor / Subcontractor:</h4>
-                        <h2 class="text-xl font-black text-slate-800">${docData.vendorName}</h2>
-                        <p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${docData.vendorAddress || ''}</p>
-                    </div>
-                    <div class="text-right">
-                        <h1 class="text-3xl font-black text-indigo-700 tracking-tighter uppercase mb-2">Purchase Order</h1>
-                        <p class="text-sm text-slate-600 font-bold mb-1">PO No: <span class="font-mono text-slate-800">${docData.id}</span></p>
-                        <p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>
-                    </div>
-                </div>
-                <div class="mb-8 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                    <h4 class="font-black text-slate-400 uppercase tracking-widest text-[10px] mb-1">Linked Project Reference:</h4>
-                    <p class="text-sm font-bold text-slate-800">${proj ? proj.details : 'General Overhead'}</p>
-                </div>
-                <table class="w-full text-left border-collapse mb-8">
-                    <thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Outsourced Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead>
-                    <tbody class="text-sm">${itemsHtml}</tbody>
-                </table>
-                <div class="flex justify-end mb-12">
-                    <table class="w-72">
-                        <tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>
-                        ${sstRow}
-                        <tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Total PO Value</td><td class="text-right py-3 font-mono text-indigo-700">${formatRM(docData.total)}</td></tr>
-                    </table>
-                </div>
-                <div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2">
-                    <p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p>
-                    <p>1. Please supply/execute the works strictly as specified above.</p>
-                    <p>2. Payment terms are 30 days upon receipt of your official original invoice.</p>
-                    <p>3. This is a computer-generated Purchase Order. No signature is required.</p>
-                </div>
-                <div class="mt-8 flex justify-end no-print">
-                    <button onclick="savePDFToDrive('print-po', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 mr-4 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button>
-                    <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print P.O.</button>
-                </div>`;
-            
+            printArea.innerHTML = `${getLetterhead()}<div class="flex justify-between mb-12"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Vendor / Subcontractor:</h4><h2 class="text-xl font-black text-slate-800">${docData.vendorName}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${docData.vendorAddress || ''}</p></div><div class="text-right"><h1 class="text-3xl font-black text-indigo-700 tracking-tighter uppercase mb-2">Purchase Order</h1><p class="text-sm text-slate-600 font-bold mb-1">PO No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p></div></div><div class="mb-8 bg-slate-50 p-4 rounded-lg border border-slate-200"><h4 class="font-black text-slate-400 uppercase tracking-widest text-[10px] mb-1">Linked Project Reference:</h4><p class="text-sm font-bold text-slate-800">${proj ? proj.details : 'General Overhead'}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Outsourced Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Total PO Value</td><td class="text-right py-3 font-mono text-indigo-700">${formatRM(docData.total)}</td></tr></table></div><div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Please supply/execute the works strictly as specified above.</p><p>2. Payment terms are 30 days upon receipt of your official original invoice.</p><p>3. This is a computer-generated Purchase Order. No signature is required.</p></div><div class="mt-8 flex justify-end no-print"><button onclick="savePDFToDrive('print-po', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 mr-4 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button><button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print P.O.</button></div>`;
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => { printArea.classList.add('hidden'); document.getElementById('topbar').classList.remove('hidden'); document.getElementById('sidebar').classList.remove('hidden'); switchView('pos'); };
+        };
+
+        window.connectGoogleDrive = function() {
+            if(!state.settings.clientid) return Swal.fire('Configuration Needed', 'Please save your Google Drive API keys in Company Setup first.', 'warning');
+            const script = document.createElement('script'); script.src = 'https://accounts.google.com/gsi/client';
+            script.onload = () => {
+                const client = google.accounts.oauth2.initTokenClient({
+                    client_id: state.settings.clientid, scope: 'https://www.googleapis.com/auth/drive.file',
+                    callback: (response) => {
+                        if (response.error) { Swal.fire('Error', 'Google Drive connection failed.', 'error'); } 
+                        else { window.gapiToken = response.access_token; Swal.fire('Connected!', 'Secure link to Google Drive established.', 'success'); document.querySelector('button[onclick="connectGoogleDrive()"]').innerHTML = '<i class="ph ph-cloud-check text-lg mr-2"></i> Vault Linked'; document.querySelector('button[onclick="connectGoogleDrive()"]').classList.replace('bg-indigo-50', 'bg-emerald-50'); document.querySelector('button[onclick="connectGoogleDrive()"]').classList.replace('text-indigo-700', 'text-emerald-700'); }
+                    },
+                }); client.requestAccessToken();
+            }; document.body.appendChild(script);
+        };
+
+        window.uploadFileToDrive = async function(file, customName) {
+            if (!window.gapiToken) return;
+            const metadata = { name: customName || file.name, mimeType: file.type }; if(state.settings.folderid) metadata.parents = [state.settings.folderid];
+            const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' })); form.append('file', file);
+            try { await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + window.gapiToken }), body: form }); } catch(e) { console.error(e); }
+        };
+
+        window.savePDFToDrive = function(elementId, filename) {
+            if (!window.gapiToken) return Swal.fire('Not Connected', 'Please connect Google Drive via the top right button first.', 'warning');
+            Swal.fire({ title: 'Generating PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            const element = document.getElementById(elementId); element.classList.remove('hidden');
+            html2pdf().from(element).set({ margin: 10, filename: `${filename}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).output('blob').then(async function(pdfBlob) {
+                element.classList.add('hidden');
+                const metadata = { name: `${filename}.pdf`, mimeType: 'application/pdf' }; if(state.settings.folderid) metadata.parents = [state.settings.folderid];
+                const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' })); form.append('file', pdfBlob);
+                try { const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + window.gapiToken }), body: form }); if(res.ok) Swal.fire('Saved to Vault!', 'PDF successfully uploaded to Google Drive.', 'success'); else throw new Error('Upload failed'); } catch(e) { Swal.fire('Error', 'Failed to save to Drive.', 'error'); }
+            });
+        };
+
+        // --- OCR & Gemini Engine ---
+        window.processReceiptImage = async function(event) {
+            const file = event.target.files[0]; if (!file) return;
+            Swal.fire({ title: 'AI Scanning...', text: 'Extracting data via Tesseract OCR...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try {
+                const worker = await Tesseract.createWorker('eng'); const ret = await worker.recognize(file); const text = ret.data.text; await worker.terminate();
+                let extractedAmount = 0; let extractedDesc = "AI Extracted Expense"; const lines = text.split('\n'); let foundTotal = false;
+                for (let i = lines.length - 1; i >= 0; i--) { const line = lines[i].toUpperCase(); if (line.includes('TOTAL') || line.includes('RM') || line.includes('JUMLAH')) { const match = line.match(/\d+\.\d{2}/); if (match) { extractedAmount = parseFloat(match[0]); foundTotal = true; break; } } }
+                if(!foundTotal) { const allNumbers = text.match(/\d+\.\d{2}/g); if(allNumbers) { const floats = allNumbers.map(n => parseFloat(n)); extractedAmount = Math.max(...floats); } }
+                const validLines = lines.filter(l => l.trim().length > 3); if (validLines.length > 0) extractedDesc = validLines[0].trim();
+                document.getElementById('exp-desc').value = extractedDesc; document.getElementById('exp-amount').value = extractedAmount > 0 ? extractedAmount : '';
+                Swal.fire({ title: 'Scan Complete!', text: `Extracted: ${extractedDesc} (RM ${extractedAmount})`, icon: 'success', timer: 2000, showConfirmButton: false });
+            } catch (error) { Swal.fire('Scan Failed', 'Could not read receipt clearly.', 'warning'); } event.target.value = '';
+        };
+
+        async function askGemini(promptText) {
+            if (!state.settings.geminikey) { Swal.fire('AI Not Configured', 'Please paste your Google AI Studio API Key in Company Setup.', 'warning'); return null; }
+            try { const genAI = new GoogleGenerativeAI(state.settings.geminikey); const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); const result = await model.generateContent(promptText); return result.response.text(); } 
+            catch (error) { Swal.fire('Gemini Error', 'Failed to connect to Google AI.', 'error'); return null; }
+        }
+
+        window.analyzeContract = async function(event) {
+            const file = event.target.files[0]; if (!file || file.type !== "application/pdf") return;
+            Swal.fire({ title: 'Reading PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try {
+                const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
+                for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; }
+                Swal.fire({ title: 'Analyzing...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                const prompt = `Analyze this contract text. Provide a professional summary focusing ONLY on: 1. Exact Scope of Work 2. Payment Terms 3. LAD/Penalty Clauses. Format using markdown.\n\nText: ${extractedText.substring(0, 30000)}`;
+                const aiResponse = await askGemini(prompt);
+                if (aiResponse) { const resultDiv = document.getElementById('ai-contract-result'); resultDiv.innerHTML = marked.parse(aiResponse); resultDiv.classList.remove('hidden'); Swal.close(); }
+            } catch (error) { Swal.fire('Analysis Failed', 'Could not process PDF text.', 'error'); } event.target.value = '';
+        };
+
+        window.toggleChatbot = function() { const window = document.getElementById('ai-chat-window'); window.classList.toggle('hidden'); window.classList.toggle('flex'); };
+        window.sendChatMessage = async function() {
+            const inputEl = document.getElementById('ai-chat-input'); const message = inputEl.value.trim(); if(!message) return;
+            const chatBox = document.getElementById('ai-chat-messages'); chatBox.innerHTML += `<div class="bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none self-end shadow-sm max-w-[85%] mt-3">${message}</div>`; inputEl.value = ''; chatBox.scrollTop = chatBox.scrollHeight;
+            const typingId = 'typing-' + Date.now(); chatBox.innerHTML += `<div id="${typingId}" class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-500 self-start shadow-sm max-w-[85%] mt-3 flex items-center gap-2"><i class="ph ph-spinner-gap animate-spin"></i> Gemini is thinking...</div>`; chatBox.scrollTop = chatBox.scrollHeight;
+            const dbSummary = { clients: state.clients.map(c=>({id:c.id, name:c.name})), projects: state.projects.map(p=>({id:p.id, details:p.details, status:p.status})), invoices: state.commercials.map(c=>({id:c.id, total:c.total, status:c.status})) };
+            const prompt = `You are ERP Co-Pilot. Answer based ONLY on this JSON database: ${JSON.stringify(dbSummary)}\n\nQuestion: "${message}"`;
+            const responseText = await askGemini(prompt); document.getElementById(typingId).remove();
+            if(responseText) chatBox.innerHTML += `<div class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-800 self-start shadow-sm max-w-[85%] mt-3 prose prose-sm">${marked.parse(responseText)}</div>`;
+            else chatBox.innerHTML += `<div class="bg-rose-50 text-rose-600 p-3 rounded-lg self-start mt-3">Connection error.</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
         };
     </script>
 </body>
