@@ -46,19 +46,25 @@
             #sidebar, #topbar, .no-print, #ai-chatbot-widget { display: none !important; }
             .print-area { display: block !important; width: 100%; margin: 0; padding: 0; }
             @page { margin: 0; size: A4; }
+            
+            /* Page Break Control */
             table { page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
         }
+        .print-area { display: none; }
         
         /* Markdown AI Formatting */
         .prose p { margin-bottom: 0.75em; }
         .prose strong { font-weight: 700; color: #0f172a; }
         .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1em; }
+        .prose h3 { font-size: 1.25rem; font-weight: 800; margin-top: 1.5em; margin-bottom: 0.5em; color: #0f172a; }
+        .prose h4 { font-size: 1rem; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; color: #334155; }
     </style>
 </head>
 <body class="text-slate-800 h-screen overflow-hidden flex bg-slate-50">
 
+    <!-- Login Screen Overlay -->
     <div id="login-screen" class="fixed inset-0 bg-[#020617] z-[100] flex flex-col items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-blue-600"></div>
@@ -82,8 +88,10 @@
         </div>
     </div>
 
+    <!-- Sidebar Overlay (Mobile) -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 z-[40] hidden md:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
 
+    <!-- Sidebar -->
     <aside id="sidebar" class="absolute md:relative w-64 bg-[#020617] text-slate-300 flex flex-col h-full shadow-2xl z-[50] no-print border-r border-slate-800 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
         <div class="p-6 border-b border-slate-800 flex flex-col items-center">
             <div class="bg-white rounded-[24px] p-2 w-28 h-28 mb-3 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
@@ -117,6 +125,9 @@
             <a href="#" onclick="switchView('ai-letter'); toggleSidebarOnMobile()" id="nav-ai-letter" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50 text-indigo-300">
                 <i class="ph ph-file-text text-xl mr-3 opacity-70"></i> Technical Surat Rasmi
             </a>
+            <a href="#" onclick="switchView('ai-vision'); toggleSidebarOnMobile()" id="nav-ai-vision" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50 text-indigo-300">
+                <i class="ph ph-camera text-xl mr-3 opacity-70"></i> Site Defect Vision
+            </a>
             
             <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-6">Internal & Admin</div>
             <a href="#" onclick="switchView('hr'); toggleSidebarOnMobile()" id="nav-hr" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
@@ -133,8 +144,10 @@
         </div>
     </aside>
 
+    <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50/50 no-print">
         
+        <!-- Topbar -->
         <header id="topbar" class="bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex justify-between items-center z-10 sticky top-0 shadow-sm">
             <div class="flex items-center gap-4">
                 <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-slate-800 focus:outline-none">
@@ -154,6 +167,7 @@
             </div>
         </header>
 
+        <!-- Scrollable Content Area -->
         <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
             
             <!-- Dashboard View -->
@@ -201,11 +215,11 @@
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
                     <div><h3 class="text-xl font-bold text-slate-800">Client Directory</h3><p class="text-sm text-slate-500">Manage partners, developers, and agencies.</p></div>
                     <div class="flex flex-wrap gap-2">
-                        <button id="btn-bulk-delete-clients" onclick="bulkDelete('clients')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button id="btn-bulk-delete-clients" onclick="bulkDelete('clients')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
                         <input type="file" id="csv-upload-clients" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'clients')">
                         <button onclick="document.getElementById('csv-upload-clients').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
-                        <button onclick="openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
+                        <button onclick="clearForm('modal-client'); document.getElementById('c-id').value=''; openModal('modal-client')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"><i class="ph ph-plus-circle text-lg"></i> Add Client</button>
                     </div>
                 </div>
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -233,11 +247,11 @@
                  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
                     <div><h3 class="text-xl font-bold text-slate-800">Commercial Documents</h3><p class="text-sm text-slate-500">Generate Quotations and Invoices to drive operations.</p></div>
                     <div class="flex flex-wrap gap-2">
-                        <button id="btn-bulk-delete-commercials" onclick="bulkDelete('commercials')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button id="btn-bulk-delete-commercials" onclick="bulkDelete('commercials')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('commercials')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
                         <input type="file" id="csv-upload-commercials" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'commercials')">
                         <button onclick="document.getElementById('csv-upload-commercials').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
-                        <button onclick="openInvoiceWizard()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"><i class="ph ph-file-plus text-lg"></i> Create Document</button>
+                        <button onclick="clearForm('modal-invoice'); openInvoiceWizard()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"><i class="ph ph-file-plus text-lg"></i> Create Document</button>
                     </div>
                 </div>
                 
@@ -265,9 +279,9 @@
                  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
                     <div><h3 class="text-xl font-bold text-slate-800">Purchase Orders (Subcon)</h3><p class="text-sm text-slate-500">Manage outward orders to fabricators, SI labs, and suppliers.</p></div>
                     <div class="flex flex-wrap gap-2">
-                        <button id="btn-bulk-delete-pos" onclick="bulkDelete('pos')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button id="btn-bulk-delete-pos" onclick="bulkDelete('pos')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('pos')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
-                        <button onclick="openPOWizard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"><i class="ph ph-shopping-cart text-lg"></i> Create P.O.</button>
+                        <button onclick="clearForm('modal-po'); openPOWizard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"><i class="ph ph-shopping-cart text-lg"></i> Create P.O.</button>
                     </div>
                 </div>
                 
@@ -297,8 +311,13 @@
                         <p class="text-sm text-slate-500">Tracking driven by Commercial Scopes. Click badges to update status.</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <button id="btn-bulk-delete-projects" onclick="bulkDelete('projects')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button id="btn-bulk-delete-projects" onclick="bulkDelete('projects')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('projects')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        
+                        <!-- AI LOA Onboard Button -->
+                        <button onclick="document.getElementById('ai-loa-upload').click()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-bold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"><i class="ph ph-sparkle text-lg"></i> AI Onboard LOA</button>
+                        <input type="file" id="ai-loa-upload" accept="application/pdf" class="hidden" onchange="processLOA(event)">
+                        
                         <input type="file" id="csv-upload-projects" accept=".csv" class="hidden" onchange="handleCSVUpload(event, 'projects')">
                         <button onclick="document.getElementById('csv-upload-projects').click()" class="bg-cyan-100 hover:bg-cyan-200 text-cyan-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-sm flex items-center gap-2"><i class="ph ph-file-csv text-lg"></i> Bulk Import CSV</button>
                     </div>
@@ -376,18 +395,37 @@
                             <i class="ph ph-magic-wand text-xl"></i> Auto-Draft Letter
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- AI Site Defect Vision View -->
+            <div id="view-ai-vision" class="view-section hidden">
+                <div class="max-w-5xl mx-auto">
+                    <div class="text-center mb-8 no-print">
+                        <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner"><i class="ph ph-camera"></i></div>
+                        <h3 class="text-2xl font-black text-slate-800">Site Defect Vision</h3>
+                        <p class="text-slate-500 mt-2">Upload a site photo. Gemini 1.5 Vision will analyze structural defects and generate a BEM-standard assessment.</p>
+                    </div>
                     
-                    <div id="ai-result" class="hidden">
+                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 no-print text-center relative hover:bg-slate-50 transition-colors border-dashed border-2 cursor-pointer" onclick="document.getElementById('vision-upload').click()">
+                        <i class="ph ph-image text-4xl text-indigo-300 mb-3"></i>
+                        <p class="font-bold text-slate-700">Click to Upload Site Photo (JPG/PNG)</p>
+                        <p class="text-xs text-slate-400 mt-1">AI will detect corrosion, spalling, and cracks</p>
+                        <input type="file" id="vision-upload" accept="image/*" class="hidden" onchange="analyzeDefect(event)">
+                    </div>
+                    
+                    <!-- Preview Area -->
+                    <div id="ai-vision-preview-container" class="hidden text-center mb-8">
+                        <img id="ai-vision-img-preview" src="" class="max-h-64 mx-auto rounded-xl shadow-md border border-slate-200 object-cover">
+                    </div>
+
+                    <div id="ai-vision-result-container" class="hidden">
                         <div class="flex justify-between items-center mb-4 no-print">
-                            <h4 class="font-bold text-slate-800">Generated Draft:</h4>
-                            <div class="flex gap-2">
-                                <button onclick="savePDFToDrive('print-ai-letter', 'Surat_Rasmi')" class="bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100"><i class="ph ph-google-drive-logo"></i> Save to Drive</button>
-                                <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-printer"></i> Print Official</button>
-                            </div>
+                            <h4 class="font-bold text-slate-800">Generated Assessment:</h4>
+                            <button onclick="printAIVision()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"><i class="ph ph-printer text-lg"></i> Print Report</button>
                         </div>
-                        <div class="bg-white p-8 md:p-12 rounded-lg shadow-md border border-slate-200 text-sm font-serif leading-relaxed" id="print-ai-letter">
-                            <!-- Letterhead injected here during print/save -->
-                            <textarea id="ai-textarea" class="w-full h-96 resize-none outline-none bg-transparent" spellcheck="false"></textarea>
+                        <div id="ai-vision-result" class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 prose prose-slate max-w-none text-sm">
+                            <!-- AI Markdown results will be injected here -->
                         </div>
                     </div>
                 </div>
@@ -398,9 +436,9 @@
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
                     <div><h3 class="text-xl font-bold text-slate-800">HR & Payroll Tracker</h3><p class="text-sm text-slate-500">Manage staff and calculate statutory deductions.</p></div>
                     <div class="flex flex-wrap gap-2">
-                        <button id="btn-bulk-delete-staff" onclick="bulkDelete('staff')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button id="btn-bulk-delete-staff" onclick="bulkDelete('staff')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('hr')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
-                        <button onclick="openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
+                        <button onclick="clearForm('modal-staff'); document.getElementById('s-id').value=''; openModal('modal-staff')" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg flex items-center gap-2"><i class="ph ph-user-plus text-lg"></i> Add Staff</button>
                     </div>
                 </div>
                 <div class="mb-4 text-right">
@@ -419,8 +457,8 @@
                         <p class="text-sm text-slate-500">Track outgoing costs, PBT fees, and staff claims.</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <button id="btn-bulk-delete-expenses" onclick="bulkDelete('expenses')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
-                        <button onclick="openModal('modal-expense')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-rose-600/20 flex items-center gap-2">
+                        <button id="btn-bulk-delete-expenses" onclick="bulkDelete('expenses')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
+                        <button onclick="clearForm('modal-expense'); document.getElementById('exp-id').value=''; openModal('modal-expense')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-rose-600/20 flex items-center gap-2">
                             <i class="ph ph-plus-circle text-lg"></i> Log Expense
                         </button>
                     </div>
@@ -436,7 +474,6 @@
                                     <th class="p-4 md:p-5">Category & Details</th>
                                     <th class="p-4 md:p-5">Project Link</th>
                                     <th class="p-4 md:p-5 text-right">Amount (RM)</th>
-                                    <th class="p-4 md:p-5 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="expenses-table" class="divide-y divide-slate-100 text-sm"></tbody>
@@ -461,13 +498,12 @@
                 </div>
 
                 <div class="bg-indigo-50 p-6 md:p-8 rounded-3xl border border-indigo-100 mb-8 space-y-6">
-                    <h4 class="font-bold text-indigo-900 border-b border-indigo-200 pb-2 flex items-center gap-2"><i class="ph ph-sparkle text-indigo-500 text-xl"></i> Gemini Pro AI Integration</h4>
-                    <p class="text-xs text-indigo-700 mb-4">Paste your Google AI Studio API Key to enable Contract Analysis, Chatbot, and Advanced Surat Rasmi generation.</p>
-                    <div><label class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1 block">Gemini API Key</label><input type="password" id="set-geminikey" class="w-full bg-white border border-indigo-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 font-mono text-xs"></div>
+                    <h4 class="font-bold text-indigo-900 border-b border-indigo-200 pb-2 flex items-center gap-2"><i class="ph ph-sparkle text-indigo-500 text-xl"></i> Gemini Pro AI Key</h4>
+                    <div><label class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mb-1 block">GOOGLE AI STUDIO API KEY</label><input type="password" id="set-geminikey" class="w-full bg-white border border-indigo-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 font-mono text-xs"></div>
                 </div>
 
                 <div class="bg-slate-50 p-6 md:p-8 rounded-3xl border border-slate-200 mb-8 space-y-6">
-                    <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2"><i class="ph ph-google-drive-logo text-blue-500 text-xl"></i> Google Drive API Integration</h4>
+                    <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 flex items-center gap-2"><i class="ph ph-google-drive-logo text-blue-500 text-xl"></i> Google Drive Integration</h4>
                     <p class="text-xs text-slate-500 mb-4">Paste your Google Cloud API credentials here to enable automated PDF uploads to your cloud vault.</p>
                     <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">OAuth Client ID</label><input type="text" id="set-clientid" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-mono text-xs"></div>
                     <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">API Key</label><input type="password" id="set-apikey" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-mono text-xs"></div>
@@ -532,7 +568,7 @@
         </div>
     </div>
 
-    <!-- Project Modal (Used for Manual Editing only now) -->
+    <!-- Project Modal -->
     <div id="modal-project" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -568,7 +604,7 @@
         </div>
     </div>
 
-    <!-- Invoice Wizard Full Modal (Auto-creates projects) -->
+    <!-- Invoice Wizard Full Modal -->
     <div id="modal-invoice" class="modal fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
         <div class="bg-slate-50 rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col min-h-[90vh] sm:min-h-0 sm:max-h-[90vh]">
             <div class="px-4 md:px-8 py-5 border-b border-slate-200 bg-white rounded-t-3xl flex justify-between items-center sticky top-0 z-10">
@@ -615,8 +651,12 @@
 
                 <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                        <h4 class="text-sm font-black text-slate-800 flex items-center gap-2"><span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> Scope of Works (These become your tracking milestones)</h4>
-                        <button onclick="addLineItem()" class="text-xs font-bold text-cyan-600 bg-cyan-50 px-3 py-1.5 rounded-lg hover:bg-cyan-100 transition-colors flex items-center gap-1"><i class="ph ph-plus"></i> Add Item</button>
+                        <h4 class="text-sm font-black text-slate-800 flex items-center gap-2"><span class="bg-slate-800 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span> Scope of Works</h4>
+                        <div class="flex gap-2">
+                            <!-- AI Auto-Suggest Button -->
+                            <button onclick="aiSuggestScopes()" class="text-xs font-bold text-white bg-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1 shadow-md shadow-indigo-600/20"><i class="ph ph-sparkle"></i> AI Auto-Suggest</button>
+                            <button onclick="addLineItem()" class="text-xs font-bold text-cyan-600 bg-cyan-50 px-3 py-1.5 rounded-lg hover:bg-cyan-100 transition-colors flex items-center gap-1"><i class="ph ph-plus"></i> Add Item</button>
+                        </div>
                     </div>
                     
                     <datalist id="scope-options">
@@ -658,7 +698,7 @@
         </div>
     </div>
 
-    <!-- Purchase Order (Subcon) Modal -->
+    <!-- Purchase Order Modal -->
     <div id="modal-po" class="modal fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
         <div class="bg-slate-50 rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col min-h-[90vh] sm:min-h-0 sm:max-h-[90vh]">
             <div class="px-4 md:px-8 py-5 border-b border-slate-200 bg-white rounded-t-3xl flex justify-between items-center sticky top-0 z-10">
@@ -711,7 +751,7 @@
         </div>
     </div>
 
-    <!-- Expense Modal with AI OCR -->
+    <!-- Expense Modal -->
     <div id="modal-expense" class="modal fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform scale-95 transition-transform duration-200">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
@@ -723,15 +763,12 @@
             </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="exp-id">
-                
-                <!-- Smart Upload Area -->
                 <div class="border-2 border-dashed border-indigo-100 bg-indigo-50/50 p-4 rounded-xl text-center relative hover:bg-indigo-50 transition-colors cursor-pointer" onclick="document.getElementById('exp-receipt').click()">
                     <i class="ph ph-scan text-3xl text-indigo-400 mb-2"></i>
                     <p class="text-xs font-bold text-indigo-700">Click to Scan Receipt</p>
                     <p class="text-[10px] text-slate-500 mt-1">AI will auto-fill amount & details</p>
                     <input type="file" id="exp-receipt" accept="image/*" class="hidden" onchange="processReceiptImage(event)">
                 </div>
-
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Category *</label>
                     <select id="exp-cat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-rose-500 font-bold text-slate-700">
@@ -749,7 +786,7 @@
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Amount (RM) *</label>
-                    <input type="number" id="exp-amount" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-rose-500 font-mono text-lg" placeholder="0.00">
+                    <input type="text" id="exp-amount" onblur="onCurrencyBlur(this)" onfocus="onCurrencyFocus(this)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-rose-500 font-mono text-lg" placeholder="0.00">
                 </div>
             </div>
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
@@ -770,7 +807,7 @@
                 <input type="hidden" id="s-id">
                 <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Full Name *</label><input type="text" id="s-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-slate-800"></div>
                 <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Role / Title *</label><input type="text" id="s-role" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-slate-800" placeholder="e.g. Project Engineer"></div>
-                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Basic Salary (RM) *</label><input type="number" id="s-salary" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-slate-800 font-mono text-lg" placeholder="0.00"></div>
+                <div><label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 block">Basic Salary (RM) *</label><input type="text" id="s-salary" onblur="onCurrencyBlur(this)" onfocus="onCurrencyFocus(this)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-slate-800 font-mono text-lg" placeholder="0.00"></div>
             </div>
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
                 <button onclick="closeModal('modal-staff')" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700">Cancel</button>
@@ -779,16 +816,36 @@
         </div>
     </div>
 
-    <!-- Print Areas -->
-    <div id="print-commercial" class="print-area bg-white p-12 max-w-4xl mx-auto hidden font-sans text-sm"></div>
-    <div id="print-po" class="print-area bg-white p-12 max-w-4xl mx-auto hidden font-sans text-sm"></div>
-    <div id="print-payslip" class="print-area bg-white p-12 max-w-2xl mx-auto hidden font-sans text-sm border border-slate-200 rounded-lg"></div>
+    <!-- Print / Export Views (Hidden Overlays) -->
+    <div id="print-overlay" class="fixed inset-0 bg-slate-800 z-[200] hidden flex-col">
+        <!-- Toolbar -->
+        <div class="bg-slate-900 px-6 py-4 flex justify-between items-center shadow-xl shrink-0">
+            <button onclick="closePrintView()" class="bg-slate-700 hover:bg-slate-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"><i class="ph ph-arrow-left text-lg"></i> Go Back</button>
+            <div class="flex gap-3 flex-wrap justify-end" id="print-actions"></div>
+        </div>
+        <!-- Scrollable A4 Container Area -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center w-full print-scroll-area">
+            <!-- A4 Paper Sheet -->
+            <div id="print-content" class="bg-white w-[210mm] min-h-[297mm] flex flex-col shadow-2xl p-[15mm] md:p-[20mm] font-sans text-sm relative shrink-0">
+                <!-- Dynamic Content injected here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile scaling for Print Preview -->
+    <style>
+        @media screen and (max-width: 768px) {
+            .print-scroll-area { justify-content: flex-start; }
+            #print-content { transform: scale(0.42); transform-origin: top left; margin-bottom: -150mm; margin-right: -100mm; }
+        }
+    </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
+        // IMPORTANT: The user provided these keys. Do not change them.
         const firebaseConfig = {
           apiKey: "AIzaSyD2VqWlAqlWWxObSaii7gxGK7pUmEB0no8",
           authDomain: "as-sidqi-erp-88dc3.firebaseapp.com",
@@ -802,6 +859,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- Global State & Configuration ---
         window.state = {
             clients: [], projects: [], commercials: [], pos: [], staff: [], expenses: [],
             settings: {
@@ -831,11 +889,52 @@
             'Renew license': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.'
         };
 
+        // Setup PDF.js Worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         window.db = db; window.collection = collection; window.addDoc = addDoc; window.getDocs = getDocs; 
         window.doc = doc; window.setDoc = setDoc; window.deleteDoc = deleteDoc; window.updateDoc = updateDoc;
 
+        // XSS Sanitizer
+        window.escapeHTML = function(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>'"]/g, function(tag) {
+                const charsToReplace = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
+                return charsToReplace[tag] || tag;
+            });
+        };
+
+        // Smart Currency Formatters (Blur/Focus)
+        window.onCurrencyBlur = function(el) {
+            if(!el.value) return;
+            let val = parseFloat(el.value.replace(/,/g, ''));
+            if(isNaN(val)) return;
+            el.type = 'text';
+            el.value = val.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+        };
+        window.onCurrencyFocus = function(el) {
+            if(!el.value) return;
+            el.value = el.value.replace(/,/g, '');
+        };
+        function parseCurrencyVal(val) {
+            if(!val) return 0;
+            return Number(String(val).replace(/,/g, ''));
+        }
+
+        // Memory Wiping for Modals
+        window.clearForm = function(modalId) {
+            const modal = document.getElementById(modalId);
+            if(!modal) return;
+            const inputs = modal.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'checkbox' || input.type === 'radio') input.checked = false;
+                else input.value = '';
+            });
+            const selects = modal.querySelectorAll('select');
+            selects.forEach(sel => { sel.selectedIndex = 0; });
+        };
+
+        // --- Core UI Logic ---
         window.handleLogin = function() {
             const id = document.getElementById('login-id').value;
             const pass = document.getElementById('login-pass').value;
@@ -865,87 +964,78 @@
         
         window.logActivity = function(msg, icon, color) {
             const alertBox = document.getElementById('dash-alerts'); if(!alertBox) return;
-            const html = `<div class="p-4 bg-${color}-50 rounded-xl border border-${color}-100 flex gap-3 animation-fade-in"><i class="ph ph-${icon} text-${color}-600 text-xl mt-0.5"></i><div><p class="text-sm font-bold text-${color}-900">${msg}</p></div></div>`;
+            const html = `<div class="p-4 bg-${color}-50 rounded-xl border border-${color}-100 flex gap-3 animation-fade-in"><i class="ph ph-${icon} text-${color}-600 text-xl mt-0.5"></i><div><p class="text-sm font-bold text-${color}-900">${escapeHTML(msg)}</p></div></div>`;
             alertBox.insertAdjacentHTML('afterbegin', html);
         };
 
         function formatRM(num) { return 'RM ' + parseFloat(num).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
-        
         function getLetterhead() {
             return `
-                <div class="flex justify-between items-start border-b-4 border-slate-800 pb-6 mb-8">
+                <div class="flex justify-between items-start border-b-4 border-slate-800 pb-6 mb-8 shrink-0">
                     <div class="flex items-center gap-4">
                         <div class="w-24 h-24 bg-white border-2 border-slate-800 rounded-[20px] p-1 flex justify-center items-center overflow-hidden">
                             <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
                         </div>
                         <div>
-                            <h1 class="text-2xl font-black text-slate-800 tracking-tight leading-none">${state.settings.name}</h1>
+                            <h1 class="text-2xl font-black text-slate-800 tracking-tight leading-none">${escapeHTML(state.settings.name)}</h1>
                             <p class="text-[10px] font-black text-emerald-600 tracking-widest uppercase mt-1">Civil & Structural Consultant</p>
                         </div>
                     </div>
                     <div class="text-right text-xs text-slate-600 font-medium">
-                        <p><strong>SSM:</strong> ${state.settings.ssm}</p>
-                        <p><strong>BEM:</strong> ${state.settings.bem}</p>
-                        <p class="whitespace-pre-line mt-1">${state.settings.address}</p>
+                        <p><strong>SSM:</strong> ${escapeHTML(state.settings.ssm)}</p>
+                        <p><strong>BEM:</strong> ${escapeHTML(state.settings.bem)}</p>
+                        <p class="whitespace-pre-line mt-1">${escapeHTML(state.settings.address)}</p>
                     </div>
                 </div>`;
         }
 
+        // --- Firebase Loading ---
         async function loadState() {
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'short' });
             Swal.fire({ title: 'Syncing with Cloud', text: 'Pulling your ERP data from Firebase...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
             try {
                 const settingsDoc = await getDocs(collection(db, "settings"));
-                if (!settingsDoc.empty) {
-                    state.settings = { ...state.settings, ...settingsDoc.docs[0].data() };
-                } else {
-                    await setDoc(doc(db, "settings", "master"), state.settings);
-                }
+                if (!settingsDoc.empty) state.settings = { ...state.settings, ...settingsDoc.docs[0].data() };
+                else await setDoc(doc(db, "settings", "master"), state.settings);
 
-                // SECURE API KEY OVERRIDE
-                if (!state.settings.clientid) state.settings.clientid = '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com';
-                if (!state.settings.apikey) state.settings.apikey = 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY';
-                if (!state.settings.geminikey) state.settings.geminikey = 'AIzaSyALV5-oaj3pU51u9cE1DzwJDm6aaI6tAhw';
+                // SECURITY OVERRIDE: Force hardcoded keys if empty
+                if(!state.settings.clientid) state.settings.clientid = '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com';
+                if(!state.settings.apikey) state.settings.apikey = 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY';
+                if(!state.settings.geminikey) state.settings.geminikey = 'AIzaSyALV5-oaj3pU51u9cE1DzwJDm6aaI6tAhw';
 
                 ['name', 'ssm', 'bem', 'address', 'bank', 'clientid', 'apikey', 'folderid', 'geminikey'].forEach(k => {
                     if(document.getElementById('set-'+k)) document.getElementById('set-'+k).value = state.settings[k] || '';
                 });
 
-                const clientSnapshot = await getDocs(collection(db, "clients"));
-                state.clients = clientSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
-                const projSnapshot = await getDocs(collection(db, "projects"));
-                state.projects = projSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
-                const commSnapshot = await getDocs(collection(db, "commercials"));
-                state.commercials = commSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
-                const poSnapshot = await getDocs(collection(db, "pos"));
-                state.pos = poSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                const [clientSnap, projSnap, commSnap, poSnap, staffSnap, expSnap] = await Promise.all([
+                    getDocs(collection(db, "clients")), getDocs(collection(db, "projects")),
+                    getDocs(collection(db, "commercials")), getDocs(collection(db, "pos")), 
+                    getDocs(collection(db, "staff")), getDocs(collection(db, "expenses"))
+                ]);
                 
-                const staffSnapshot = await getDocs(collection(db, "staff"));
-                state.staff = staffSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
-                const expSnapshot = await getDocs(collection(db, "expenses"));
-                state.expenses = expSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                state.clients = clientSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                state.projects = projSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                state.commercials = commSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                state.pos = poSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                state.staff = staffSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                state.expenses = expSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
 
                 refreshAllViews();
                 Swal.close();
                 logActivity('ERP authenticated and synchronized with Firebase', 'cloud-check', 'cyan');
-            } catch (error) {
-                console.error(error);
+            } catch (e) { 
+                console.error(e); 
                 Swal.fire({
                     title: 'Connection Blocked', 
-                    html: `<p class="text-sm">Your browser or network is blocking the database.</p><div class="bg-red-50 text-red-600 text-xs p-3 rounded-lg font-mono mb-4 text-left">Error: ${error.message}</div><p class="text-sm font-bold">Please send this error message to the developer!</p>`, 
+                    html: `<p class="text-sm">Your browser or network is blocking the database.</p><div class="bg-red-50 text-red-600 text-xs p-3 rounded-lg font-mono mb-4 text-left">Error: ${e.message}</div><p class="text-sm font-bold">Please check console or disable adblockers!</p>`, 
                     icon: 'error',
                     confirmButtonText: 'Enter Offline Mode'
-                }).then(() => {
-                    refreshAllViews();
-                });
+                }).then(() => refreshAllViews());
             }
         }
 
+        // --- Render Functions ---
         let revChart = null;
         function renderDashboard() {
             let out = 0; let col = 0;
@@ -967,95 +1057,12 @@
             });
         }
 
-        window.selectedItems = { clients: new Set(), projects: new Set(), commercials: new Set(), pos: new Set(), staff: new Set(), expenses: new Set() };
-        
-        window.toggleSelectAll = function(type, isChecked) {
-            const checkboxes = document.querySelectorAll(`.chk-${type}`);
-            window.selectedItems[type].clear();
-            checkboxes.forEach(chk => {
-                chk.checked = isChecked;
-                if(isChecked) window.selectedItems[type].add(chk.value);
-            });
-            window.toggleBulkDeleteBtn(type);
-        };
-        
-        window.toggleRowSelection = function(type, id, isChecked) {
-            if(isChecked) window.selectedItems[type].add(id);
-            else window.selectedItems[type].delete(id);
-            
-            const totalRows = document.querySelectorAll(`.chk-${type}`).length;
-            const allChecked = totalRows > 0 && totalRows === window.selectedItems[type].size;
-            const selectAllChk = document.getElementById(`selectAll-${type}`);
-            if(selectAllChk) selectAllChk.checked = allChecked;
-            
-            window.toggleBulkDeleteBtn(type);
-        };
-
-        window.toggleBulkDeleteBtn = function(type) {
-            const btn = document.getElementById(`btn-bulk-delete-${type}`);
-            if(btn) {
-                if(window.selectedItems[type].size > 0) {
-                    btn.classList.remove('hidden');
-                    btn.innerHTML = `<i class="ph ph-trash"></i> Delete Selected (${window.selectedItems[type].size})`;
-                } else {
-                    btn.classList.add('hidden');
-                }
-            }
-        };
-
-        window.bulkDelete = async function(type) {
-            const ids = Array.from(window.selectedItems[type]);
-            if(ids.length === 0) return;
-            
-            Swal.fire({
-                title: `Delete ${ids.length} records?`,
-                text: "This action cannot be undone and will permanently delete them from the cloud.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Yes, delete them!'
-            }).then(async r => {
-                if(r.isConfirmed) {
-                    Swal.showLoading();
-                    try {
-                        let colName = type;
-                        if(type === 'staff') colName = 'staff'; 
-                        
-                        for(const id of ids) {
-                            await deleteDoc(doc(db, colName, id));
-                        }
-                        
-                        if(type === 'clients') state.clients = state.clients.filter(c => !ids.includes(c.id));
-                        if(type === 'projects') state.projects = state.projects.filter(p => !ids.includes(p.id));
-                        if(type === 'commercials') state.commercials = state.commercials.filter(d => !ids.includes(d.id));
-                        if(type === 'pos') state.pos = state.pos.filter(d => !ids.includes(d.id));
-                        if(type === 'staff') state.staff = state.staff.filter(s => !ids.includes(s.id));
-                        if(type === 'expenses') state.expenses = state.expenses.filter(e => !ids.includes(e.id));
-                        
-                        window.selectedItems[type].clear();
-                        refreshAllViews();
-                        Swal.fire('Deleted!', `${ids.length} records removed successfully.`, 'success');
-                    } catch(e) {
-                        console.error(e);
-                        Swal.fire('Error', 'Failed to delete some records.', 'error');
-                    }
-                }
-            });
-        };
-
         function refreshAllViews() { 
-            renderClients(); 
-            renderProjects(); 
-            renderCommercials(); 
-            renderPOs(); 
-            renderDashboard(); 
-            renderStaff(); 
-            renderExpenses(); 
-            updateDropdowns(); 
-            
+            renderClients(); renderProjects(); renderCommercials(); renderPOs(); renderDashboard(); renderStaff(); renderExpenses(); updateDropdowns(); 
+            // Reset bulk selections on refresh
             ['clients', 'projects', 'commercials', 'pos', 'staff', 'expenses'].forEach(type => {
                 if(document.getElementById(`selectAll-${type}`)) document.getElementById(`selectAll-${type}`).checked = false;
-                if(window.toggleBulkDeleteBtn) window.toggleBulkDeleteBtn(type);
+                window.toggleBulkDeleteBtn(type);
             });
         }
 
@@ -1068,12 +1075,12 @@
         };
 
         function updateDropdowns() {
-            const clientOpts = '<option value="">-- Select Client --</option>' + state.clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const clientOpts = '<option value="">-- Select Client --</option>' + state.clients.map(c => `<option value="${c.id}">${escapeHTML(c.name)}</option>`).join('');
             if(document.getElementById('proj-client')) document.getElementById('proj-client').innerHTML = clientOpts;
             if(document.getElementById('inv-client')) document.getElementById('inv-client').innerHTML = clientOpts;
             
             const projOpts = '<option value="">-- Select Project --</option>' + state.projects.map(p => {
-                const client = state.clients.find(c => c.id === p.clientId); return `<option value="${p.id}">${client ? client.name : 'Unknown'} - ${p.details.substring(0,40)}...</option>`;
+                const client = state.clients.find(c => c.id === p.clientId); return `<option value="${p.id}">${escapeHTML(client ? client.name : 'Unknown')} - ${escapeHTML(p.details.substring(0,40))}...</option>`;
             }).join('');
             const projOptsWithNew = '<option value="NEW">➕ Create New Project from this Quote</option>' + projOpts;
 
@@ -1083,6 +1090,51 @@
             if(document.getElementById('exp-project')) document.getElementById('exp-project').innerHTML = projOpts;
         }
 
+        // --- Bulk Operations Logic ---
+        window.selectedItems = { clients: new Set(), projects: new Set(), commercials: new Set(), pos: new Set(), staff: new Set(), expenses: new Set() };
+        
+        window.toggleSelectAll = function(type, isChecked) {
+            const checkboxes = document.querySelectorAll(`.chk-${type}`);
+            window.selectedItems[type].clear();
+            checkboxes.forEach(chk => { chk.checked = isChecked; if(isChecked) window.selectedItems[type].add(chk.value); });
+            window.toggleBulkDeleteBtn(type);
+        };
+
+        window.toggleRowSelection = function(type, id, isChecked) {
+            if(isChecked) window.selectedItems[type].add(id); else window.selectedItems[type].delete(id);
+            const totalRows = document.querySelectorAll(`.chk-${type}`).length;
+            const allChecked = totalRows > 0 && totalRows === window.selectedItems[type].size;
+            if(document.getElementById(`selectAll-${type}`)) document.getElementById(`selectAll-${type}`).checked = allChecked;
+            window.toggleBulkDeleteBtn(type);
+        };
+
+        window.toggleBulkDeleteBtn = function(type) {
+            const btn = document.getElementById(`btn-bulk-delete-${type}`);
+            if(btn) { if(window.selectedItems[type].size > 0) { btn.classList.remove('hidden'); btn.innerHTML = `<i class="ph ph-trash"></i> Delete Selected (${window.selectedItems[type].size})`; } else { btn.classList.add('hidden'); } }
+        };
+
+        window.bulkDelete = async function(type) {
+            const ids = Array.from(window.selectedItems[type]); if(ids.length === 0) return;
+            Swal.fire({ title: `Delete ${ids.length} records?`, text: "This action cannot be undone and will permanently delete them from the cloud.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', confirmButtonText: 'Yes, delete them!' }).then(async r => {
+                if(r.isConfirmed) {
+                    Swal.showLoading();
+                    try {
+                        let colName = type; if(type === 'staff') colName = 'staff'; 
+                        for(const id of ids) { await deleteDoc(doc(db, colName, id)); }
+                        if(type === 'clients') state.clients = state.clients.filter(c => !ids.includes(c.id));
+                        if(type === 'projects') state.projects = state.projects.filter(p => !ids.includes(p.id));
+                        if(type === 'commercials') state.commercials = state.commercials.filter(d => !ids.includes(d.id));
+                        if(type === 'pos') state.pos = state.pos.filter(d => !ids.includes(d.id));
+                        if(type === 'staff') state.staff = state.staff.filter(s => !ids.includes(s.id));
+                        if(type === 'expenses') state.expenses = state.expenses.filter(e => !ids.includes(e.id));
+                        window.selectedItems[type].clear(); refreshAllViews();
+                        Swal.fire('Deleted!', `${ids.length} records removed successfully.`, 'success');
+                    } catch(e) { console.error(e); Swal.fire('Error', 'Failed to delete some records.', 'error'); }
+                }
+            });
+        };
+
+        // --- Client Logic ---
         window.saveClient = async function() {
             const id = document.getElementById('c-id').value;
             const name = document.getElementById('c-name').value;
@@ -1093,7 +1145,6 @@
                 if(id) { await updateDoc(doc(db, "clients", id), clientData); const index = state.clients.findIndex(c => c.id === id); if(index !== -1) state.clients[index] = { ...clientData, id }; } 
                 else { const docRef = await addDoc(collection(db, "clients"), clientData); state.clients.push({ ...clientData, id: docRef.id }); logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); }
                 if(document.getElementById('c-file').files.length > 0) await uploadFileToDrive(document.getElementById('c-file').files[0], name + ' - SSM/Profile');
-                ['c-id', 'c-name', 'c-ssm', 'c-contact', 'c-email', 'c-address', 'c-file'].forEach(f => document.getElementById(f).value = '');
                 closeModal('modal-client'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
         };
@@ -1113,21 +1164,21 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100 text-center"><input type="checkbox" value="${c.id}" onchange="toggleRowSelection('clients', '${c.id}', this.checked)" class="chk-clients w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800">${c.name}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 font-mono text-slate-500 text-xs">${c.ssm || '-'}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-slate-600">${c.contact || '-'}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-indigo-600">${c.email || '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800">${escapeHTML(c.name)}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 font-mono text-slate-500 text-xs">${escapeHTML(c.ssm || '-')}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-slate-600">${escapeHTML(c.contact || '-')}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-indigo-600">${escapeHTML(c.email || '-')}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800 text-center">${projCount}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right">
                             <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button onclick="editClient('${c.id}')" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
-                                <button onclick="deleteData('client', '${c.id}')" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
                             </div>
                         </td>
                     </tr>`;
             });
         }
 
+        // --- Project Logic ---
         window.saveProjectUpdate = async function() {
             const id = document.getElementById('p-id').value; const clientId = document.getElementById('proj-client').value; const details = document.getElementById('p-details').value;
             if(!id || !clientId || !details) return Swal.fire('Error', 'Client and Details required', 'error');
@@ -1175,7 +1226,7 @@
                             if(status === 'Completed') completed++;
                             let colorClass = status === 'In Progress' ? 'bg-amber-100 text-amber-700 border-amber-200' : (status === 'Completed' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200');
                             let icon = status === 'In Progress' ? 'ph-spinner-gap animate-spin' : (status === 'Completed' ? 'ph-check-circle-fill' : 'ph-circle');
-                            scopesHtml += `<button onclick="toggleScopeStatus('${p.id}', '${scope}', '${status}')" class="${colorClass} border px-2 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 shadow-sm"><i class="ph ${icon} text-sm"></i> ${scope}</button>`;
+                            scopesHtml += `<button onclick="toggleScopeStatus('${p.id}', '${escapeHTML(scope)}', '${status}')" class="${colorClass} border px-2 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest flex items-center gap-1 shadow-sm"><i class="ph ${icon} text-sm"></i> ${escapeHTML(scope)}</button>`;
                         });
                         scopesHtml += `</div>`;
                         let pct = Math.round((completed / total) * 100);
@@ -1188,14 +1239,15 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100 text-center align-top"><input type="checkbox" value="${p.id}" onchange="toggleRowSelection('projects', '${p.id}', this.checked)" class="chk-projects w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top"><div class="font-bold text-slate-800 text-sm mb-1.5 leading-snug">${p.details}</div><div class="text-xs font-bold text-indigo-600 flex items-center gap-1.5 mb-1"><i class="ph ph-buildings text-sm"></i> ${client ? client.name : 'Unknown'}</div><div class="text-[10px] text-slate-400 font-medium">Registered: ${p.date}</div></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top"><div class="font-black text-slate-800 text-xs flex items-center gap-1.5"><i class="ph ph-bank text-sm text-cyan-600"></i> ${p.pbt || 'TBD'}</div><div class="text-[11px] font-mono font-bold text-slate-500 mt-2 mb-2 px-2 py-0.5 bg-slate-100 rounded inline-block border border-slate-200">Ref: ${p.ref || 'Pending...'}</div><div class="text-[10px] font-medium text-slate-500 flex items-start gap-1.5"><i class="ph ph-map-pin text-sm text-rose-400"></i> <span>${p.gps || 'Location TBD'}</span></div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top"><div class="font-bold text-slate-800 text-sm mb-1.5 leading-snug">${escapeHTML(p.details)}</div><div class="text-xs font-bold text-indigo-600 flex items-center gap-1.5 mb-1"><i class="ph ph-buildings text-sm"></i> ${escapeHTML(client ? client.name : 'Unknown')}</div><div class="text-[10px] text-slate-400 font-medium">Registered: ${p.date}</div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top"><div class="font-black text-slate-800 text-xs flex items-center gap-1.5"><i class="ph ph-bank text-sm text-cyan-600"></i> ${escapeHTML(p.pbt || 'TBD')}</div><div class="text-[11px] font-mono font-bold text-slate-500 mt-2 mb-2 px-2 py-0.5 bg-slate-100 rounded inline-block border border-slate-200">Ref: ${escapeHTML(p.ref || 'Pending...')}</div><div class="text-[10px] font-medium text-slate-500 flex items-start gap-1.5"><i class="ph ph-map-pin text-sm text-rose-400"></i> <span>${escapeHTML(p.gps || 'Location TBD')}</span></div></td>
                         <td class="p-4 md:p-5 border-b border-slate-100 align-top">${progressHtml}${scopesHtml}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 align-top text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="quickQuote('${p.id}')" title="Quick Quote" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button><button onclick="editProject('${p.id}')" title="Edit Metadata" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button><button onclick="deleteData('project', '${p.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button></div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 align-top text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="quickQuote('${p.id}')" title="Quick Quote" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button><button onclick="editProject('${p.id}')" title="Edit Metadata" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button></div></td>
                     </tr>`;
             });
         }
 
+        // --- Billing Logic ---
         let tempLineItems = []; let editingDocId = null;
         window.toggleNewProjectFields = function(val) { document.getElementById('new-proj-fields').classList.toggle('hidden', val !== 'NEW'); };
         window.openInvoiceWizard = function(docId = null) {
@@ -1203,7 +1255,7 @@
             if(docId) {
                 const d = state.commercials.find(x => x.id === docId);
                 if(d) { document.getElementById('inv-project').value = d.projectId; document.getElementById('inv-type').value = d.type; document.getElementById('inv-po').value = d.poRef || ''; document.getElementById('inv-sst').checked = d.tax > 0; tempLineItems = JSON.parse(JSON.stringify(d.items)); }
-            } else { document.getElementById('inv-project').value = 'NEW'; toggleNewProjectFields('NEW'); document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = ''; document.getElementById('inv-sst').checked = false; tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }]; }
+            } else { clearForm('modal-invoice'); document.getElementById('inv-project').value = 'NEW'; toggleNewProjectFields('NEW'); document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = ''; document.getElementById('inv-sst').checked = false; tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }]; }
             renderLineItems(); openModal('modal-invoice');
         };
 
@@ -1212,7 +1264,7 @@
             tempLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-0 relative group">
-                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${item.desc}" oninput="updateItemDesc(${index}, this.value)" list="scope-options" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-cyan-500" placeholder="e.g. PE Endorsement"><textarea id="item-note-${index}" oninput="updateItemNote(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none focus:border-cyan-500 h-16 resize-none" placeholder="Notes / Breakdown...">${item.note || ''}</textarea></div>
+                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${escapeHTML(item.desc)}" oninput="updateItemDesc(${index}, this.value)" list="scope-options" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-cyan-500" placeholder="e.g. PE Endorsement"><textarea id="item-note-${index}" oninput="updateItemNote(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none focus:border-cyan-500 h-16 resize-none" placeholder="Notes / Breakdown...">${escapeHTML(item.note || '')}</textarea></div>
                         <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="updateItemQty(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-cyan-500"></div>
                         <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="updateItemPrice(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-cyan-500" placeholder="0.00"></div>
                         <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="removeLineItem(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
@@ -1272,19 +1324,20 @@
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100 text-center"><input type="checkbox" value="${d.id}" onchange="toggleRowSelection('commercials', '${d.id}', this.checked)" class="chk-commercials w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></td>
                         <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-black text-slate-800">${d.id}</div><div class="flex items-center gap-2 mt-1">${typeBadge}<span class="text-[10px] text-slate-400 font-medium">${d.date}</span></div></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-slate-700 text-xs">${client ? client.name : 'Unknown'}</div><div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px] md:max-w-xs">${proj ? proj.details : 'Unknown Project'}</div></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs font-mono text-slate-500">${d.poRef || '-'}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-slate-700 text-xs">${escapeHTML(client ? client.name : 'Unknown')}</div><div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px] md:max-w-xs">${escapeHTML(proj ? proj.details : 'Unknown Project')}</div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs font-mono text-slate-500">${escapeHTML(d.poRef || '-')}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="font-black font-mono ${d.type==='Invoice' ? 'text-cyan-600' : 'text-slate-700'}">${formatRM(d.total)}</div>${d.tax > 0 ? `<div class="text-[9px] text-rose-500 uppercase tracking-widest font-bold mt-0.5">+ 8% SST</div>` : ''}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">${d.type === 'Invoice' ? `<button onclick="togglePaidStatus('${d.id}')" title="Mark Paid" class="${paidBtnClass} p-1.5 rounded transition-colors"><i class="ph ${paidIcon} text-lg"></i></button>` : ''}<button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button><button onclick="openInvoiceWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button><button onclick="deleteData('commercial', '${d.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button></div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">${d.type === 'Invoice' ? `<button onclick="togglePaidStatus('${d.id}')" title="Mark Paid" class="${paidBtnClass} p-1.5 rounded transition-colors"><i class="ph ${paidIcon} text-lg"></i></button>` : ''}<button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button><button onclick="openInvoiceWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button></div></td>
                     </tr>`;
             });
         }
 
+        // --- PO Logic ---
         let tempPOLineItems = []; let editingPOId = null;
         window.openPOWizard = function(docId = null) {
             editingPOId = docId;
             if(docId) { const d = state.pos.find(x => x.id === docId); if(d) { document.getElementById('po-project').value = d.projectId; document.getElementById('po-vendor-name').value = d.vendorName || ''; document.getElementById('po-vendor-address').value = d.vendorAddress || ''; document.getElementById('po-sst').checked = d.tax > 0; tempPOLineItems = JSON.parse(JSON.stringify(d.items)); } }
-            else { document.getElementById('po-project').value = ''; document.getElementById('po-vendor-name').value = ''; document.getElementById('po-vendor-address').value = ''; document.getElementById('po-sst').checked = false; tempPOLineItems = [{ desc: '', qty: 1, price: 0 }]; }
+            else { clearForm('modal-po'); document.getElementById('po-project').value = ''; document.getElementById('po-vendor-name').value = ''; document.getElementById('po-vendor-address').value = ''; document.getElementById('po-sst').checked = false; tempPOLineItems = [{ desc: '', qty: 1, price: 0 }]; }
             renderPOLineItems(); openModal('modal-po');
         };
         window.renderPOLineItems = function() {
@@ -1292,7 +1345,7 @@
             tempPOLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-0 relative group">
-                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${item.desc}" oninput="updateItemDescPO(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="e.g. Soil Investigation Borehole"></div>
+                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${escapeHTML(item.desc)}" oninput="updateItemDescPO(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="e.g. Soil Investigation Borehole"></div>
                         <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="updateItemQtyPO(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-indigo-500"></div>
                         <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="updateItemPricePO(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-500" placeholder="0.00"></div>
                         <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="removeLineItemPO(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
@@ -1326,18 +1379,19 @@
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100 text-center"><input type="checkbox" value="${d.id}" onchange="toggleRowSelection('pos', '${d.id}', this.checked)" class="chk-pos w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></td>
                         <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-black text-slate-800">${d.id}</div><div class="text-[10px] text-slate-400 font-medium mt-1">${d.date}</div></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-indigo-700 text-xs">${d.vendorName}</div><div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px] md:max-w-xs"><i class="ph ph-link"></i> ${proj ? proj.details : 'Unknown Project'}</div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-indigo-700 text-xs">${escapeHTML(d.vendorName)}</div><div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[200px] md:max-w-xs"><i class="ph ph-link"></i> ${escapeHTML(proj ? proj.details : 'Unknown Project')}</div></td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="font-black font-mono text-slate-700">${formatRM(d.total)}</div>${d.tax > 0 ? `<div class="text-[9px] text-rose-500 uppercase tracking-widest font-bold mt-0.5">+ 8% SST</div>` : ''}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="togglePOSettled('${d.id}')" title="Mark Settled" class="${settledClass} p-1.5 rounded transition-colors"><i class="ph ph-check-circle${d.status==='Settled'?'-fill':''} text-lg"></i></button><button onclick="printPO('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button><button onclick="openPOWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button><button onclick="deleteData('po', '${d.id}')" title="Delete" class="text-slate-400 hover:text-red-500 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button></div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="togglePOSettled('${d.id}')" title="Mark Settled" class="${settledClass} p-1.5 rounded transition-colors"><i class="ph ph-check-circle${d.status==='Settled'?'-fill':''} text-lg"></i></button><button onclick="printPO('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button><button onclick="openPOWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button></div></td>
                     </tr>`;
             });
         }
 
+        // --- HR & Staff Logic ---
         window.saveStaff = async function() {
             const id = document.getElementById('s-id').value;
             const name = document.getElementById('s-name').value;
             const role = document.getElementById('s-role').value;
-            const salary = Number(document.getElementById('s-salary').value);
+            const salary = parseCurrencyVal(document.getElementById('s-salary').value);
             if(!name || !salary) return Swal.fire('Error', 'Name and Salary required', 'error');
             const staffData = { name, role, salary };
             Swal.showLoading();
@@ -1350,7 +1404,6 @@
                     const docRef = await addDoc(collection(db, "staff"), staffData);
                     state.staff.push({ ...staffData, id: docRef.id });
                 }
-                ['s-id', 's-name', 's-role', 's-salary'].forEach(f => document.getElementById(f).value = '');
                 closeModal('modal-staff'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save staff.', 'error'); }
         };
@@ -1358,25 +1411,30 @@
         window.generatePayslip = function(id) {
             const s = state.staff.find(x => x.id === id); if(!s) return;
             const epf = s.salary * 0.11; const socso = s.salary * 0.005; const net = s.salary - epf - socso;
-            const printArea = document.getElementById('print-payslip');
-            printArea.innerHTML = `
+            
+            const contentHtml = `
                 ${getLetterhead()}
                 <h2 class="text-2xl font-black text-center uppercase tracking-widest mb-8 border-b-2 border-slate-800 pb-2">Payslip</h2>
-                <div class="flex justify-between mb-8 text-sm font-bold"><div><p class="text-slate-500 uppercase text-[10px]">Staff Name</p><p>${s.name}</p></div><div class="text-right"><p class="text-slate-500 uppercase text-[10px]">Role / Title</p><p>${s.role}</p></div></div>
+                <div class="flex justify-between mb-8 text-sm font-bold"><div><p class="text-slate-500 uppercase text-[10px]">Staff Name</p><p>${escapeHTML(s.name)}</p></div><div class="text-right"><p class="text-slate-500 uppercase text-[10px]">Role / Title</p><p>${escapeHTML(s.role)}</p></div></div>
                 <table class="w-full text-left border-collapse mb-8 text-sm">
                     <tr class="border-b border-slate-200"><td class="py-3 font-bold">Basic Salary</td><td class="py-3 text-right font-mono">${formatRM(s.salary)}</td></tr>
                     <tr class="border-b border-slate-100 text-rose-500"><td class="py-3 pl-4">Less: EPF (11%)</td><td class="py-3 text-right font-mono">-${formatRM(epf)}</td></tr>
                     <tr class="border-b border-slate-200 text-rose-500"><td class="py-3 pl-4">Less: SOCSO & EIS</td><td class="py-3 text-right font-mono">-${formatRM(socso)}</td></tr>
                     <tr class="font-black text-lg border-b-4 border-slate-800"><td class="py-4 uppercase tracking-widest text-xs">Net Payable</td><td class="py-4 text-right font-mono text-cyan-700">${formatRM(net)}</td></tr>
                 </table>
-                <div class="mt-12 flex justify-between text-xs font-bold text-slate-400"><div class="border-t border-slate-300 pt-2 w-48 text-center">Employer Signature</div><div class="border-t border-slate-300 pt-2 w-48 text-center">Employee Signature</div></div>
-                <div class="mt-8 flex justify-end no-print gap-3">
-                    <button onclick="closePrintView('print-payslip', 'hr')" class="px-6 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border border-slate-200 mr-auto">Go Back</button>
-                    <button onclick="viewPDF('print-payslip', '${s.id}-Payslip')" class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-file-pdf text-xl"></i> Open PDF</button>
-                    <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print Payslip</button>
+                <div class="mt-auto pt-8 flex-shrink-0">
+                    <div class="mt-12 flex justify-between text-xs font-bold text-slate-400 no-print">
+                        <div class="border-t border-slate-300 pt-2 w-48 text-center">Employer Signature</div>
+                        <div class="border-t border-slate-300 pt-2 w-48 text-center">Employee Signature</div>
+                    </div>
                 </div>
             `;
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => closePrintView('print-payslip', 'hr');
+            const actionsHtml = `
+                <button onclick="savePDFToDrive('print-content', '${s.name}-Payslip')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="openPDFNewTab('print-content', '${s.name}-Payslip')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-printer text-lg"></i> Print PDF</button>
+            `;
+            openPrintView(contentHtml, actionsHtml, 'hr');
         };
 
         function renderStaff() {
@@ -1388,24 +1446,25 @@
                         <div class="absolute top-4 left-4"><input type="checkbox" value="${s.id}" onchange="toggleRowSelection('staff', '${s.id}', this.checked)" class="chk-staff w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></div>
                         <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button onclick="generatePayslip('${s.id}')" title="Generate Payslip" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button>
-                            <button onclick="deleteData('staff', '${s.id}')" class="text-red-500 hover:bg-red-50 p-1.5 rounded"><i class="ph ph-trash text-lg"></i></button>
                         </div>
                         <div class="w-12 h-12 mx-auto bg-slate-100 text-slate-700 rounded-full flex items-center justify-center font-black text-xl mb-4 border border-slate-200"><i class="ph ph-user"></i></div>
-                        <h4 class="font-black text-slate-800 text-lg text-center">${s.name}</h4>
-                        <p class="text-xs font-bold text-slate-500 mb-4 text-center">${s.role}</p>
+                        <h4 class="font-black text-slate-800 text-lg text-center">${escapeHTML(s.name)}</h4>
+                        <p class="text-xs font-bold text-slate-500 mb-4 text-center">${escapeHTML(s.role)}</p>
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center"><p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Basic Salary</p><p class="font-mono font-black text-cyan-600">${formatRM(s.salary)}</p></div>
                     </div>`;
             });
         }
 
+        // --- Expenses Logic ---
         window.saveExpense = async function() {
-            const category = document.getElementById('exp-cat').value; const desc = document.getElementById('exp-desc').value; const amount = Number(document.getElementById('exp-amount').value); const projectId = document.getElementById('exp-project').value;
+            const category = document.getElementById('exp-cat').value; const desc = document.getElementById('exp-desc').value; 
+            const amount = parseCurrencyVal(document.getElementById('exp-amount').value); const projectId = document.getElementById('exp-project').value;
             if(!desc || !amount) return Swal.fire('Error', 'Description and Amount required', 'error');
             const expData = { category, desc, amount, projectId, date: new Date().toLocaleDateString('en-MY') };
             Swal.showLoading();
             try {
                 const docRef = await addDoc(collection(db, "expenses"), expData); state.expenses.push({ ...expData, id: docRef.id });
-                ['exp-desc', 'exp-amount'].forEach(f => document.getElementById(f).value = ''); document.getElementById('exp-project').value = ''; closeModal('modal-expense'); refreshAllViews(); Swal.close();
+                closeModal('modal-expense'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to log expense.', 'error'); }
         };
 
@@ -1418,33 +1477,14 @@
                     <tr class="hover:bg-slate-50 transition-colors group">
                         <td class="p-4 md:p-5 border-b border-slate-100 text-center"><input type="checkbox" value="${e.id}" onchange="toggleRowSelection('expenses', '${e.id}', this.checked)" class="chk-expenses w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-[10px] text-slate-400">${e.date}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-slate-800 text-sm">${e.desc}</div><div class="text-[10px] font-black uppercase tracking-widest text-rose-500 mt-1">${e.category}</div></td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs text-slate-500">${projName}</td>
+                        <td class="p-4 md:p-5 border-b border-slate-100"><div class="font-bold text-slate-800 text-sm">${escapeHTML(e.desc)}</div><div class="text-[10px] font-black uppercase tracking-widest text-rose-500 mt-1">${escapeHTML(e.category)}</div></td>
+                        <td class="p-4 md:p-5 border-b border-slate-100 text-xs text-slate-500">${escapeHTML(projName)}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right font-mono font-black text-rose-600">${formatRM(e.amount)}</td>
-                        <td class="p-4 md:p-5 border-b border-slate-100 text-right"><button onclick="deleteData('expense', '${e.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg opacity-0 group-hover:opacity-100"><i class="ph ph-trash text-lg"></i></button></td>
                     </tr>`;
             });
         }
 
-        window.deleteData = function(type, id) {
-            Swal.fire({ title: 'Delete record?', text: "Permanent cloud deletion.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' }).then(async r => {
-                if(r.isConfirmed){
-                    Swal.showLoading();
-                    try {
-                        let colName = type + "s"; if(type==='staff') colName='staff'; else if(type==='po') colName='pos';
-                        await deleteDoc(doc(db, colName, id));
-                        if(type==='client') state.clients = state.clients.filter(c=>c.id!==id);
-                        if(type==='project') state.projects = state.projects.filter(p=>p.id!==id);
-                        if(type==='commercial') state.commercials = state.commercials.filter(d=>d.id!==id);
-                        if(type==='po') state.pos = state.pos.filter(d=>d.id!==id);
-                        if(type==='staff') state.staff = state.staff.filter(s=>s.id!==id);
-                        if(type==='expense') state.expenses = state.expenses.filter(e=>e.id!==id);
-                        refreshAllViews(); Swal.fire('Deleted!', 'Record removed.', 'success');
-                    } catch(e) { Swal.fire('Error', 'Failed to delete.', 'error'); }
-                }
-            });
-        };
-
+        // --- Export & Data Import Logic ---
         window.exportToCSV = function(type) {
             let data = []; let filename = '';
             const escapeCSV = (str) => { if (str == null) return '""'; const s = String(str); if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`; return s; };
@@ -1504,31 +1544,81 @@
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 documents found.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
         }
 
-        window.closePrintView = function(printId, returnViewId) {
-            document.getElementById(printId).classList.add('hidden');
-            document.getElementById('topbar').classList.remove('hidden'); 
-            document.getElementById('sidebar').classList.remove('hidden'); 
-            switchView(returnViewId);
+        // --- Print & Drive Engine ---
+        window.closePrintView = function(returnViewId) {
+            document.getElementById('print-overlay').classList.add('hidden');
+            if(returnViewId) switchView(returnViewId);
+        };
+
+        window.openPrintView = function(htmlContent, actionsHtml, returnViewId) {
+            document.getElementById('print-content').innerHTML = htmlContent;
+            
+            // Add return view logic to close button
+            const toolbarHtml = `
+                <button onclick="closePrintView('${returnViewId}')" class="bg-slate-700 hover:bg-slate-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"><i class="ph ph-arrow-left text-lg"></i> Go Back</button>
+                <div class="flex gap-3 flex-wrap justify-end">${actionsHtml}</div>
+            `;
+            document.querySelector('#print-overlay .bg-slate-900').innerHTML = toolbarHtml;
+            document.getElementById('print-overlay').classList.remove('hidden');
         };
 
         window.printCommercial = function(id) {
             const docData = state.commercials.find(d => d.id === id); if(!docData) return;
             const proj = state.projects.find(p => p.id === docData.projectId); const client = proj ? state.clients.find(c => c.id === proj.clientId) : null;
-            let itemsHtml = ''; docData.items.forEach((item, i) => { const noteHtml = item.note ? `<div class="text-xs text-slate-500 mt-1 whitespace-pre-line italic border-l-2 border-slate-200 pl-2 ml-1">${item.note}</div>` : ''; itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div>${noteHtml}</td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`; });
+            let itemsHtml = ''; docData.items.forEach((item, i) => { const noteHtml = item.note ? `<div class="text-xs text-slate-500 mt-1 whitespace-pre-line italic border-l-2 border-slate-200 pl-2 ml-1">${escapeHTML(item.note)}</div>` : ''; itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${escapeHTML(item.desc)}</div>${noteHtml}</td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`; });
             const sstRow = docData.tax > 0 ? `<tr class="font-bold text-slate-600 text-sm"><td colspan="4" class="text-right py-2">Add: 8% SST</td><td class="text-right py-2 font-mono">${formatRM(docData.tax)}</td></tr>` : '';
-            const printArea = document.getElementById('print-commercial');
-            printArea.innerHTML = `${getLetterhead()}<div class="flex justify-between mb-12"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4><h2 class="text-xl font-black text-slate-800">${client ? client.name : ''}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${client ? client.address : ''}</p><p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${client ? client.contact : ''}</p></div><div class="text-right"><h1 class="text-4xl font-black text-cyan-700 tracking-tighter uppercase mb-2">${docData.type}</h1><p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${docData.poRef}</span></p>` : ''}</div></div><div class="mb-8"><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Project Details:</h4><p class="text-sm font-bold text-slate-800">${proj ? proj.details : ''}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td><td class="text-right py-3 font-mono text-cyan-700">${formatRM(docData.total)}</td></tr></table></div><div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Payment to be made payable to <strong>${state.settings.name}</strong>.</p><p>2. Account Details: <strong>${state.settings.bank}</strong></p><p>3. This is a computer-generated document. No signature is required.</p></div><div class="mt-8 flex flex-wrap justify-end gap-3 no-print"><button onclick="closePrintView('print-commercial', 'commercials')" class="px-6 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border border-slate-200 mr-auto">Go Back</button><button onclick="savePDFToDrive('print-commercial', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button><button onclick="viewPDF('print-commercial', '${docData.id}')" class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-file-pdf text-xl"></i> Open PDF in New Tab</button><button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-cyan-600/20 flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print</button></div>`;
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => closePrintView('print-commercial', 'commercials');
+            
+            const contentHtml = `
+                ${getLetterhead()}
+                <div class="flex justify-between mb-12"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4><h2 class="text-xl font-black text-slate-800">${escapeHTML(client ? client.name : '')}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${escapeHTML(client ? client.address : '')}</p><p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${escapeHTML(client ? client.contact : '')}</p></div><div class="text-right"><h1 class="text-4xl font-black text-cyan-700 tracking-tighter uppercase mb-2">${docData.type}</h1><p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${escapeHTML(docData.poRef)}</span></p>` : ''}</div></div><div class="mb-8"><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Project Details:</h4><p class="text-sm font-bold text-slate-800">${escapeHTML(proj ? proj.details : '')}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td><td class="text-right py-3 font-mono text-cyan-700">${formatRM(docData.total)}</td></tr></table></div>
+                <div class="mt-auto pt-8 flex-shrink-0">
+                    <div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Payment to be made payable to <strong>${escapeHTML(state.settings.name)}</strong>.</p><p>2. Account Details: <strong>${escapeHTML(state.settings.bank)}</strong></p><p>3. This is a computer-generated document. No signature is required.</p></div>
+                </div>
+            `;
+            const actionsHtml = `
+                <button onclick="savePDFToDrive('print-content', '${docData.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="openPDFNewTab('print-content', '${docData.id}')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"><i class="ph ph-printer text-lg"></i> Print PDF</button>
+            `;
+            openPrintView(contentHtml, actionsHtml, 'commercials');
         };
 
         window.printPO = function(id) {
             const docData = state.pos.find(d => d.id === id); if(!docData) return;
             const proj = state.projects.find(p => p.id === docData.projectId);
-            let itemsHtml = ''; docData.items.forEach((item, i) => { itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${item.desc}</div></td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`; });
+            let itemsHtml = ''; docData.items.forEach((item, i) => { itemsHtml += `<tr class="border-b border-slate-100"><td class="py-4 font-semibold text-slate-800">${i+1}</td><td class="py-4"><div class="font-bold text-slate-800">${escapeHTML(item.desc)}</div></td><td class="py-4 text-center font-mono">${item.qty}</td><td class="py-4 text-right font-mono">${formatRM(item.price)}</td><td class="py-4 text-right font-mono font-bold">${formatRM(item.qty * item.price)}</td></tr>`; });
             const sstRow = docData.tax > 0 ? `<tr class="font-bold text-slate-600 text-sm"><td colspan="4" class="text-right py-2">Add: 8% SST</td><td class="text-right py-2 font-mono">${formatRM(docData.tax)}</td></tr>` : '';
-            const printArea = document.getElementById('print-po');
-            printArea.innerHTML = `${getLetterhead()}<div class="flex justify-between mb-12"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Vendor / Subcontractor:</h4><h2 class="text-xl font-black text-slate-800">${docData.vendorName}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${docData.vendorAddress || ''}</p></div><div class="text-right"><h1 class="text-3xl font-black text-indigo-700 tracking-tighter uppercase mb-2">Purchase Order</h1><p class="text-sm text-slate-600 font-bold mb-1">PO No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p></div></div><div class="mb-8 bg-slate-50 p-4 rounded-lg border border-slate-200"><h4 class="font-black text-slate-400 uppercase tracking-widest text-[10px] mb-1">Linked Project Reference:</h4><p class="text-sm font-bold text-slate-800">${proj ? proj.details : 'General Overhead'}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Outsourced Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Total PO Value</td><td class="text-right py-3 font-mono text-indigo-700">${formatRM(docData.total)}</td></tr></table></div><div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Please supply/execute the works strictly as specified above.</p><p>2. Payment terms are 30 days upon receipt of your official original invoice.</p><p>3. This is a computer-generated Purchase Order. No signature is required.</p></div><div class="mt-8 flex flex-wrap justify-end gap-3 no-print"><button onclick="closePrintView('print-po', 'pos')" class="px-6 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors border border-slate-200 mr-auto">Go Back</button><button onclick="savePDFToDrive('print-po', '${docData.id}')" class="bg-indigo-50 text-indigo-600 px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 border border-indigo-100 hover:bg-indigo-100 shadow-sm"><i class="ph ph-google-drive-logo text-xl"></i> Save to Drive</button><button onclick="viewPDF('print-po', '${docData.id}')" class="bg-violet-600 hover:bg-violet-700 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-file-pdf text-xl"></i> Open PDF</button><button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2"><i class="ph ph-printer text-xl"></i> Print P.O.</button></div>`;
-            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden')); document.getElementById('topbar').classList.add('hidden'); document.getElementById('sidebar').classList.add('hidden'); printArea.classList.remove('hidden'); window.onafterprint = () => closePrintView('print-po', 'pos');
+            
+            const contentHtml = `
+                ${getLetterhead()}
+                <div class="flex justify-between mb-12"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Vendor / Subcontractor:</h4><h2 class="text-xl font-black text-slate-800">${escapeHTML(docData.vendorName)}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${escapeHTML(docData.vendorAddress || '')}</p></div><div class="text-right"><h1 class="text-3xl font-black text-indigo-700 tracking-tighter uppercase mb-2">Purchase Order</h1><p class="text-sm text-slate-600 font-bold mb-1">PO No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p></div></div><div class="mb-8 bg-slate-50 p-4 rounded-lg border border-slate-200"><h4 class="font-black text-slate-400 uppercase tracking-widest text-[10px] mb-1">Linked Project Reference:</h4><p class="text-sm font-bold text-slate-800">${escapeHTML(proj ? proj.details : 'General Overhead')}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Outsourced Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-800"><td class="text-right py-3 uppercase tracking-widest text-xs">Total PO Value</td><td class="text-right py-3 font-mono text-indigo-700">${formatRM(docData.total)}</td></tr></table></div>
+                <div class="mt-auto pt-8 flex-shrink-0">
+                    <div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Please supply/execute the works strictly as specified above.</p><p>2. Payment terms are 30 days upon receipt of your official original invoice.</p><p>3. This is a computer-generated Purchase Order. No signature is required.</p></div>
+                </div>
+            `;
+            const actionsHtml = `
+                <button onclick="savePDFToDrive('print-content', '${docData.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="openPDFNewTab('print-content', '${docData.id}')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-printer text-lg"></i> Print P.O.</button>
+            `;
+            openPrintView(contentHtml, actionsHtml, 'pos');
+        };
+
+        window.openPDFNewTab = function(elementId, filename) {
+            Swal.fire({ title: 'Opening PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            const element = document.getElementById(elementId);
+            html2pdf().from(element).set({
+                margin: 10,
+                filename: `${filename}.pdf`,
+                pagebreak: { mode: ['css', 'legacy'] },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).output('bloburl').then(function(pdfUrl) {
+                Swal.close();
+                window.open(pdfUrl, '_blank');
+            }).catch(e => {
+                Swal.fire('Error', 'Failed to generate PDF.', 'error');
+            });
         };
 
         window.connectGoogleDrive = function() {
@@ -1552,39 +1642,149 @@
             try { await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + window.gapiToken }), body: form }); } catch(e) { console.error(e); }
         };
 
-        window.viewPDF = function(elementId, filename) {
-            Swal.fire({ title: 'Generating PDF Viewer...', text: 'Formatting page breaks and opening in a new tab.', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-            const element = document.getElementById(elementId);
-            html2pdf().from(element).set({
-                margin: 10,
-                filename: `${filename}.pdf`,
-                pagebreak: { mode: ['css', 'legacy'] },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            }).outputPdf('blob').then(function(pdfBlob) {
-                Swal.close();
-                const url = URL.createObjectURL(pdfBlob);
-                window.open(url, '_blank');
-            });
-        };
-
         window.savePDFToDrive = function(elementId, filename) {
             if (!window.gapiToken) return Swal.fire('Not Connected', 'Please connect Google Drive via the top right button first.', 'warning');
             Swal.fire({ title: 'Generating PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             const element = document.getElementById(elementId);
-            html2pdf().from(element).set({ 
-                margin: 10, 
-                filename: `${filename}.pdf`, 
-                pagebreak: { mode: ['css', 'legacy'] },
-                html2canvas: { scale: 2, useCORS: true }, 
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-            }).output('blob').then(async function(pdfBlob) {
+            html2pdf().from(element).set({ margin: 10, filename: `${filename}.pdf`, pagebreak: { mode: ['css', 'legacy'] }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).output('blob').then(async function(pdfBlob) {
                 const metadata = { name: `${filename}.pdf`, mimeType: 'application/pdf' }; if(state.settings.folderid) metadata.parents = [state.settings.folderid];
                 const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' })); form.append('file', pdfBlob);
                 try { const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + window.gapiToken }), body: form }); if(res.ok) Swal.fire('Saved to Vault!', 'PDF successfully uploaded to Google Drive.', 'success'); else throw new Error('Upload failed'); } catch(e) { Swal.fire('Error', 'Failed to save to Drive.', 'error'); }
             });
         };
 
+        // --- Core Gemini AI Engine ---
+        async function askGemini(promptText, isJson = false) {
+            if (!state.settings.geminikey) { Swal.fire('AI Not Configured', 'Please configure your Gemini API Key in Company Setup.', 'warning'); return null; }
+            try { 
+                const genAI = new GoogleGenerativeAI(state.settings.geminikey); 
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+                const result = await model.generateContent(promptText); 
+                let text = result.response.text();
+                if(isJson) { text = text.replace(/```json/g, '').replace(/```/g, '').trim(); }
+                return text; 
+            } catch (error) { console.error(error); Swal.fire('Gemini Error', 'Failed to connect to Google AI.', 'error'); return null; }
+        }
+
+        // --- AI Expansion 1: LOA Auto-Onboard ---
+        window.processLOA = async function(event) {
+            const file = event.target.files[0]; if (!file || file.type !== "application/pdf") return;
+            Swal.fire({ title: 'AI Reading LOA...', text: 'Extracting Project and Client Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            try {
+                const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
+                for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; }
+                
+                const prompt = `You are a structural engineering assistant in Malaysia. Read this Letter of Award (LOA) or Tender document. Extract the following details: 1. The name of the Client (the company awarding the job). 2. The Project Details or Title. 3. The PBT or Local Authority mentioned (e.g., DBKL, MBPJ, MBSA). If none, say "TBD". 4. The Reference Number of the LOA/Tender. 5. The GPS or Location of the site. Return strictly as a valid JSON object with keys: "clientName", "projectDetails", "pbt", "ref", "gps". Do NOT include markdown blocks. Text: ${extractedText.substring(0, 20000)}`;
+                
+                const jsonText = await askGemini(prompt, true);
+                if(jsonText) {
+                    const data = JSON.parse(jsonText);
+                    // Process Client
+                    let clientId = null;
+                    const existingClient = state.clients.find(c => c.name.toLowerCase() === data.clientName.toLowerCase());
+                    if(existingClient) clientId = existingClient.id;
+                    else {
+                        const newClientRef = await addDoc(collection(db, "clients"), { name: data.clientName, ssm:'', contact:'', email:'', address:'' });
+                        clientId = newClientRef.id; state.clients.push({ id: clientId, name: data.clientName });
+                    }
+                    // Process Project
+                    const projData = { clientId: clientId, details: data.projectDetails, pbt: data.pbt, gps: data.gps, status: 'Awarded', ref: data.ref, date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
+                    const docRef = await addDoc(collection(db, "projects"), projData);
+                    state.projects.push({ ...projData, id: docRef.id });
+                    
+                    if(document.getElementById('ai-loa-upload').files.length > 0) {
+                        await uploadFileToDrive(document.getElementById('ai-loa-upload').files[0], 'LOA - ' + data.projectDetails.substring(0,20));
+                    }
+                    refreshAllViews();
+                    Swal.fire('AI Onboarding Complete!', `Client: ${data.clientName}\nProject: ${data.projectDetails}`, 'success');
+                }
+            } catch (error) { console.error(error); Swal.fire('Analysis Failed', 'Could not process PDF or JSON.', 'error'); }
+            event.target.value = '';
+        };
+
+        // --- AI Expansion 2: Site Defect Vision ---
+        window.analyzeDefect = async function(event) {
+            const file = event.target.files[0]; if (!file) return;
+            
+            // Show preview
+            const readerPreview = new FileReader();
+            readerPreview.onload = function(e) {
+                document.getElementById('ai-vision-img-preview').src = e.target.result;
+                document.getElementById('ai-vision-preview-container').classList.remove('hidden');
+            };
+            readerPreview.readAsDataURL(file);
+
+            Swal.fire({ title: 'Gemini Vision Analysis...', text: 'Examining structural integrity...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            
+            if (!state.settings.geminikey) return Swal.fire('AI Not Configured', 'Missing Gemini API Key.', 'warning');
+            
+            try {
+                const base64EncodedDataPromise = new Promise((resolve) => {
+                    const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file);
+                });
+                const base64EncodedData = await base64EncodedDataPromise;
+                
+                const genAI = new GoogleGenerativeAI(state.settings.geminikey);
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                
+                const prompt = "You are a Professional Civil & Structural Engineer (Ir.) registered with BEM in Malaysia. Analyze this site photo. Generate a professional 'Structural Defect Assessment'. Format using Markdown. Structure it exactly like this:\n\n### 1. Visual Observations\n(Detail what is wrong, e.g. spalling, corrosion, honeycombing, cracked welds).\n\n### 2. Root Cause Analysis\n(Why it happened).\n\n### 3. Recommended Repair Methods\n(Technical solutions, e.g., Epoxy injection, steel jacketing, wire brushing and repainting). Keep it technical and concise.";
+                
+                const imagePart = { inlineData: { data: base64EncodedData, mimeType: file.type } };
+                const result = await model.generateContent([prompt, imagePart]);
+                const text = result.response.text();
+                
+                document.getElementById('ai-vision-result').innerHTML = marked.parse(text);
+                document.getElementById('ai-vision-result-container').classList.remove('hidden');
+                Swal.close();
+            } catch(e) { console.error(e); Swal.fire('Vision Error', 'Failed to analyze image.', 'error'); }
+            event.target.value = '';
+        };
+
+        window.printAIVision = function() {
+            const reportContent = document.getElementById('ai-vision-result').innerHTML;
+            const imgSrc = document.getElementById('ai-vision-img-preview').src;
+            const contentHtml = `
+                ${getLetterhead()}
+                <h2 class="text-2xl font-black uppercase tracking-widest border-b-2 border-slate-800 pb-2 mb-6 text-center">Structural Defect Assessment</h2>
+                <div class="mb-8 text-center"><img src="${imgSrc}" class="max-h-64 mx-auto rounded border border-slate-300 shadow-sm object-contain"></div>
+                <div class="prose prose-slate max-w-none text-sm">${reportContent}</div>
+                <div class="mt-auto pt-12 flex-shrink-0">
+                    <div class="text-xs font-bold text-slate-500 border-t border-slate-300 pt-2 w-64">Prepared by:<br><br><br>Ir. Principal (BEM: ${state.settings.bem})</div>
+                </div>
+            `;
+            const actionsHtml = `
+                <button onclick="savePDFToDrive('print-content', 'Site_Defect_Report')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="openPDFNewTab('print-content', 'Site_Defect_Report')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-printer text-lg"></i> Print Report</button>
+            `;
+            openPrintView(contentHtml, actionsHtml, 'ai-vision');
+        };
+
+        // --- AI Expansion 3: Smart Quotation Auto-Pilot ---
+        window.aiSuggestScopes = async function() {
+            let projectTitle = '';
+            const selectedProj = document.getElementById('inv-project').value;
+            if (selectedProj === 'NEW') projectTitle = document.getElementById('inv-proj-details').value;
+            else { const p = state.projects.find(x => x.id === selectedProj); if(p) projectTitle = p.details; }
+            
+            if(!projectTitle) return Swal.fire('Required', 'Please select a project or type a new project title first.', 'warning');
+            
+            Swal.fire({ title: 'AI Generating Scopes...', text: 'Estimating market rates and tasks...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+            
+            const prompt = `I am a Civil & Structural Consultant in Malaysia preparing a quotation for: "${projectTitle}". Suggest 3 to 4 standard engineering scopes of work for this. Return strictly a JSON array of objects. Keys: "desc" (scope title), "note" (detailed task description), "qty" (number, usually 1), "price" (estimated market price in RM, number only). Do not include markdown or backticks.`;
+            
+            const jsonText = await askGemini(prompt, true);
+            if(jsonText) {
+                try {
+                    const aiItems = JSON.parse(jsonText);
+                    tempLineItems = aiItems;
+                    renderLineItems();
+                    Swal.fire('Auto-Filled!', 'Review the AI suggestions and adjust pricing as needed.', 'success');
+                } catch(e) { Swal.fire('Error', 'AI returned invalid formatting.', 'error'); }
+            }
+        };
+
+        // --- Original OCR & Contract Analyzer ---
         window.processReceiptImage = async function(event) {
             const file = event.target.files[0]; if (!file) return;
             Swal.fire({ title: 'AI Scanning...', text: 'Extracting data via Tesseract OCR...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -1598,12 +1798,6 @@
                 Swal.fire({ title: 'Scan Complete!', text: `Extracted: ${extractedDesc} (RM ${extractedAmount})`, icon: 'success', timer: 2000, showConfirmButton: false });
             } catch (error) { Swal.fire('Scan Failed', 'Could not read receipt clearly.', 'warning'); } event.target.value = '';
         };
-
-        async function askGemini(promptText) {
-            if (!state.settings.geminikey) { Swal.fire('AI Not Configured', 'Please paste your Google AI Studio API Key in Company Setup.', 'warning'); return null; }
-            try { const genAI = new GoogleGenerativeAI(state.settings.geminikey); const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); const result = await model.generateContent(promptText); return result.response.text(); } 
-            catch (error) { Swal.fire('Gemini Error', 'Failed to connect to Google AI.', 'error'); return null; }
-        }
 
         window.analyzeContract = async function(event) {
             const file = event.target.files[0]; if (!file || file.type !== "application/pdf") return;
@@ -1619,31 +1813,36 @@
         };
 
         window.generateAILetter = async function() {
-            const projectId = document.getElementById('ai-project').value; const type = document.getElementById('ai-type').value; const customPrompt = document.getElementById('ai-custom-prompt').value;
-            if(!projectId) return Swal.fire('Error', 'Please select a project first.', 'error');
-            const proj = state.projects.find(p => p.id === projectId); const client = state.clients.find(c => c.id === proj.clientId);
+            const pId = document.getElementById('ai-project').value; const type = document.getElementById('ai-type').value; const customPrompt = document.getElementById('ai-custom-prompt').value;
+            if(!pId) return Swal.fire('Error', 'Please select a project.', 'error');
+            const p = state.projects.find(x => x.id === pId); const client = state.clients.find(c => c.id === p.clientId);
             Swal.fire({ title: 'Gemini Drafting...', text: 'Writing professional Surat Rasmi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-            const prompt = `Write an official Malay formal letter (Surat Rasmi) for an engineering consulting firm. 
-            From: ${state.settings.name}
-            To Client: ${client ? client.name : 'Client'}, ${client ? client.address : ''}
-            Project: ${proj.details}
-            PBT/Authority involved: ${proj.pbt} (Ref: ${proj.ref})
-            Letter Purpose: ${type}.
-            Custom Instructions: ${customPrompt}
-            Format: Do NOT include a letterhead placeholder. Start with the date, then recipient address, then "Tuan/Puan", then the title, then the body. Keep it highly professional and technical.`;
+            
+            const prompt = `Write an official Malay formal letter (Surat Rasmi) for an engineering consulting firm. From: ${state.settings.name}. To Client: ${client ? client.name : 'Client'}. Project: ${p.details}. PBT/Authority: ${p.pbt} (Ref: ${p.ref}). Letter Purpose: ${type}. Custom Instructions: ${customPrompt}. Format: Do NOT include a letterhead placeholder. Start with the date, then "Tuan/Puan", then the title, then the body. Keep it highly professional and technical.`;
             const aiResponse = await askGemini(prompt);
+            
             if (aiResponse) { 
-                document.getElementById('ai-result').classList.remove('hidden');
-                document.getElementById('print-ai-letter').innerHTML = `${getLetterhead()}<textarea id="ai-textarea" class="w-full h-96 resize-none outline-none bg-transparent" spellcheck="false">${aiResponse.replace(/\*\*/g, '')}</textarea>`;
+                const letterBody = aiResponse.replace(/\*\*/g, ''); 
+                const contentHtml = `
+                    <div class="flex flex-col min-h-[297mm] bg-white">
+                        ${getLetterhead()}
+                        <div class="mt-8 font-serif text-sm leading-relaxed" style="white-space: pre-wrap;">${escapeHTML(letterBody)}</div>
+                    </div>
+                `;
+                const actionsHtml = `
+                    <button onclick="savePDFToDrive('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                    <button onclick="openPDFNewTab('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                    <button onclick="window.print()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2"><i class="ph ph-printer text-lg"></i> Print Official</button>
+                `;
+                openPrintView(contentHtml, actionsHtml, 'ai-letter');
                 Swal.close(); 
             }
         };
 
         window.toggleChatbot = function() { const window = document.getElementById('ai-chat-window'); window.classList.toggle('hidden'); window.classList.toggle('flex'); };
-        
         window.sendChatMessage = async function() {
             const inputEl = document.getElementById('ai-chat-input'); const message = inputEl.value.trim(); if(!message) return;
-            const chatBox = document.getElementById('ai-chat-messages'); chatBox.innerHTML += `<div class="bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none self-end shadow-sm max-w-[85%] mt-3">${message}</div>`; inputEl.value = ''; chatBox.scrollTop = chatBox.scrollHeight;
+            const chatBox = document.getElementById('ai-chat-messages'); chatBox.innerHTML += `<div class="bg-indigo-600 text-white p-3 rounded-lg rounded-tr-none self-end shadow-sm max-w-[85%] mt-3">${escapeHTML(message)}</div>`; inputEl.value = ''; chatBox.scrollTop = chatBox.scrollHeight;
             const typingId = 'typing-' + Date.now(); chatBox.innerHTML += `<div id="${typingId}" class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-500 self-start shadow-sm max-w-[85%] mt-3 flex items-center gap-2"><i class="ph ph-spinner-gap animate-spin"></i> Gemini is thinking...</div>`; chatBox.scrollTop = chatBox.scrollHeight;
             const dbSummary = { clients: state.clients.map(c=>({id:c.id, name:c.name})), projects: state.projects.map(p=>({id:p.id, details:p.details, status:p.status})), invoices: state.commercials.map(c=>({id:c.id, total:c.total, status:c.status})) };
             const prompt = `You are ERP Co-Pilot. Answer based ONLY on this JSON database: ${JSON.stringify(dbSummary)}\n\nQuestion: "${message}"`;
