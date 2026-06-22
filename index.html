@@ -2067,23 +2067,70 @@
         }
 
         async function processCommercialCSV(data) {
-            let addedCount = 0; const year = new Date().getFullYear(); for(const row of data) {
-                const type = row['Type'] || 'Invoice'; const projStr = row['Project']; const descStr = row['Description'] || 'General Engineering Works'; const qty = Number(row['Qty'] || 1); const price = Number(row['Price'] || 0); const applySst = (row['SST'] || '').toLowerCase() === 'yes';
-                if(!projStr || price === 0) continue; let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
-                if(existingProj) projectId = existingProj.id; else { 
-                    let projDocId = 'proj_' + Date.now();
+            let addedCount = 0; 
+            for(const row of data) {
+                const type = row['Type'] || 'Invoice';
+                const docIdRaw = row['Doc ID'] || row['Invoice Number'] || row['Quote Number'];
+                const clientStr = row['Client Name'] || row['Client'] || 'Unknown Client';
+                const dateStr = row['Date'] || new Date().toLocaleDateString('en-MY');
+                const statusStr = row['Status'] || 'Unpaid';
+                const poRef = row['PO Reference'] || '';
+                
+                // Extract number from currency strings like "RM 1,315,000.00"
+                let totalStr = row['Grand Total (RM)'] || row['Price'] || row['Total'] || '0';
+                const totalVal = parseFloat(String(totalStr).replace(/[^0-9.-]+/g, ""));
+                
+                if (!docIdRaw && totalVal === 0) continue; // Skip empty rows safely
+                
+                const docId = docIdRaw ? String(docIdRaw).trim() : `${type === 'Quotation' ? 'QUO' : 'INV'}-${Date.now()}`;
+                
+                // 1. Map or Auto-create Client Profile
+                let clientId = null;
+                const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
+                if (existingClient) clientId = existingClient.id; 
+                else { 
+                    let newClientId = 'client_' + Date.now() + Math.floor(Math.random()*1000);
                     if(isFirebaseActive) {
-                        const newProjRef = await addDoc(getColRef("projects"), { clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); 
+                        const newClientRef = await addDoc(getColRef("clients"), { name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' });
+                        newClientId = newClientRef.id;
+                    }
+                    clientId = newClientId; 
+                    state.clients.push({ id: clientId, name: clientStr.trim() }); 
+                }
+
+                // 2. Map or Auto-create Scope/Project Profile
+                const projStr = row['Project ID'] || row['Project'] || `Imported Document Scope: ${docId}`;
+                let projectId = null; 
+                const existingProj = state.projects.find(p => p.details.toLowerCase().trim() === projStr.toLowerCase().trim());
+                if(existingProj) projectId = existingProj.id; 
+                else { 
+                    let projDocId = 'proj_' + Date.now() + Math.floor(Math.random()*1000);
+                    if(isFirebaseActive) {
+                        const newProjRef = await addDoc(getColRef("projects"), { clientId: clientId, details: projStr, pbt:'TBD', status:'Drafting', date: dateStr, scopeStatuses: {} }); 
                         projDocId = newProjRef.id;
                     }
-                    projectId = projDocId; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); 
+                    projectId = projDocId; 
+                    state.projects.push({ id: projectId, details: projStr, clientId: clientId, date: dateStr, pbt:'TBD', status:'Drafting', scopeStatuses: {} }); 
                 }
-                const subtotal = qty * price; const tax = applySst ? (subtotal * 0.08) : 0; const total = subtotal + tax; const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1; const docId = `${prefix}-${year}-${String(count).padStart(3, '0')}`;
-                const docData = { projectId, type, poRef: row['PO Reference'] || '', items: [{ desc: descStr, note: '', qty, price }], subtotal, tax, total, date: row['Date'] || new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
+                
+                // 3. Construct Final Financial Document
+                const items = [{ desc: 'Imported Document Entry', note: 'Bulk imported from CSV', qty: 1, price: totalVal }];
+                const docData = { projectId, type, poRef, items, subtotal: totalVal, tax: 0, total: totalVal, date: dateStr, status: statusStr };
+                
                 if(isFirebaseActive) await setDoc(getDocRef("commercials", docId), docData);
-                state.commercials.push({ ...docData, id: docId }); addedCount++;
+                
+                // Avoid duplication in local state memory
+                const existingDocIndex = state.commercials.findIndex(d => d.id === docId);
+                if (existingDocIndex !== -1) {
+                    state.commercials[existingDocIndex] = { ...docData, id: docId };
+                } else {
+                    state.commercials.push({ ...docData, id: docId }); 
+                    addedCount++;
+                }
             }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 documents found.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
+            refreshAllViews(); 
+            if (addedCount === 0) Swal.fire('No Data', '0 valid documents found in CSV.', 'warning'); 
+            else Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents.`, 'success');
         }
 
         // --- Print & Drive Engine ---
