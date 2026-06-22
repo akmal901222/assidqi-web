@@ -25,11 +25,6 @@
     <!-- Marked.js for AI Markdown Formatting -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
-    <!-- Firebase SDKs (Using stable Compat wrappers to prevent import errors) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .sidebar-item { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -206,11 +201,11 @@
                     </div>
                 </div>
 
-                <!-- High-Tech Profit Analysis Panel (June 2026 MTD / 2026 YTD) -->
+                <!-- High-Tech Profit Analysis Panel -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group interactive-card neon-glow-cyan">
                         <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><i class="ph ph-calendar text-cyan-600 text-lg"></i> Monthly Ledger ( June )</h4>
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><i class="ph ph-calendar text-cyan-600 text-lg"></i> Monthly Ledger ( Current )</h4>
                             <span class="bg-cyan-50 border border-cyan-100 text-cyan-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">MTD</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
@@ -231,7 +226,7 @@
                     
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group interactive-card neon-glow-indigo">
                         <div class="flex justify-between items-center mb-4">
-                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><i class="ph ph-trend-up text-indigo-600 text-lg"></i> Annual Ledger ( 2026 )</h4>
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><i class="ph ph-trend-up text-indigo-600 text-lg"></i> Annual Ledger ( YTD )</h4>
                             <span class="bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">YTD</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
@@ -937,16 +932,12 @@
     </style>
 
     <!-- Application Logic Modules -->
-    <script>
-        // Unique dynamic sandbox namespace matching client rules
-        const appId = "pelantar-erp";
-        
-        // Secure database collection pathways
-        function getCol(colName) {
-            return db.collection("artifacts").doc(appId).collection("public").doc("data").collection(colName);
-        }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Global State & Configuration ---
+        // Global exports for HTML inline handlers
         window.state = {
             clients: [], projects: [], commercials: [], pos: [], staff: [], expenses: [],
             settings: {
@@ -964,6 +955,37 @@
             currentDocTypeFilter: 'ALL'
         };
 
+        // --- Firebase Connection Setup (Modular) ---
+        let app, auth, db;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'pelantar-erp';
+        let isFirebaseActive = false;
+
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "dummy", authDomain: "dummy.firebaseapp.com", projectId: "dummy"
+            };
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            isFirebaseActive = true;
+        } catch (e) {
+            console.warn("Firebase config not found or invalid. Running in local fallback state.");
+        }
+
+        // Database Path Generators Rules
+        const getColRef = (colName) => collection(db, 'artifacts', appId, 'public', 'data', colName);
+        const getDocRef = (colName, documentId) => doc(db, 'artifacts', appId, 'public', 'data', colName, documentId);
+
+        const initAuth = async () => {
+            if (!isFirebaseActive) return;
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+
+        // Static Variables Map
         const scopeNotesMap = {
             'Design & Drawing': 'Preparation of detailed structural calculations (STAAD.Pro) and C&S AutoCAD drawings for the structure and foundation, compliant with BS 5950 and MS 1553.',
             'Submission': 'Preparation of Borang A, Laporan Cadangan Pemajuan (LCP), and official C&S document submission to the Local Authority (PBT) via OSC 3.0 Plus.',
@@ -1130,7 +1152,6 @@
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             document.getElementById(`view-${viewId}`).classList.add('active', 'block');
             
-            // Minimalist dynamic header naming map
             const titleMap = {
                 'dashboard': 'Dashboard',
                 'clients': 'Clients',
@@ -1178,18 +1199,26 @@
                 </div>`;
         }
 
-        // --- Firebase Load state synchronization ---
-        async function loadState() {
+        // --- Firebase Load state synchronization (Modular Fix) ---
+        window.loadState = async function() {
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'short' });
             Swal.fire({ title: 'Establishing Handshake', text: 'Syncing ledger data with active cloud nodes...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
             try {
-                // Anonymous handshake connection to pass security policies
-                await firebase.auth().signInAnonymously();
+                if(isFirebaseActive) {
+                    await initAuth();
+                    if (!auth.currentUser) throw new Error("Authentication Handshake failed.");
 
-                const settingsDoc = await getCol("settings").get();
-                if (!settingsDoc.empty) state.settings = { ...state.settings, ...settingsDoc.docs[0].data() };
-                else await getCol("settings").doc("master").set(state.settings);
+                    const settingsSnap = await getDocs(getColRef("settings"));
+                    if (!settingsSnap.empty) {
+                        const masterDoc = await getDoc(getDocRef("settings", "master"));
+                        if (masterDoc.exists()) {
+                            state.settings = { ...state.settings, ...masterDoc.data() };
+                        }
+                    } else {
+                        await setDoc(getDocRef("settings", "master"), state.settings);
+                    }
+                }
 
                 // SECURITY OVERRIDE: Force credentials if empty
                 if(!state.settings.clientid) state.settings.clientid = '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com';
@@ -1200,25 +1229,27 @@
                     if(document.getElementById('set-'+k)) document.getElementById('set-'+k).value = state.settings[k] || '';
                 });
 
-                const [clientSnap, projSnap, commSnap, poSnap, staffSnap, expSnap] = await Promise.all([
-                    getCol("clients").get(), getCol("projects").get(),
-                    getCol("commercials").get(), getCol("pos").get(), 
-                    getCol("staff").get(), getCol("expenses").get()
-                ]);
-                
-                state.clients = clientSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                state.projects = projSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                state.commercials = commSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                state.pos = poSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                state.staff = staffSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-                state.expenses = expSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                if(isFirebaseActive) {
+                    const [clientSnap, projSnap, commSnap, poSnap, staffSnap, expSnap] = await Promise.all([
+                        getDocs(getColRef("clients")), getDocs(getColRef("projects")),
+                        getDocs(getColRef("commercials")), getDocs(getColRef("pos")), 
+                        getDocs(getColRef("staff")), getDocs(getColRef("expenses"))
+                    ]);
+                    
+                    state.clients = clientSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    state.projects = projSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    state.commercials = commSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    state.pos = poSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    state.staff = staffSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    state.expenses = expSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                }
 
                 refreshAllViews();
                 Swal.close();
-                logActivity('ERP authenticated and synchronized with Firebase', 'cloud-check', 'cyan');
+                if(isFirebaseActive) logActivity('ERP authenticated and synchronized with Firebase (v11 Modular)', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
-                Swal.close(); // Clean up existing loading dialog before spawning the error modal
+                Swal.close(); 
                 Swal.fire({
                     title: 'Offline Sandboxed Mode Active', 
                     html: `<p class="text-sm">Local environment operational inside secure fallback sandbox.</p>`, 
@@ -1241,7 +1272,6 @@
                 if(d.type === 'Invoice') {
                     if(d.status === 'Paid') col += d.total; else out += d.total;
                     
-                    // Parse date "DD/MM/YYYY" safely to run profit analysis
                     if (d.date) {
                         const parts = d.date.split('/');
                         const m = parseInt(parts[1], 10);
@@ -1312,7 +1342,10 @@
             ['name', 'ssm', 'bem', 'address', 'bank', 'clientid', 'apikey', 'folderid', 'geminikey'].forEach(k => { newSettings[k] = document.getElementById('set-'+k).value; });
             state.settings = { ...state.settings, ...newSettings };
             Swal.showLoading();
-            try { await getCol("settings").doc("master").set(state.settings); Swal.fire('Saved!', 'Practice settings updated.', 'success'); } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
+            try { 
+                if(isFirebaseActive) await setDoc(getDocRef("settings", "master"), state.settings); 
+                Swal.fire('Saved!', 'Practice settings updated.', 'success'); 
+            } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
         };
 
         function updateDropdowns() {
@@ -1360,8 +1393,10 @@
                 if(r.isConfirmed) {
                     Swal.showLoading();
                     try {
-                        let colName = type; if(type === 'staff') colName = 'staff'; 
-                        for(const id of ids) { await getCol(colName).doc(id).delete(); }
+                        let colName = type; 
+                        if(isFirebaseActive) {
+                            for(const id of ids) { await deleteDoc(getDocRef(colName, id)); }
+                        }
                         if(type === 'clients') state.clients = state.clients.filter(c => !ids.includes(c.id));
                         if(type === 'projects') state.projects = state.projects.filter(p => !ids.includes(p.id));
                         if(type === 'commercials') state.commercials = state.commercials.filter(d => !ids.includes(d.id));
@@ -1383,11 +1418,22 @@
             const clientData = { name, ssm: document.getElementById('c-ssm').value, contact: document.getElementById('c-contact').value, email: document.getElementById('c-email').value, address: document.getElementById('c-address').value };
             Swal.showLoading();
             try {
-                if(id) { await getCol("clients").doc(id).update(clientData); const index = state.clients.findIndex(c => c.id === id); if(index !== -1) state.clients[index] = { ...clientData, id }; } 
-                else { const docRef = await getCol("clients").add(clientData); state.clients.push({ ...clientData, id: docRef.id }); logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); }
+                if(id) { 
+                    if(isFirebaseActive) await updateDoc(getDocRef("clients", id), clientData); 
+                    const index = state.clients.findIndex(c => c.id === id); if(index !== -1) state.clients[index] = { ...clientData, id }; 
+                } 
+                else { 
+                    let docId = 'client_' + Date.now();
+                    if(isFirebaseActive) {
+                        const docRef = await addDoc(getColRef("clients"), clientData); 
+                        docId = docRef.id;
+                    }
+                    state.clients.push({ ...clientData, id: docId }); 
+                    logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); 
+                }
                 if(document.getElementById('c-file').files.length > 0) await uploadFileToDrive(document.getElementById('c-file').files[0], name + ' - SSM/Profile');
                 closeModal('modal-client'); refreshAllViews(); Swal.close();
-            } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
+            } catch(e) { console.error(e); Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
         };
 
         window.editClient = function(id) {
@@ -1426,7 +1472,7 @@
             const projData = { clientId, details, pbt: document.getElementById('p-pbt').value, ref: document.getElementById('p-ref').value, gps: document.getElementById('p-gps').value };
             Swal.showLoading();
             try {
-                await getCol("projects").doc(id).update(projData);
+                if(isFirebaseActive) await updateDoc(getDocRef("projects", id), projData);
                 const index = state.projects.findIndex(p => p.id === id); if(index !== -1) state.projects[index] = { ...state.projects[index], ...projData };
                 if(document.getElementById('p-file').files.length > 0) await uploadFileToDrive(document.getElementById('p-file').files[0], 'Vault - ' + details.substring(0,20));
                 closeModal('modal-project'); refreshAllViews(); Swal.close();
@@ -1445,7 +1491,7 @@
             if(!state.projects[projIndex].scopeStatuses) state.projects[projIndex].scopeStatuses = {};
             state.projects[projIndex].scopeStatuses[scopeName] = newStatus;
             renderProjects();
-            try { await getCol("projects").doc(projectId).update({ [`scopeStatuses.${scopeName}`]: newStatus }); } catch (e) { console.error(e); }
+            try { if(isFirebaseActive) await updateDoc(getDocRef("projects", projectId), { [`scopeStatuses.${scopeName}`]: newStatus }); } catch (e) { console.error(e); }
         };
 
         window.quickQuote = function(projectId) { switchView('invoices'); openInvoiceWizard(); document.getElementById('inv-project').value = projectId; toggleNewProjectFields(projectId); };
@@ -1456,7 +1502,7 @@
                     Swal.showLoading();
                     try {
                         if(type === 'project') {
-                            await getCol("projects").doc(id).delete();
+                            if(isFirebaseActive) await deleteDoc(getDocRef("projects", id));
                             state.projects = state.projects.filter(p => p.id !== id);
                         }
                         refreshAllViews();
@@ -1471,7 +1517,6 @@
             if(!container) return;
             container.innerHTML = '';
             
-            // Search Input parsing
             const searchVal = (document.getElementById('search-scopes')?.value || '').toLowerCase().trim();
 
             const filteredList = state.projects.filter(p => {
@@ -1480,10 +1525,8 @@
                 const details = p.details.toLowerCase();
                 const pbtVal = (p.pbt || '').toLowerCase();
                 
-                // Text Match
                 const textMatch = details.includes(searchVal) || clientName.includes(searchVal) || pbtVal.includes(searchVal);
                 
-                // PBT Filter Logic
                 if (state.currentPbtFilter === 'ALL') return textMatch;
                 if (state.currentPbtFilter === 'OTHER') {
                     return textMatch && !['dbkl', 'mbpj', 'mbsa', 'mpkj'].includes(pbtVal);
@@ -1580,7 +1623,6 @@
                                     <span class="px-2.5 py-1 rounded-md bg-slate-50 border border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-widest"><i class="ph ph-bank"></i> ${escapeHTML(p.pbt || 'TBD')}</span>
                                 </div>
                                 
-                                <!-- Minimalist High-Tech Typography Area with Full Title Tooltip -->
                                 <div class="cursor-help group/title relative max-w-full" title="${escapeHTML(p.details)}">
                                     <div class="text-[9px] font-black tracking-widest text-indigo-500 uppercase mb-0.5">Structure Details</div>
                                     <h4 class="font-black text-slate-800 text-sm md:text-base leading-snug uppercase tracking-tight mb-2.5">${escapeHTML(minTitle.specs)}</h4>
@@ -1603,8 +1645,6 @@
                                 <div class="${barColor} h-2 transition-all duration-500" style="width: ${pct}%"></div>
                             </div>
                         </div>
-
-                        <!-- Interactive Scopes Panel -->
                         ${scopesHtml}
                     </div>
                 `;
@@ -1690,10 +1730,13 @@
                         if (existingClient) {
                             clientId = existingClient.id;
                         } else {
-                            // Auto-create client profile cleanly matching schemas
                             const clientData = { name: newClientName, ssm: '', contact: '', email: '', address: '' };
-                            const clientRef = await getCol("clients").add(clientData);
-                            clientId = clientRef.id;
+                            let clientDocId = 'client_' + Date.now();
+                            if(isFirebaseActive) {
+                                const clientRef = await addDoc(getColRef("clients"), clientData);
+                                clientDocId = clientRef.id;
+                            }
+                            clientId = clientDocId;
                             state.clients.push({ ...clientData, id: clientId });
                             logActivity(`Added new client: ${newClientName}`, 'buildings', 'emerald');
                         }
@@ -1703,23 +1746,41 @@
 
                     const details = document.getElementById('inv-proj-details').value;
                     if(!clientId || !details) return Swal.fire('Error', 'Link a client and type proposal details', 'error');
-                    const projRef = await getCol("projects").add({ clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} });
-                    projectId = projRef.id; state.projects.push({ clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {}, id: projectId });
+                    
+                    const projData = { clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
+                    let projDocId = 'proj_' + Date.now();
+                    if(isFirebaseActive) {
+                        const projRef = await addDoc(getColRef("projects"), projData);
+                        projDocId = projRef.id;
+                    }
+                    projectId = projDocId; 
+                    state.projects.push({ ...projData, id: projectId });
                 }
                 let subtotal = 0; tempLineItems.forEach(i => subtotal += (i.qty * i.price)); let tax = document.getElementById('inv-sst').checked ? (subtotal * 0.08) : 0;
                 const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const year = new Date().getFullYear(); const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1;
                 const docId = editingDocId || `${prefix}-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, type, poRef, items: tempLineItems, subtotal, tax, total: subtotal+tax, date: new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
-                if(editingDocId) { await getCol("commercials").doc(editingDocId).update(docData); const index = state.commercials.findIndex(d => d.id === editingDocId); if(index !== -1) state.commercials[index] = { ...docData, id: editingDocId }; } 
-                else { await getCol("commercials").doc(docId).set(docData); state.commercials.push({ ...docData, id: docId }); const tracking = `Generated new ${type} for ${formatRM(docData.total)}`; logActivity(tracking, 'receipt', 'cyan'); }
+                
+                if(editingDocId) { 
+                    if(isFirebaseActive) await updateDoc(getDocRef("commercials", editingDocId), docData); 
+                    const index = state.commercials.findIndex(d => d.id === editingDocId); if(index !== -1) state.commercials[index] = { ...docData, id: editingDocId }; 
+                } 
+                else { 
+                    if(isFirebaseActive) await setDoc(getDocRef("commercials", docId), docData); 
+                    state.commercials.push({ ...docData, id: docId }); 
+                    const tracking = `Generated new ${type} for ${formatRM(docData.total)}`; logActivity(tracking, 'receipt', 'cyan'); 
+                }
                 closeModal('modal-invoice'); refreshAllViews(); Swal.close();
-            } catch(e) { Swal.fire('Error', 'Failed to save billing document.', 'error'); }
+            } catch(e) { console.error(e); Swal.fire('Error', 'Failed to save billing document.', 'error'); }
         };
 
         window.togglePaidStatus = async function(id) {
             const docIndex = state.commercials.findIndex(d => d.id === id); if(docIndex === -1) return;
             const newStatus = state.commercials[docIndex].status === 'Paid' ? 'Unpaid' : 'Paid';
-            try { await getCol("commercials").doc(id).update({ status: newStatus }); state.commercials[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); }
+            try { 
+                if(isFirebaseActive) await updateDoc(getDocRef("commercials", id), { status: newStatus }); 
+                state.commercials[docIndex].status = newStatus; refreshAllViews(); 
+            } catch(e) { Swal.fire('Error', 'Update failed', 'error'); }
         };
 
         function renderCommercials() {
@@ -1734,10 +1795,8 @@
                 const details = proj ? proj.details.toLowerCase() : '';
                 const docId = d.id.toLowerCase();
                 
-                // Search match
                 const textMatch = docId.includes(searchVal) || clientName.includes(searchVal) || details.includes(searchVal);
                 
-                // Type Filter Match
                 if (state.currentDocTypeFilter === 'ALL') return textMatch;
                 return textMatch && d.type === state.currentDocTypeFilter;
             });
@@ -1792,12 +1851,25 @@
                 let subtotal = 0; tempPOLineItems.forEach(i => subtotal += (i.qty * i.price)); let tax = document.getElementById('po-sst').checked ? (subtotal * 0.08) : 0;
                 const year = new Date().getFullYear(); const count = state.pos.filter(d => d.id.includes(year)).length + 1; const docId = editingPOId || `PO-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, vendorName, vendorAddress, items: tempPOLineItems, subtotal, tax, total: subtotal+tax, date: new Date().toLocaleDateString('en-MY'), status: 'Pending' };
-                if(editingPOId) { await getCol("pos").doc(editingPOId).update(docData); const index = state.pos.findIndex(d => d.id === editingPOId); if(index !== -1) state.pos[index] = { ...docData, id: editingPOId }; } 
-                else { await getCol("pos").doc(docId).set(docData); state.pos.push({ ...docData, id: docId }); logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); }
+                if(editingPOId) { 
+                    if(isFirebaseActive) await updateDoc(getDocRef("pos", editingPOId), docData); 
+                    const index = state.pos.findIndex(d => d.id === editingPOId); if(index !== -1) state.pos[index] = { ...docData, id: editingPOId }; 
+                } 
+                else { 
+                    if(isFirebaseActive) await setDoc(getDocRef("pos", docId), docData); 
+                    state.pos.push({ ...docData, id: docId }); logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); 
+                }
                 closeModal('modal-po'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save PO details.', 'error'); }
         };
-        window.togglePOSettled = async function(id) { const docIndex = state.pos.findIndex(d => d.id === id); if(docIndex === -1) return; const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled'; try { await getCol("pos").doc(id).update({ status: newStatus }); state.pos[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); } };
+        window.togglePOSettled = async function(id) { 
+            const docIndex = state.pos.findIndex(d => d.id === id); if(docIndex === -1) return; 
+            const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled'; 
+            try { 
+                if(isFirebaseActive) await updateDoc(getDocRef("pos", id), { status: newStatus }); 
+                state.pos[docIndex].status = newStatus; refreshAllViews(); 
+            } catch(e) { Swal.fire('Error', 'Update failed', 'error'); } 
+        };
         
         function renderPOs() {
             const tbody = document.getElementById('pos-table'); if(!tbody) return; tbody.innerHTML = '';
@@ -1826,12 +1898,16 @@
             Swal.showLoading();
             try {
                 if(id) {
-                    await getCol("staff").doc(id).update(staffData);
+                    if(isFirebaseActive) await updateDoc(getDocRef("staff", id), staffData);
                     const index = state.staff.findIndex(s => s.id === id);
                     if(index !== -1) state.staff[index] = { ...staffData, id };
                 } else {
-                    const docRef = await getCol("staff").add(staffData);
-                    state.staff.push({ ...staffData, id: docRef.id });
+                    let docId = 'staff_' + Date.now();
+                    if(isFirebaseActive) {
+                        const docRef = await addDoc(getColRef("staff"), staffData);
+                        docId = docRef.id;
+                    }
+                    state.staff.push({ ...staffData, id: docId });
                 }
                 closeModal('modal-staff'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save staff.', 'error'); }
@@ -1892,7 +1968,12 @@
             const expData = { category, desc, amount, projectId, date: new Date().toLocaleDateString('en-MY') };
             Swal.showLoading();
             try {
-                const docRef = await getCol("expenses").add(expData); state.expenses.push({ ...expData, id: docRef.id });
+                let docId = 'exp_' + Date.now();
+                if(isFirebaseActive) {
+                    const docRef = await addDoc(getColRef("expenses"), expData);
+                    docId = docRef.id;
+                }
+                state.expenses.push({ ...expData, id: docId });
                 closeModal('modal-expense'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to log expense claim.', 'error'); }
         };
@@ -1945,7 +2026,15 @@
             let addedCount = 0; for(const row of data) {
                 const name = row['Client Name'] || row['Company Name'] || row['Client']; if(!name) continue;
                 const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
-                if(!existing) { const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' }; const docRef = await getCol("clients").add(clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++; }
+                if(!existing) { 
+                    const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' }; 
+                    let docId = 'client_' + Date.now();
+                    if(isFirebaseActive) {
+                        const docRef = await addDoc(getColRef("clients"), clientData);
+                        docId = docRef.id;
+                    }
+                    state.clients.push({ ...clientData, id: docId }); addedCount++; 
+                }
             }
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 clients added.', 'warning'); else Swal.fire('Clients Imported!', `Imported ${addedCount} clients.`, 'success');
         }
@@ -1954,9 +2043,22 @@
             let addedCount = 0; let newClients = 0; for(const row of data) {
                 const clientStr = row['Client Name'] || row['Client'] || row['Klien']; const detailsStr = row['Project Details'] || row['Project'] || row['Tajuk']; if(!clientStr || !detailsStr) continue;
                 let clientId = null; const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
-                if(existingClient) clientId = existingClient.id; else { const newClientRef = await getCol("clients").add({ name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' }); clientId = newClientRef.id; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; }
+                if(existingClient) clientId = existingClient.id; else { 
+                    let newClientId = 'client_' + Date.now();
+                    if(isFirebaseActive) {
+                        const newClientRef = await addDoc(getColRef("clients"), { name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' });
+                        newClientId = newClientRef.id;
+                    }
+                    clientId = newClientId; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; 
+                }
                 const projData = { clientId: clientId, details: detailsStr, pbt: row['PBT'] || row['Authority'] || 'DBKL', gps: row['Location'] || row['GPS'] || '', status: row['Status'] || 'Drafting', ref: row['Reference'] || '', date: row['Date'] || new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
-                const docRef = await getCol("projects").add(projData); state.projects.push({ ...projData, id: docRef.id }); addedCount++;
+                
+                let docId = 'proj_' + Date.now();
+                if(isFirebaseActive) {
+                    const docRef = await addDoc(getColRef("projects"), projData);
+                    docId = docRef.id;
+                }
+                state.projects.push({ ...projData, id: docId }); addedCount++;
             }
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 projects found.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.`, 'success');
         }
@@ -1965,10 +2067,18 @@
             let addedCount = 0; const year = new Date().getFullYear(); for(const row of data) {
                 const type = row['Type'] || 'Invoice'; const projStr = row['Project']; const descStr = row['Description'] || 'General Engineering Works'; const qty = Number(row['Qty'] || 1); const price = Number(row['Price'] || 0); const applySst = (row['SST'] || '').toLowerCase() === 'yes';
                 if(!projStr || price === 0) continue; let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
-                if(existingProj) projectId = existingProj.id; else { const newProjRef = await getCol("projects").add({ clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); projectId = newProjRef.id; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); }
+                if(existingProj) projectId = existingProj.id; else { 
+                    let projDocId = 'proj_' + Date.now();
+                    if(isFirebaseActive) {
+                        const newProjRef = await addDoc(getColRef("projects"), { clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); 
+                        projDocId = newProjRef.id;
+                    }
+                    projectId = projDocId; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); 
+                }
                 const subtotal = qty * price; const tax = applySst ? (subtotal * 0.08) : 0; const total = subtotal + tax; const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1; const docId = `${prefix}-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, type, poRef: row['PO Reference'] || '', items: [{ desc: descStr, note: '', qty, price }], subtotal, tax, total, date: row['Date'] || new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
-                await getCol("commercials").doc(docId).set(docData); state.commercials.push({ ...docData, id: docId }); addedCount++;
+                if(isFirebaseActive) await setDoc(getDocRef("commercials", docId), docData);
+                state.commercials.push({ ...docData, id: docId }); addedCount++;
             }
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 documents found.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
         }
@@ -2115,7 +2225,11 @@
             Swal.fire({ title: 'AI Reading LOA...', text: 'Extracting Project and Client Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             try {
                 const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
-                for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; }
+                for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { 
+                    const page = await pdf.getPage(i); 
+                    const textContent = await page.getTextContent(); 
+                    extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; 
+                }
                 
                 const prompt = `You are a Malaysian structural engineering assistant. Read this Letter of Award (LOA) or Tender document. Extract the following details: 1. The name of the Client. 2. The Project Details or Title. 3. The PBT or Local Authority mentioned. If none, say "TBD". 4. The Reference Number of the LOA/Tender. 5. The GPS or Location of the site. Return strictly as a valid JSON object with keys: "clientName", "projectDetails", "pbt", "ref", "gps". Do NOT include markdown blocks. Text: ${extractedText.substring(0, 20000)}`;
                 
@@ -2126,12 +2240,21 @@
                     const existingClient = state.clients.find(c => c.name.toLowerCase() === data.clientName.toLowerCase());
                     if(existingClient) clientId = existingClient.id;
                     else {
-                        const newClientRef = await getCol("clients").add({ name: data.clientName, ssm:'', contact:'', email:'', address:'' });
-                        clientId = newClientRef.id; state.clients.push({ id: clientId, name: data.clientName });
+                        let newClientId = 'client_' + Date.now();
+                        if(isFirebaseActive) {
+                            const newClientRef = await addDoc(getColRef("clients"), { name: data.clientName, ssm:'', contact:'', email:'', address:'' });
+                            newClientId = newClientRef.id;
+                        }
+                        clientId = newClientId; state.clients.push({ id: clientId, name: data.clientName });
                     }
                     const projData = { clientId: clientId, details: data.projectDetails, pbt: data.pbt, gps: data.gps, status: 'Awarded', ref: data.ref, date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
-                    const docRef = await getCol("projects").add(projData);
-                    state.projects.push({ ...projData, id: docRef.id });
+                    
+                    let docId = 'proj_' + Date.now();
+                    if(isFirebaseActive) {
+                        const docRef = await addDoc(getColRef("projects"), projData);
+                        docId = docRef.id;
+                    }
+                    state.projects.push({ ...projData, id: docId });
                     
                     if(document.getElementById('ai-loa-upload').files.length > 0) {
                         await uploadFileToDrive(document.getElementById('ai-loa-upload').files[0], 'LOA - ' + data.projectDetails.substring(0,20));
@@ -2262,7 +2385,12 @@
             Swal.fire({ title: 'Reading PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             try {
                 const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
-                for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { const page = await page.getTextContent(); extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; }
+                for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { 
+                    // CRITICAL FIX: Changed variable from 'page' shadowing bug
+                    const pdfPage = await pdf.getPage(i); 
+                    const textContent = await pdfPage.getTextContent(); 
+                    extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; 
+                }
                 Swal.fire({ title: 'Analyzing...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
                 const prompt = `Analyze this contract text. Provide a professional summary focusing ONLY on: 1. Exact Scope of Work 2. Payment Terms 3. LAD/Penalty Clauses. Format using markdown.\n\nText: ${extractedText.substring(0, 30000)}`;
                 const aiResponse = await askGemini(prompt);
@@ -2316,20 +2444,32 @@
             Swal.fire({ title: 'Deploying Sandbox...', text: 'Writing standard mock entities into sandboxed memory...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             try {
                 // Clients
-                const cl1 = await getCol("clients").add({ name: "NEIGE DESIGN SDN BHD", ssm: "20180104XXXX", contact: "En. Shahrul", email: "contact@neigedesign.com", address: "3A-12, Plaza Damas, Sri Hartamas, KL" });
-                const cl2 = await getCol("clients").add({ name: "OUTDOOR CHANNEL SDN BHD", ssm: "20150203XXXX", contact: "Mr. Wong", email: "wong@outdoorchannel.com.my", address: "No 5, Jalan Tandang, Petaling Jaya" });
+                let cl1Id = 'cl_' + Date.now() + '1';
+                let cl2Id = 'cl_' + Date.now() + '2';
+                
+                if(isFirebaseActive) {
+                    const cl1 = await addDoc(getColRef("clients"), { name: "NEIGE DESIGN SDN BHD", ssm: "20180104XXXX", contact: "En. Shahrul", email: "contact@neigedesign.com", address: "3A-12, Plaza Damas, Sri Hartamas, KL" });
+                    const cl2 = await addDoc(getColRef("clients"), { name: "OUTDOOR CHANNEL SDN BHD", ssm: "20150203XXXX", contact: "Mr. Wong", email: "wong@outdoorchannel.com.my", address: "No 5, Jalan Tandang, Petaling Jaya" });
+                    cl1Id = cl1.id; cl2Id = cl2.id;
+                }
                 
                 // Projects
-                const p1 = await getCol("projects").add({ clientId: cl1.id, details: "CADANGAN MEMBINA PAPARAN IKLAN TWINPOLE DUA MUKAAN BERUKURAN 60ft x 40ft DI PERSIMPANGAN JALAN TEMPLER/JALAN KLANG LAMA", pbt: "MBPJ", gps: "3.0851, 101.6433", status: "In Progress", ref: "MBPJ/OSC/2026-001", date: "22/06/2026", scopeStatuses: { "Design & Drawing": "Completed", "PE Endorsement": "In Progress" } });
-                const p2 = await getCol("projects").add({ clientId: cl2.id, details: "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN UNIPOLE 18m x 6m DI LEBUHRAYA LDP KM 5.2 ARAH UTARA", pbt: "DBKL", gps: "3.1501, 101.6112", status: "Awarded", ref: "DBKL/OSC/2026-144", date: "22/06/2026", scopeStatuses: { "Renew license": "In Progress" } });
+                let p1Id = 'p_' + Date.now() + '1';
+                let p2Id = 'p_' + Date.now() + '2';
+                
+                if(isFirebaseActive) {
+                    const p1 = await addDoc(getColRef("projects"), { clientId: cl1Id, details: "CADANGAN MEMBINA PAPARAN IKLAN TWINPOLE DUA MUKAAN BERUKURAN 60ft x 40ft DI PERSIMPANGAN JALAN TEMPLER/JALAN KLANG LAMA", pbt: "MBPJ", gps: "3.0851, 101.6433", status: "In Progress", ref: "MBPJ/OSC/2026-001", date: "22/06/2026", scopeStatuses: { "Design & Drawing": "Completed", "PE Endorsement": "In Progress" } });
+                    const p2 = await addDoc(getColRef("projects"), { clientId: cl2Id, details: "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN UNIPOLE 18m x 6m DI LEBUHRAYA LDP KM 5.2 ARAH UTARA", pbt: "DBKL", gps: "3.1501, 101.6112", status: "Awarded", ref: "DBKL/OSC/2026-144", date: "22/06/2026", scopeStatuses: { "Renew license": "In Progress" } });
+                    p1Id = p1.id; p2Id = p2.id;
+                    
+                    // Commercials
+                    await setDoc(getDocRef("commercials", "QUO-2026-001"), { projectId: p1Id, type: "Quotation", poRef: "PO-ND-889", items: [{ desc: "Design & Drawing", note: scopeNotesMap["Design & Drawing"], qty: 1, price: 4500 }, { desc: "PE Endorsement", note: scopeNotesMap["PE Endorsement"], qty: 1, price: 3000 }], subtotal: 7500, tax: 600, total: 8100, date: "22/06/2026", status: "Unpaid" });
+                    await setDoc(getDocRef("commercials", "QUO-2026-002"), { projectId: p2Id, type: "Quotation", poRef: "PO-OC-772", items: [{ desc: "Renew license", note: scopeNotesMap["Renew license"], qty: 1, price: 3500 }], subtotal: 3500, tax: 0, total: 3500, date: "22/06/2026", status: "Unpaid" });
 
-                // Commercials
-                await getCol("commercials").doc("QUO-2026-001").set({ projectId: p1.id, type: "Quotation", poRef: "PO-ND-889", items: [{ desc: "Design & Drawing", note: scopeNotesMap["Design & Drawing"], qty: 1, price: 4500 }, { desc: "PE Endorsement", note: scopeNotesMap["PE Endorsement"], qty: 1, price: 3000 }], subtotal: 7500, tax: 600, total: 8100, date: "22/06/2026", status: "Unpaid" });
-                await getCol("commercials").doc("QUO-2026-002").set({ projectId: p2.id, type: "Quotation", poRef: "PO-OC-772", items: [{ desc: "Renew license", note: scopeNotesMap["Renew license"], qty: 1, price: 3500 }], subtotal: 3500, tax: 0, total: 3500, date: "22/06/2026", status: "Unpaid" });
-
-                // Staff
-                await getCol("staff").add({ name: "Muhammad Amirul Bin Razak", role: "Graduate Engineer", salary: 3800 });
-                await getCol("staff").add({ name: "Siti Nurhaliza Binti Yusof", role: "Admin Coordinator", salary: 2800 });
+                    // Staff
+                    await addDoc(getColRef("staff"), { name: "Muhammad Amirul Bin Razak", role: "Graduate Engineer", salary: 3800 });
+                    await addDoc(getColRef("staff"), { name: "Siti Nurhaliza Binti Yusof", role: "Admin Coordinator", salary: 2800 });
+                }
 
                 Swal.fire('Sandbox Online!', 'Seed data deployed. Re-initialising dashboard...', 'success').then(() => {
                     location.reload();
