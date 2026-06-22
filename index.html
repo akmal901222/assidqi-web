@@ -961,15 +961,17 @@
         let isFirebaseActive = false;
 
         try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "dummy", authDomain: "dummy.firebaseapp.com", projectId: "dummy"
-            };
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            isFirebaseActive = true;
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            if (firebaseConfig && firebaseConfig.projectId && firebaseConfig.projectId !== "dummy") {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseActive = true;
+            } else {
+                console.warn("Valid Firebase config not found. Running in local fallback state.");
+            }
         } catch (e) {
-            console.warn("Firebase config not found or invalid. Running in local fallback state.");
+            console.warn("Firebase initialization error. Running in local fallback state.");
         }
 
         // Database Path Generators Rules
@@ -1249,6 +1251,7 @@
                 if(isFirebaseActive) logActivity('ERP authenticated and synchronized with Firebase (v11 Modular)', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
+                isFirebaseActive = false; // Fix: Instantly disable network calls on error to prevent infinite hang
                 Swal.close(); 
                 Swal.fire({
                     title: 'Offline Sandboxed Mode Active', 
