@@ -2099,7 +2099,7 @@
                 }
 
                 // 2. Map or Auto-create Scope/Project Profile
-                const projStr = row['Project ID'] || row['Project'] || `Imported Document Scope: ${docId}`;
+                const projStr = row['Project ID'] || row['Project'] || `General Engineering Works - ${clientStr}`;
                 let projectId = null; 
                 const existingProj = state.projects.find(p => p.details.toLowerCase().trim() === projStr.toLowerCase().trim());
                 if(existingProj) projectId = existingProj.id; 
