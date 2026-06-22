@@ -24,6 +24,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <!-- Marked.js for AI Markdown Formatting -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
     <!-- Firebase SDKs (Using stable Compat wrappers to prevent import errors) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -49,7 +50,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Tech-style Glowing elements and Glassmorphism */
+        /* Tech-style Glowing elements and Glassmorphic shadows */
         .neon-glow-cyan { box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.12), 0 8px 10px -6px rgba(6, 182, 212, 0.12); }
         .neon-glow-indigo { box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.12), 0 8px 10px -6px rgba(99, 102, 241, 0.12); }
         .neon-glow-rose { box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.12), 0 8px 10px -6px rgba(244, 63, 94, 0.12); }
@@ -80,8 +81,8 @@
             <div class="bg-white rounded-[24px] p-2 w-28 h-28 mb-6 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
                 <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
             </div>
-            <h2 class="text-2xl font-black text-white mb-2 tracking-tight">Pelantar</h2>
-            <p class="text-xs text-cyan-400 mb-8 font-extrabold tracking-widest uppercase">C&S Operations</p>
+            <h2 class="text-2xl font-black text-white mb-2 tracking-tight">As-Sidqi ERP</h2>
+            <p class="text-xs text-cyan-400 mb-8 font-extrabold tracking-widest uppercase text-center">Secured Operations Console</p>
             
             <div class="space-y-4 text-left">
                 <div>
@@ -106,11 +107,11 @@
             <div class="bg-white rounded-[24px] p-2 w-28 h-28 mb-3 shadow-lg flex justify-center items-center overflow-hidden mx-auto border-[3px] border-slate-700">
                 <img src="https://lh3.googleusercontent.com/d/1VuiMt9qcpuIjvyC5xz6QcnSI2l1wn-iC" alt="As-Sidqi Logo" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/150x150/ffffff/0a1128?text=AS';">
             </div>
-            <div class="bg-cyan-900/40 text-cyan-400 border border-cyan-800/50 px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase mt-2">C&S Core</div>
+            <div class="bg-cyan-900/40 text-cyan-400 border border-cyan-800/50 px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase mt-2">C&S CORE</div>
         </div>
         
         <nav class="flex-1 overflow-y-auto py-4">
-            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-2">Operations</div>
+            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-2">OPERATIONS</div>
             <a href="#" onclick="switchView('dashboard'); toggleSidebarOnMobile()" id="nav-dashboard" class="sidebar-item active flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
                 <i class="ph ph-squares-four text-xl mr-3 opacity-70"></i> Dashboard
             </a>
@@ -118,7 +119,7 @@
                 <i class="ph ph-address-book text-xl mr-3 opacity-70"></i> Clients
             </a>
             
-            <div class="px-6 text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-2 mt-5">Engineering</div>
+            <div class="px-6 text-[10px] font-black text-cyan-500 uppercase tracking-widest mb-2 mt-5">ENGINEERING</div>
             <a href="#" onclick="switchView('scopes'); toggleSidebarOnMobile()" id="nav-scopes" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50 text-cyan-300">
                 <i class="ph ph-kanban text-xl mr-3 opacity-70"></i> Scopes
             </a>
@@ -129,7 +130,7 @@
                 <i class="ph ph-shopping-cart text-xl mr-3 opacity-70"></i> Subcon POs
             </a>
             
-            <div class="px-6 text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 mt-5 flex items-center gap-1"><i class="ph ph-sparkle"></i> Co-Pilot AI</div>
+            <div class="px-6 text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 mt-5 flex items-center gap-1"><i class="ph ph-sparkle"></i> CO-PILOT AI</div>
             <a href="#" onclick="switchView('ai-analyzer'); toggleSidebarOnMobile()" id="nav-ai-analyzer" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50 text-indigo-300">
                 <i class="ph ph-file-magnifying-glass text-xl mr-3 opacity-70"></i> Analyzer
             </a>
@@ -140,7 +141,7 @@
                 <i class="ph ph-camera text-xl mr-3 opacity-70"></i> Defect Vision
             </a>
             
-            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-5">Corporate</div>
+            <div class="px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 mt-5">CORPORATE</div>
             <a href="#" onclick="switchView('hr'); toggleSidebarOnMobile()" id="nav-hr" class="sidebar-item flex items-center px-6 py-3.5 text-sm hover:text-white hover:bg-slate-800/50">
                 <i class="ph ph-users text-xl mr-3 opacity-70"></i> HR Ledger
             </a>
@@ -164,7 +165,7 @@
                 <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-slate-800 focus:outline-none">
                     <i class="ph ph-list text-2xl"></i>
                 </button>
-                <h2 id="topbar-title" class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Executive Dashboard</h2>
+                <h2 id="topbar-title" class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Dashboard</h2>
             </div>
             <div class="flex items-center gap-4">
                 <button onclick="connectGoogleDrive()" class="hidden md:flex bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-xl text-xs font-bold transition-all items-center border border-indigo-100 shadow-sm">
@@ -182,9 +183,9 @@
         <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
             
             <!-- VIEW: EXECUTIVE DASHBOARD -->
-            <div id="view-dashboard" class="view-section block active">
+            <div id="view-dashboard" class="view-section block active space-y-6">
                 <!-- Glowing Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group interactive-card neon-glow-cyan">
                         <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-25 transition-opacity"><i class="ph ph-coins text-6xl text-cyan-600"></i></div>
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Outstanding</p>
@@ -205,47 +206,46 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Profit Analysis Dashboard Panel -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <!-- Monthly Performance -->
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden group interactive-card neon-glow-cyan">
-                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i class="ph ph-chart-pie text-cyan-600 text-xl"></i> Monthly Ledger (<span id="prof-month-label">June</span>)</h4>
-                            <span class="text-[9px] font-black uppercase bg-cyan-50 text-cyan-600 px-2 py-0.5 rounded border border-cyan-200">MTD</span>
+                <!-- High-Tech Profit Analysis Panel (June 2026 MTD / 2026 YTD) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group interactive-card neon-glow-cyan">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><i class="ph ph-calendar text-cyan-600 text-lg"></i> Monthly Ledger ( June )</h4>
+                            <span class="bg-cyan-50 border border-cyan-100 text-cyan-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">MTD</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 text-center">
-                            <div>
-                                <p class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Invoiced</p>
-                                <p class="text-sm font-bold text-slate-700 mt-1" id="prof-month-rev">RM 0.00</p>
+                        <div class="grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
+                            <div class="text-center">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Invoiced</p>
+                                <p class="font-mono text-sm font-bold text-slate-700" id="mtd-invoiced">RM 0.00</p>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Expenses</p>
-                                <p class="text-sm font-bold text-rose-600 mt-1" id="prof-month-exp">RM 0.00</p>
+                            <div class="text-center border-x border-slate-100">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Expenses</p>
+                                <p class="font-mono text-sm font-bold text-rose-600" id="mtd-expenses">RM 0.00</p>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Net Profit</p>
-                                <p class="text-sm font-black text-emerald-600 mt-1" id="prof-month-net">RM 0.00</p>
+                            <div class="text-center">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Net Profit</p>
+                                <p class="font-mono text-sm font-black text-emerald-600" id="mtd-profit">RM 0.00</p>
                             </div>
                         </div>
                     </div>
-                    <!-- Annual Performance -->
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 relative overflow-hidden group interactive-card neon-glow-indigo">
-                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                            <h4 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i class="ph ph-trend-up text-indigo-600 text-xl"></i> Annual Ledger (<span id="prof-year-label">2026</span>)</h4>
-                            <span class="text-[9px] font-black uppercase bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded border border-indigo-200">YTD</span>
+                    
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group interactive-card neon-glow-indigo">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5"><i class="ph ph-trend-up text-indigo-600 text-lg"></i> Annual Ledger ( 2026 )</h4>
+                            <span class="bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">YTD</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 text-center">
-                            <div>
-                                <p class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Invoiced</p>
-                                <p class="text-sm font-bold text-slate-700 mt-1" id="prof-year-rev">RM 0.00</p>
+                        <div class="grid grid-cols-3 gap-2 border-t border-slate-100 pt-4">
+                            <div class="text-center">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Invoiced</p>
+                                <p class="font-mono text-sm font-bold text-slate-700" id="ytd-invoiced">RM 0.00</p>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Expenses</p>
-                                <p class="text-sm font-bold text-rose-600 mt-1" id="prof-year-exp">RM 0.00</p>
+                            <div class="text-center border-x border-slate-100">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Expenses</p>
+                                <p class="font-mono text-sm font-bold text-rose-600" id="ytd-expenses">RM 0.00</p>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-black uppercase text-slate-400 tracking-wider">Net Profit</p>
-                                <p class="text-sm font-black text-emerald-600 mt-1" id="prof-year-net">RM 0.00</p>
+                            <div class="text-center">
+                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Net Profit</p>
+                                <p class="font-mono text-sm font-black text-emerald-600" id="ytd-profit">RM 0.00</p>
                             </div>
                         </div>
                     </div>
@@ -271,7 +271,7 @@
             <!-- VIEW: CLIENTS DIRECTORY -->
             <div id="view-clients" class="view-section hidden">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-                    <div><h3 class="text-xl font-black text-slate-800">Clients</h3><p class="text-sm text-slate-500">Registered partners & developers.</p></div>
+                    <div><h3 class="text-xl font-bold text-slate-800">Clients</h3><p class="text-sm text-slate-500">Corporate developers, architects, and government entities.</p></div>
                     <div class="flex flex-wrap gap-2">
                         <button id="btn-bulk-delete-clients" onclick="bulkDelete('clients')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('clients')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
@@ -304,8 +304,8 @@
             <div id="view-scopes" class="view-section hidden">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
                     <div>
-                        <h3 class="text-xl font-black text-slate-800">Scopes</h3>
-                        <p class="text-sm text-slate-500">Live civil, structural & authority tracking.</p>
+                        <h3 class="text-xl font-bold text-slate-800">Scopes</h3>
+                        <p class="text-sm text-slate-500">Live civil, structural & authority approvals status. Click scope items to step progress.</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <button id="btn-bulk-delete-projects" onclick="bulkDelete('projects')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
@@ -344,8 +344,8 @@
             <div id="view-invoices" class="view-section hidden">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
                     <div>
-                        <h3 class="text-xl font-black text-slate-800">Invoices</h3>
-                        <p class="text-sm text-slate-500">Receivables & billing pipeline management.</p>
+                        <h3 class="text-xl font-bold text-slate-800">Invoices</h3>
+                        <p class="text-sm text-slate-500">Corporate receivables management, tax structures, and pipeline status.</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <button id="btn-bulk-delete-commercials" onclick="bulkDelete('commercials')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
@@ -393,10 +393,11 @@
             <!-- VIEW: PURCHASE ORDERS (PO) -->
             <div id="view-pos" class="view-section hidden">
                  <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4 no-print">
-                    <div><h3 class="text-xl font-black text-slate-800">Subcon POs</h3><p class="text-sm text-slate-500">Outward scopes assigned to suppliers & boring crews.</p></div>
+                    <div><h3 class="text-xl font-bold text-slate-800">Subcon POs</h3><p class="text-sm text-slate-500">Outward scopes assigned to fabricators, boring crews, and steel yards.</p></div>
                     <div class="flex flex-wrap gap-2">
                         <button id="btn-bulk-delete-pos" onclick="bulkDelete('pos')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
-                        <button onclick="exportToCSV('pos')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-shopping-cart text-lg"></i> Issue P.O.</button>
+                        <button onclick="exportToCSV('pos')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
+                        <button onclick="clearForm('modal-po'); openPOWizard()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-2"><i class="ph ph-shopping-cart text-lg"></i> Issue P.O.</button>
                     </div>
                 </div>
                 
@@ -423,8 +424,8 @@
                 <div class="max-w-5xl mx-auto">
                     <div class="text-center mb-8 no-print">
                         <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-[20px] flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner"><i class="ph ph-file-magnifying-glass"></i></div>
-                        <h3 class="text-2xl font-black text-slate-800">AI Analyzer</h3>
-                        <p class="text-slate-500 mt-2">Extract critical liability, LADs, and engineering parameters instantly.</p>
+                        <h3 class="text-2xl font-black text-slate-800">Analyzer</h3>
+                        <p class="text-slate-500 mt-2">Instantly extract critical engineering liability, Liquidated Ascertained Damages (LAD), and scope limitations from legal LOAs.</p>
                     </div>
                     
                     <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 no-print text-center relative hover:bg-slate-50 transition-colors border-dashed border-2 cursor-pointer" onclick="document.getElementById('contract-upload').click()">
@@ -444,7 +445,7 @@
                     <div class="text-center mb-8 no-print">
                         <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-[20px] flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner"><i class="ph ph-magic-wand"></i></div>
                         <h3 class="text-2xl font-black text-slate-800">Surat Gen</h3>
-                        <p class="text-slate-500 mt-2">Assemble highly detailed technical letters to standard PBT layouts.</p>
+                        <p class="text-slate-500 mt-2">Assemble highly detailed submission letters and technical appeals automatically formatted to PBT standards.</p>
                     </div>
                     
                     <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 no-print">
@@ -477,7 +478,7 @@
                     <div class="text-center mb-8 no-print">
                         <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-[20px] flex items-center justify-center text-3xl mx-auto mb-4 shadow-inner"><i class="ph ph-camera"></i></div>
                         <h3 class="text-2xl font-black text-slate-800">Defect Vision</h3>
-                        <p class="text-slate-500 mt-2">Upload site photos for immediate C&S visual assessments.</p>
+                        <p class="text-slate-500 mt-2">Submit high-resolution photographs of site anomalies (concrete spalling, rusting rebar, shear cracks) to generate immediate professional engineer reviews.</p>
                     </div>
                     
                     <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 no-print text-center relative hover:bg-slate-50 transition-colors border-dashed border-2 cursor-pointer" onclick="document.getElementById('vision-upload').click()">
@@ -505,7 +506,7 @@
             <!-- VIEW: HR & PAYROLL -->
             <div id="view-hr" class="view-section hidden">
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-                    <div><h3 class="text-xl font-bold text-slate-800">HR Ledger</h3><p class="text-sm text-slate-500">Manage internal structural engineering, drafting, and administration staff.</p></div>
+                    <div><h3 class="text-xl font-bold text-slate-800">HR Ledger</h3><p class="text-sm text-slate-500">Manage internal structural engineering, drafting, and administrative staff.</p></div>
                     <div class="flex flex-wrap gap-2">
                         <button id="btn-bulk-delete-staff" onclick="bulkDelete('staff')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
                         <button onclick="exportToCSV('hr')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 md:px-5 md:py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex items-center gap-2"><i class="ph ph-download-simple text-lg"></i> Export CSV</button>
@@ -525,7 +526,7 @@
                 <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
                     <div>
                         <h3 class="text-xl font-bold text-slate-800">Expenses</h3>
-                        <p class="text-sm text-slate-500">Track structural site mapping mileage, PBT deposits, and office logistics.</p>
+                        <p class="text-sm text-slate-500">Track and catalog structural site mapping mileage, PBT deposits, and office logistics.</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <button id="btn-bulk-delete-expenses" onclick="bulkDelete('expenses')" class="hidden bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2"><i class="ph ph-trash"></i> Delete Selected</button>
@@ -553,9 +554,9 @@
                 </div>
             </div>
 
-            <!-- VIEW: VIEW: SETTINGS & SECURE CONFIGURATION -->
+            <!-- VIEW: SETTINGS & SECURE CONFIGURATION -->
             <div id="view-settings" class="view-section hidden max-w-3xl mx-auto">
-                <div class="mb-8"><h3 class="text-2xl font-black text-slate-800">Settings</h3><p class="text-slate-500">Configure your professional engineering practice (C&S) parameters.</p></div>
+                <div class="mb-8"><h3 class="text-2xl font-black text-slate-800">Practice Setup</h3><p class="text-slate-500">Configure your professional engineering practice (C&S) parameters.</p></div>
                 
                 <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 mb-8 space-y-6">
                     <h4 class="font-bold text-slate-800 border-b border-slate-100 pb-2">Firm Profile Information</h4>
@@ -675,7 +676,7 @@
         </div>
     </div>
 
-    <!-- Invoicing & Billing Wizard Modular Overlay (Single Page View Restored) -->
+    <!-- Invoicing & Billing Wizard Modular Overlay -->
     <div id="modal-invoice" class="modal fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
         <div class="bg-slate-50 rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col min-h-[90vh] sm:min-h-0 sm:max-h-[90vh]">
             <div class="px-4 md:px-8 py-5 border-b border-slate-200 bg-white rounded-t-3xl flex justify-between items-center sticky top-0 z-10">
@@ -704,9 +705,13 @@
                     </div>
                     
                     <div id="new-proj-fields" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 hidden bg-cyan-50 p-4 rounded-xl border border-cyan-100">
-                        <div>
-                            <label class="text-[10px] font-bold text-cyan-700 uppercase tracking-widest mb-1 block">Choose Client *</label>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-[10px] font-bold text-cyan-700 uppercase tracking-widest block">Choose Client *</label>
+                                <button type="button" onclick="toggleNewClientInput()" id="btn-toggle-new-client" class="text-[9px] font-black text-indigo-600 hover:text-indigo-800 uppercase tracking-wider">➕ Create New Client</button>
+                            </div>
                             <select id="inv-client" class="w-full bg-white border border-cyan-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500"></select>
+                            <input type="text" id="inv-new-client-name" class="w-full bg-white border border-cyan-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500 hidden" placeholder="Enter New Company/Developer Name">
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-cyan-700 uppercase tracking-widest mb-1 block">New Scope Proposal Description *</label>
@@ -888,7 +893,7 @@
     </div>
 
     <!-- Dual-Pane Split Document Printing Workspace -->
-    <div id="print-overlay" class="fixed inset-0 bg-slate-900 z-[200] hidden flex flex-col md:flex-row font-sans">
+    <div id="print-overlay" class="fixed inset-0 bg-slate-900 z-[200] hidden flex flex-col md:flex-row">
         <!-- Interactive Control Panel (Left Pane) -->
         <div class="w-full md:w-80 bg-slate-950 p-6 flex flex-col gap-6 justify-between border-b md:border-b-0 md:border-r border-slate-800 text-white shrink-0 no-print">
             <div class="space-y-6">
@@ -933,18 +938,12 @@
 
     <!-- Application Logic Modules -->
     <script>
-        // --- Minimalist Date Helper Parser ---
-        function parseDateMY(dateStr) {
-            if(!dateStr) return { day: 1, month: 1, year: 2026 };
-            const parts = dateStr.split('/');
-            if(parts.length === 3) {
-                return {
-                    day: parseInt(parts[0], 10),
-                    month: parseInt(parts[1], 10),
-                    year: parseInt(parts[2], 10)
-                };
-            }
-            return { day: 1, month: 1, year: 2026 };
+        // Unique dynamic sandbox namespace matching client rules
+        const appId = "pelantar-erp";
+        
+        // Secure database collection pathways
+        function getCol(colName) {
+            return db.collection("artifacts").doc(appId).collection("public").doc("data").collection(colName);
         }
 
         // --- Global State & Configuration ---
@@ -1069,7 +1068,7 @@
         };
 
         // Setup PDF.js Worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
         // --- Global UI Helpers and Formatters ---
         window.escapeHTML = function(str) {
@@ -1130,9 +1129,8 @@
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${viewId}`).classList.remove('hidden');
             document.getElementById(`view-${viewId}`).classList.add('active', 'block');
-            if(document.getElementById(`nav-${viewId}`)) document.getElementById(`nav-${viewId}`).classList.add('active');
             
-            // Dynamic short topbar title mapping
+            // Minimalist dynamic header naming map
             const titleMap = {
                 'dashboard': 'Dashboard',
                 'clients': 'Clients',
@@ -1146,9 +1144,8 @@
                 'expenses': 'Expenses',
                 'settings': 'Settings'
             };
-            if(titleMap[viewId]) {
-                document.getElementById('topbar-title').innerText = titleMap[viewId];
-            }
+            document.getElementById('topbar-title').innerText = titleMap[viewId] || 'Dashboard';
+            if(document.getElementById(`nav-${viewId}`)) document.getElementById(`nav-${viewId}`).classList.add('active');
         };
 
         window.openModal = function(id) { document.getElementById(id).classList.add('active'); };
@@ -1187,14 +1184,14 @@
             Swal.fire({ title: 'Establishing Handshake', text: 'Syncing ledger data with active cloud nodes...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
             try {
-                // RULE 3: Authenticate before running database queries to meet Firestore access parameters
+                // Anonymous handshake connection to pass security policies
                 await firebase.auth().signInAnonymously();
 
-                const settingsDoc = await db.collection("settings").get();
+                const settingsDoc = await getCol("settings").get();
                 if (!settingsDoc.empty) state.settings = { ...state.settings, ...settingsDoc.docs[0].data() };
-                else await db.collection("settings").doc("master").set(state.settings);
+                else await getCol("settings").doc("master").set(state.settings);
 
-                // SECURITY OVERRIDE: Force hardcoded keys if empty
+                // SECURITY OVERRIDE: Force credentials if empty
                 if(!state.settings.clientid) state.settings.clientid = '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com';
                 if(!state.settings.apikey) state.settings.apikey = 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY';
                 if(!state.settings.geminikey) state.settings.geminikey = 'AIzaSyALV5-oaj3pU51u9cE1DzwJDm6aaI6tAhw';
@@ -1204,9 +1201,9 @@
                 });
 
                 const [clientSnap, projSnap, commSnap, poSnap, staffSnap, expSnap] = await Promise.all([
-                    db.collection("clients").get(), db.collection("projects").get(),
-                    db.collection("commercials").get(), db.collection("pos").get(), 
-                    db.collection("staff").get(), db.collection("expenses").get()
+                    getCol("clients").get(), getCol("projects").get(),
+                    getCol("commercials").get(), getCol("pos").get(), 
+                    getCol("staff").get(), getCol("expenses").get()
                 ]);
                 
                 state.clients = clientSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
@@ -1221,12 +1218,11 @@
                 logActivity('ERP authenticated and synchronized with Firebase', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
-                Swal.close(); // Cleanly close the active loading handshake overlay before presenting the fallback window
+                Swal.close(); // Clean up existing loading dialog before spawning the error modal
                 Swal.fire({
                     title: 'Offline Sandboxed Mode Active', 
                     html: `<p class="text-sm">Local environment operational inside secure fallback sandbox.</p>`, 
-                    icon: 'info',
-                    confirmButtonText: 'Access Sandbox'
+                    icon: 'info'
                 }).then(() => refreshAllViews());
             }
         }
@@ -1235,58 +1231,64 @@
         let revChart = null;
         function renderDashboard() {
             let out = 0; let col = 0;
+            let mtdInvoiced = 0; let mtdExpensesVal = 0;
+            let ytdInvoiced = 0; let ytdExpensesVal = 0;
+            
+            const currentMonth = new Date().getMonth() + 1; 
+            const currentYear = new Date().getFullYear(); 
+            
             state.commercials.forEach(d => {
                 if(d.type === 'Invoice') {
                     if(d.status === 'Paid') col += d.total; else out += d.total;
-                }
-            });
-            document.getElementById('dash-outstanding').innerText = formatRM(out);
-            document.getElementById('dash-collected').innerText = formatRM(col);
-            document.getElementById('dash-clients').innerText = state.clients.length;
-
-            // Dynamic Profit Analysis calculation
-            const currentYear = 2026;
-            const currentMonth = 5; // June is index 5
-            
-            let monthRev = 0; let monthExp = 0;
-            let yearRev = 0; let yearExp = 0;
-
-            state.commercials.forEach(d => {
-                if (d.type === 'Invoice') {
-                    const docDate = parseDateMY(d.date);
-                    if (docDate.year === currentYear) {
-                        yearRev += d.total;
-                        if (docDate.month === currentMonth) {
-                            monthRev += d.total;
+                    
+                    // Parse date "DD/MM/YYYY" safely to run profit analysis
+                    if (d.date) {
+                        const parts = d.date.split('/');
+                        const m = parseInt(parts[1], 10);
+                        const y = parseInt(parts[2], 10);
+                        if (y === currentYear) {
+                            ytdInvoiced += d.total;
+                            if (m === currentMonth) {
+                                mtdInvoiced += d.total;
+                            }
                         }
                     }
                 }
             });
 
+            // Calculate Expenses
             state.expenses.forEach(e => {
-                const expDate = parseDateMY(e.date);
-                if (expDate.year === currentYear) {
-                    yearExp += e.amount;
-                    if (expDate.month === currentMonth) {
-                        monthExp += e.amount;
+                if (e.date) {
+                    const parts = e.date.split('/');
+                    const m = parseInt(parts[1], 10);
+                    const y = parseInt(parts[2], 10);
+                    if (y === currentYear) {
+                        ytdExpensesVal += e.amount;
+                        if (m === currentMonth) {
+                            mtdExpensesVal += e.amount;
+                        }
                     }
                 }
             });
 
-            const monthNet = monthRev - monthExp;
-            const yearNet = yearRev - yearExp;
+            document.getElementById('dash-outstanding').innerText = formatRM(out);
+            document.getElementById('dash-collected').innerText = formatRM(col);
+            document.getElementById('dash-clients').innerText = state.clients.length;
 
-            document.getElementById('prof-month-rev').innerText = formatRM(monthRev);
-            document.getElementById('prof-month-exp').innerText = formatRM(monthExp);
-            const mNetEl = document.getElementById('prof-month-net');
-            mNetEl.innerText = formatRM(monthNet);
-            mNetEl.className = `text-sm font-black mt-1 ${monthNet >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+            // Render Profit Analysis Numbers
+            document.getElementById('mtd-invoiced').innerText = formatRM(mtdInvoiced);
+            document.getElementById('mtd-expenses').innerText = formatRM(mtdExpensesVal);
+            const mtdProfit = mtdInvoiced - mtdExpensesVal;
+            const mtdProfitEl = document.getElementById('mtd-profit');
+            mtdProfitEl.innerText = formatRM(mtdProfit);
+            mtdProfitEl.className = `font-mono text-sm font-black ${mtdProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
 
-            document.getElementById('prof-year-rev').innerText = formatRM(yearRev);
-            document.getElementById('prof-year-exp').innerText = formatRM(yearExp);
-            const yNetEl = document.getElementById('prof-year-net');
-            yNetEl.innerText = formatRM(yearNet);
-            yNetEl.className = `text-sm font-black mt-1 ${yearNet >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+            document.getElementById('ytd-invoiced').innerText = formatRM(ytdInvoiced);
+            document.getElementById('ytd-expenses').innerText = formatRM(ytdExpensesVal);
+            const ytdProfit = ytdInvoiced - ytdExpensesVal;
+            const ytdProfitEl = document.getElementById('ytd-profit');
+            ytdProfitEl.innerText = formatRM(ytdProfit);
+            ytdProfitEl.className = `font-mono text-sm font-black ${ytdProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
 
             const ctx = document.getElementById('revenueChart'); if(!ctx) return;
             if(revChart) revChart.destroy();
@@ -1310,7 +1312,7 @@
             ['name', 'ssm', 'bem', 'address', 'bank', 'clientid', 'apikey', 'folderid', 'geminikey'].forEach(k => { newSettings[k] = document.getElementById('set-'+k).value; });
             state.settings = { ...state.settings, ...newSettings };
             Swal.showLoading();
-            try { await db.collection("settings").doc("master").set(state.settings); Swal.fire('Saved!', 'Practice settings updated.', 'success'); } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
+            try { await getCol("settings").doc("master").set(state.settings); Swal.fire('Saved!', 'Practice settings updated.', 'success'); } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
         };
 
         function updateDropdowns() {
@@ -1359,7 +1361,7 @@
                     Swal.showLoading();
                     try {
                         let colName = type; if(type === 'staff') colName = 'staff'; 
-                        for(const id of ids) { await db.collection(colName).doc(id).delete(); }
+                        for(const id of ids) { await getCol(colName).doc(id).delete(); }
                         if(type === 'clients') state.clients = state.clients.filter(c => !ids.includes(c.id));
                         if(type === 'projects') state.projects = state.projects.filter(p => !ids.includes(p.id));
                         if(type === 'commercials') state.commercials = state.commercials.filter(d => !ids.includes(d.id));
@@ -1381,8 +1383,8 @@
             const clientData = { name, ssm: document.getElementById('c-ssm').value, contact: document.getElementById('c-contact').value, email: document.getElementById('c-email').value, address: document.getElementById('c-address').value };
             Swal.showLoading();
             try {
-                if(id) { await db.collection("clients").doc(id).update(clientData); const index = state.clients.findIndex(c => c.id === id); if(index !== -1) state.clients[index] = { ...clientData, id }; } 
-                else { const docRef = await db.collection("clients").add(clientData); state.clients.push({ ...clientData, id: docRef.id }); logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); }
+                if(id) { await getCol("clients").doc(id).update(clientData); const index = state.clients.findIndex(c => c.id === id); if(index !== -1) state.clients[index] = { ...clientData, id }; } 
+                else { const docRef = await getCol("clients").add(clientData); state.clients.push({ ...clientData, id: docRef.id }); logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); }
                 if(document.getElementById('c-file').files.length > 0) await uploadFileToDrive(document.getElementById('c-file').files[0], name + ' - SSM/Profile');
                 closeModal('modal-client'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
@@ -1424,7 +1426,7 @@
             const projData = { clientId, details, pbt: document.getElementById('p-pbt').value, ref: document.getElementById('p-ref').value, gps: document.getElementById('p-gps').value };
             Swal.showLoading();
             try {
-                await db.collection("projects").doc(id).update(projData);
+                await getCol("projects").doc(id).update(projData);
                 const index = state.projects.findIndex(p => p.id === id); if(index !== -1) state.projects[index] = { ...state.projects[index], ...projData };
                 if(document.getElementById('p-file').files.length > 0) await uploadFileToDrive(document.getElementById('p-file').files[0], 'Vault - ' + details.substring(0,20));
                 closeModal('modal-project'); refreshAllViews(); Swal.close();
@@ -1443,7 +1445,7 @@
             if(!state.projects[projIndex].scopeStatuses) state.projects[projIndex].scopeStatuses = {};
             state.projects[projIndex].scopeStatuses[scopeName] = newStatus;
             renderProjects();
-            try { await db.collection("projects").doc(projectId).update({ [`scopeStatuses.${scopeName}`]: newStatus }); } catch (e) { console.error(e); }
+            try { await getCol("projects").doc(projectId).update({ [`scopeStatuses.${scopeName}`]: newStatus }); } catch (e) { console.error(e); }
         };
 
         window.quickQuote = function(projectId) { switchView('invoices'); openInvoiceWizard(); document.getElementById('inv-project').value = projectId; toggleNewProjectFields(projectId); };
@@ -1454,7 +1456,7 @@
                     Swal.showLoading();
                     try {
                         if(type === 'project') {
-                            await db.collection("projects").doc(id).delete();
+                            await getCol("projects").doc(id).delete();
                             state.projects = state.projects.filter(p => p.id !== id);
                         }
                         refreshAllViews();
@@ -1612,8 +1614,34 @@
         // --- Billing Logic ---
         let tempLineItems = []; let editingDocId = null;
         window.toggleNewProjectFields = function(val) { document.getElementById('new-proj-fields').classList.toggle('hidden', val !== 'NEW'); };
+        
+        window.toggleNewClientInput = function() {
+            const selectEl = document.getElementById('inv-client');
+            const inputEl = document.getElementById('inv-new-client-name');
+            const btn = document.getElementById('btn-toggle-new-client');
+            if (inputEl.classList.contains('hidden')) {
+                inputEl.classList.remove('hidden');
+                selectEl.classList.add('hidden');
+                btn.innerText = "✖ Choose Existing";
+            } else {
+                inputEl.classList.add('hidden');
+                selectEl.classList.remove('hidden');
+                btn.innerText = "➕ Create New Client";
+                inputEl.value = "";
+            }
+        };
+
         window.openInvoiceWizard = function(docId = null) {
             editingDocId = docId; document.getElementById('new-proj-fields').classList.add('hidden');
+            
+            const selectEl = document.getElementById('inv-client');
+            const inputEl = document.getElementById('inv-new-client-name');
+            const btn = document.getElementById('btn-toggle-new-client');
+            inputEl.classList.add('hidden');
+            selectEl.classList.remove('hidden');
+            btn.innerText = "➕ Create New Client";
+            inputEl.value = "";
+
             if(docId) {
                 const d = state.commercials.find(x => x.id === docId);
                 if(d) { document.getElementById('inv-project').value = d.projectId; document.getElementById('inv-type').value = d.type; document.getElementById('inv-po').value = d.poRef || ''; document.getElementById('inv-sst').checked = d.tax > 0; tempLineItems = JSON.parse(JSON.stringify(d.items)); }
@@ -1653,17 +1681,37 @@
             Swal.showLoading();
             try {
                 if (projectId === 'NEW') {
-                    const clientId = document.getElementById('inv-client').value; const details = document.getElementById('inv-proj-details').value;
+                    let clientId = null;
+                    const newClientName = document.getElementById('inv-new-client-name').value.trim();
+                    const inputNewClientActive = !document.getElementById('inv-new-client-name').classList.contains('hidden');
+
+                    if (inputNewClientActive && newClientName) {
+                        const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === newClientName.toLowerCase());
+                        if (existingClient) {
+                            clientId = existingClient.id;
+                        } else {
+                            // Auto-create client profile cleanly matching schemas
+                            const clientData = { name: newClientName, ssm: '', contact: '', email: '', address: '' };
+                            const clientRef = await getCol("clients").add(clientData);
+                            clientId = clientRef.id;
+                            state.clients.push({ ...clientData, id: clientId });
+                            logActivity(`Added new client: ${newClientName}`, 'buildings', 'emerald');
+                        }
+                    } else {
+                        clientId = document.getElementById('inv-client').value;
+                    }
+
+                    const details = document.getElementById('inv-proj-details').value;
                     if(!clientId || !details) return Swal.fire('Error', 'Link a client and type proposal details', 'error');
-                    const projRef = await db.collection("projects").add({ clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} });
+                    const projRef = await getCol("projects").add({ clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} });
                     projectId = projRef.id; state.projects.push({ clientId, details, pbt: 'TBD', gps: '', status: 'Drafting', ref: '', date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {}, id: projectId });
                 }
                 let subtotal = 0; tempLineItems.forEach(i => subtotal += (i.qty * i.price)); let tax = document.getElementById('inv-sst').checked ? (subtotal * 0.08) : 0;
                 const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const year = new Date().getFullYear(); const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1;
                 const docId = editingDocId || `${prefix}-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, type, poRef, items: tempLineItems, subtotal, tax, total: subtotal+tax, date: new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
-                if(editingDocId) { await db.collection("commercials").doc(editingDocId).update(docData); const index = state.commercials.findIndex(d => d.id === editingDocId); if(index !== -1) state.commercials[index] = { ...docData, id: editingDocId }; } 
-                else { await db.collection("commercials").doc(docId).set(docData); state.commercials.push({ ...docData, id: docId }); logActivity("Generated new commercial document", 'receipt', 'cyan'); }
+                if(editingDocId) { await getCol("commercials").doc(editingDocId).update(docData); const index = state.commercials.findIndex(d => d.id === editingDocId); if(index !== -1) state.commercials[index] = { ...docData, id: editingDocId }; } 
+                else { await getCol("commercials").doc(docId).set(docData); state.commercials.push({ ...docData, id: docId }); const tracking = `Generated new ${type} for ${formatRM(docData.total)}`; logActivity(tracking, 'receipt', 'cyan'); }
                 closeModal('modal-invoice'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save billing document.', 'error'); }
         };
@@ -1671,7 +1719,7 @@
         window.togglePaidStatus = async function(id) {
             const docIndex = state.commercials.findIndex(d => d.id === id); if(docIndex === -1) return;
             const newStatus = state.commercials[docIndex].status === 'Paid' ? 'Unpaid' : 'Paid';
-            try { await db.collection("commercials").doc(id).update({ status: newStatus }); state.commercials[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); }
+            try { await getCol("commercials").doc(id).update({ status: newStatus }); state.commercials[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); }
         };
 
         function renderCommercials() {
@@ -1744,12 +1792,12 @@
                 let subtotal = 0; tempPOLineItems.forEach(i => subtotal += (i.qty * i.price)); let tax = document.getElementById('po-sst').checked ? (subtotal * 0.08) : 0;
                 const year = new Date().getFullYear(); const count = state.pos.filter(d => d.id.includes(year)).length + 1; const docId = editingPOId || `PO-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, vendorName, vendorAddress, items: tempPOLineItems, subtotal, tax, total: subtotal+tax, date: new Date().toLocaleDateString('en-MY'), status: 'Pending' };
-                if(editingPOId) { await db.collection("pos").doc(editingPOId).update(docData); const index = state.pos.findIndex(d => d.id === editingPOId); if(index !== -1) state.pos[index] = { ...docData, id: editingPOId }; } 
-                else { await db.collection("pos").doc(docId).set(docData); state.pos.push({ ...docData, id: docId }); logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); }
+                if(editingPOId) { await getCol("pos").doc(editingPOId).update(docData); const index = state.pos.findIndex(d => d.id === editingPOId); if(index !== -1) state.pos[index] = { ...docData, id: editingPOId }; } 
+                else { await getCol("pos").doc(docId).set(docData); state.pos.push({ ...docData, id: docId }); logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); }
                 closeModal('modal-po'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save PO details.', 'error'); }
         };
-        window.togglePOSettled = async function(id) { const docIndex = state.pos.findIndex(d => d.id === id); if(docIndex === -1) return; const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled'; try { await db.collection("pos").doc(id).update({ status: newStatus }); state.pos[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); } };
+        window.togglePOSettled = async function(id) { const docIndex = state.pos.findIndex(d => d.id === id); if(docIndex === -1) return; const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled'; try { await getCol("pos").doc(id).update({ status: newStatus }); state.pos[docIndex].status = newStatus; refreshAllViews(); } catch(e) { Swal.fire('Error', 'Update failed', 'error'); } };
         
         function renderPOs() {
             const tbody = document.getElementById('pos-table'); if(!tbody) return; tbody.innerHTML = '';
@@ -1778,11 +1826,11 @@
             Swal.showLoading();
             try {
                 if(id) {
-                    await db.collection("staff").doc(id).update(staffData);
+                    await getCol("staff").doc(id).update(staffData);
                     const index = state.staff.findIndex(s => s.id === id);
                     if(index !== -1) state.staff[index] = { ...staffData, id };
                 } else {
-                    const docRef = await db.collection("staff").add(staffData);
+                    const docRef = await getCol("staff").add(staffData);
                     state.staff.push({ ...staffData, id: docRef.id });
                 }
                 closeModal('modal-staff'); refreshAllViews(); Swal.close();
@@ -1844,7 +1892,7 @@
             const expData = { category, desc, amount, projectId, date: new Date().toLocaleDateString('en-MY') };
             Swal.showLoading();
             try {
-                const docRef = await db.collection("expenses").add(expData); state.expenses.push({ ...expData, id: docRef.id });
+                const docRef = await getCol("expenses").add(expData); state.expenses.push({ ...expData, id: docRef.id });
                 closeModal('modal-expense'); refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to log expense claim.', 'error'); }
         };
@@ -1897,7 +1945,7 @@
             let addedCount = 0; for(const row of data) {
                 const name = row['Client Name'] || row['Company Name'] || row['Client']; if(!name) continue;
                 const existing = state.clients.find(c => c.name.toLowerCase().trim() === name.toLowerCase().trim());
-                if(!existing) { const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' }; const docRef = await db.collection("clients").add(clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++; }
+                if(!existing) { const clientData = { name: name.trim(), ssm: row['SSM Number'] || row['SSM'] || '', contact: row['Contact Person'] || row['Contact'] || '', email: row['Email Address'] || row['Email'] || '', address: row['Billing Address'] || row['Address'] || '' }; const docRef = await getCol("clients").add(clientData); state.clients.push({ ...clientData, id: docRef.id }); addedCount++; }
             }
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 clients added.', 'warning'); else Swal.fire('Clients Imported!', `Imported ${addedCount} clients.`, 'success');
         }
@@ -1906,9 +1954,9 @@
             let addedCount = 0; let newClients = 0; for(const row of data) {
                 const clientStr = row['Client Name'] || row['Client'] || row['Klien']; const detailsStr = row['Project Details'] || row['Project'] || row['Tajuk']; if(!clientStr || !detailsStr) continue;
                 let clientId = null; const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
-                if(existingClient) clientId = existingClient.id; else { const newClientRef = await db.collection("clients").add({ name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' }); clientId = newClientRef.id; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; }
+                if(existingClient) clientId = existingClient.id; else { const newClientRef = await getCol("clients").add({ name: clientStr.trim(), ssm:'', contact:'', email:'', address:'' }); clientId = newClientRef.id; state.clients.push({ id: clientId, name: clientStr.trim() }); newClients++; }
                 const projData = { clientId: clientId, details: detailsStr, pbt: row['PBT'] || row['Authority'] || 'DBKL', gps: row['Location'] || row['GPS'] || '', status: row['Status'] || 'Drafting', ref: row['Reference'] || '', date: row['Date'] || new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
-                const docRef = await db.collection("projects").add(projData); state.projects.push({ ...projData, id: docRef.id }); addedCount++;
+                const docRef = await getCol("projects").add(projData); state.projects.push({ ...projData, id: docRef.id }); addedCount++;
             }
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 projects found.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.`, 'success');
         }
@@ -1917,10 +1965,10 @@
             let addedCount = 0; const year = new Date().getFullYear(); for(const row of data) {
                 const type = row['Type'] || 'Invoice'; const projStr = row['Project']; const descStr = row['Description'] || 'General Engineering Works'; const qty = Number(row['Qty'] || 1); const price = Number(row['Price'] || 0); const applySst = (row['SST'] || '').toLowerCase() === 'yes';
                 if(!projStr || price === 0) continue; let projectId = null; const existingProj = state.projects.find(p => p.details.toLowerCase().includes(projStr.toLowerCase()));
-                if(existingProj) projectId = existingProj.id; else { const newProjRef = await db.collection("projects").add({ clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); projectId = newProjRef.id; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); }
+                if(existingProj) projectId = existingProj.id; else { const newProjRef = await getCol("projects").add({ clientId: state.clients[0]?.id||'', details: projStr, pbt:'DBKL', status:'Drafting', date: new Date().toLocaleDateString('en-MY') }); projectId = newProjRef.id; state.projects.push({ id: projectId, details: projStr, clientId: state.clients[0]?.id||'' }); }
                 const subtotal = qty * price; const tax = applySst ? (subtotal * 0.08) : 0; const total = subtotal + tax; const prefix = type === 'Quotation' ? 'QUO' : 'INV'; const count = state.commercials.filter(d => d.type === type && d.id.includes(year)).length + 1; const docId = `${prefix}-${year}-${String(count).padStart(3, '0')}`;
                 const docData = { projectId, type, poRef: row['PO Reference'] || '', items: [{ desc: descStr, note: '', qty, price }], subtotal, tax, total, date: row['Date'] || new Date().toLocaleDateString('en-MY'), status: 'Unpaid' };
-                await db.collection("commercials").doc(docId).set(docData); state.commercials.push({ ...docData, id: docId }); addedCount++;
+                await getCol("commercials").doc(docId).set(docData); state.commercials.push({ ...docData, id: docId }); addedCount++;
             }
             refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 documents found.', 'warning'); else Swal.fire('Billing Imported!', `Imported ${addedCount} documents.`, 'success');
         }
@@ -2078,11 +2126,11 @@
                     const existingClient = state.clients.find(c => c.name.toLowerCase() === data.clientName.toLowerCase());
                     if(existingClient) clientId = existingClient.id;
                     else {
-                        const newClientRef = await db.collection("clients").add({ name: data.clientName, ssm:'', contact:'', email:'', address:'' });
+                        const newClientRef = await getCol("clients").add({ name: data.clientName, ssm:'', contact:'', email:'', address:'' });
                         clientId = newClientRef.id; state.clients.push({ id: clientId, name: data.clientName });
                     }
                     const projData = { clientId: clientId, details: data.projectDetails, pbt: data.pbt, gps: data.gps, status: 'Awarded', ref: data.ref, date: new Date().toLocaleDateString('en-MY'), scopeStatuses: {} };
-                    const docRef = await db.collection("projects").add(projData);
+                    const docRef = await getCol("projects").add(projData);
                     state.projects.push({ ...projData, id: docRef.id });
                     
                     if(document.getElementById('ai-loa-upload').files.length > 0) {
@@ -2164,7 +2212,7 @@
             `;
             const actionsHtml = `
                 <button onclick="savePDFToDrive('print-content', 'Site_Defect_Report')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                <button onclick="openPDFNewTab('print-content', 'Site_Defect_Report')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="openPDFNewTab('print-content', 'Site_Defect_Report')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 animate-pulse"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                 <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-printer text-lg"></i> Print Report</button>
             `;
             openPrintView(contentHtml, actionsHtml, 'ai-vision');
@@ -2241,7 +2289,7 @@
                 `;
                 const actionsHtml = `
                     <button onclick="savePDFToDrive('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                    <button onclick="openPDFNewTab('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                    <button onclick="openPDFNewTab('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                     <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-printer text-lg"></i> Print Official</button>
                 `;
                 openPrintView(contentHtml, actionsHtml, 'ai-letter');
@@ -2268,20 +2316,20 @@
             Swal.fire({ title: 'Deploying Sandbox...', text: 'Writing standard mock entities into sandboxed memory...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             try {
                 // Clients
-                const cl1 = await db.collection("clients").add({ name: "NEIGE DESIGN SDN BHD", ssm: "20180104XXXX", contact: "En. Shahrul", email: "contact@neigedesign.com", address: "3A-12, Plaza Damas, Sri Hartamas, KL" });
-                const cl2 = await db.collection("clients").add({ name: "OUTDOOR CHANNEL SDN BHD", ssm: "20150203XXXX", contact: "Mr. Wong", email: "wong@outdoorchannel.com.my", address: "No 5, Jalan Tandang, Petaling Jaya" });
+                const cl1 = await getCol("clients").add({ name: "NEIGE DESIGN SDN BHD", ssm: "20180104XXXX", contact: "En. Shahrul", email: "contact@neigedesign.com", address: "3A-12, Plaza Damas, Sri Hartamas, KL" });
+                const cl2 = await getCol("clients").add({ name: "OUTDOOR CHANNEL SDN BHD", ssm: "20150203XXXX", contact: "Mr. Wong", email: "wong@outdoorchannel.com.my", address: "No 5, Jalan Tandang, Petaling Jaya" });
                 
                 // Projects
-                const p1 = await db.collection("projects").add({ clientId: cl1.id, details: "CADANGAN MEMBINA PAPARAN IKLAN TWINPOLE DUA MUKAAN BERUKURAN 60ft x 40ft DI PERSIMPANGAN JALAN TEMPLER/JALAN KLANG LAMA", pbt: "MBPJ", gps: "3.0851, 101.6433", status: "In Progress", ref: "MBPJ/OSC/2026-001", date: "22/06/2026", scopeStatuses: { "Design & Drawing": "Completed", "PE Endorsement": "In Progress" } });
-                const p2 = await db.collection("projects").add({ clientId: cl2.id, details: "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN UNIPOLE 18m x 6m DI LEBUHRAYA LDP KM 5.2 ARAH UTARA", pbt: "DBKL", gps: "3.1501, 101.6112", status: "Awarded", ref: "DBKL/OSC/2026-144", date: "22/06/2026", scopeStatuses: { "Renew license": "In Progress" } });
+                const p1 = await getCol("projects").add({ clientId: cl1.id, details: "CADANGAN MEMBINA PAPARAN IKLAN TWINPOLE DUA MUKAAN BERUKURAN 60ft x 40ft DI PERSIMPANGAN JALAN TEMPLER/JALAN KLANG LAMA", pbt: "MBPJ", gps: "3.0851, 101.6433", status: "In Progress", ref: "MBPJ/OSC/2026-001", date: "22/06/2026", scopeStatuses: { "Design & Drawing": "Completed", "PE Endorsement": "In Progress" } });
+                const p2 = await getCol("projects").add({ clientId: cl2.id, details: "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN UNIPOLE 18m x 6m DI LEBUHRAYA LDP KM 5.2 ARAH UTARA", pbt: "DBKL", gps: "3.1501, 101.6112", status: "Awarded", ref: "DBKL/OSC/2026-144", date: "22/06/2026", scopeStatuses: { "Renew license": "In Progress" } });
 
                 // Commercials
-                await db.collection("commercials").doc("QUO-2026-001").set({ projectId: p1.id, type: "Quotation", poRef: "PO-ND-889", items: [{ desc: "Design & Drawing", note: scopeNotesMap["Design & Drawing"], qty: 1, price: 4500 }, { desc: "PE Endorsement", note: scopeNotesMap["PE Endorsement"], qty: 1, price: 3000 }], subtotal: 7500, tax: 600, total: 8100, date: "22/06/2026", status: "Unpaid" });
-                await db.collection("commercials").doc("QUO-2026-002").set({ projectId: p2.id, type: "Quotation", poRef: "PO-OC-772", items: [{ desc: "Renew license", note: scopeNotesMap["Renew license"], qty: 1, price: 3500 }], subtotal: 3500, tax: 0, total: 3500, date: "22/06/2026", status: "Unpaid" });
+                await getCol("commercials").doc("QUO-2026-001").set({ projectId: p1.id, type: "Quotation", poRef: "PO-ND-889", items: [{ desc: "Design & Drawing", note: scopeNotesMap["Design & Drawing"], qty: 1, price: 4500 }, { desc: "PE Endorsement", note: scopeNotesMap["PE Endorsement"], qty: 1, price: 3000 }], subtotal: 7500, tax: 600, total: 8100, date: "22/06/2026", status: "Unpaid" });
+                await getCol("commercials").doc("QUO-2026-002").set({ projectId: p2.id, type: "Quotation", poRef: "PO-OC-772", items: [{ desc: "Renew license", note: scopeNotesMap["Renew license"], qty: 1, price: 3500 }], subtotal: 3500, tax: 0, total: 3500, date: "22/06/2026", status: "Unpaid" });
 
                 // Staff
-                await db.collection("staff").add({ name: "Muhammad Amirul Bin Razak", role: "Graduate Engineer", salary: 3800 });
-                await db.collection("staff").add({ name: "Siti Nurhaliza Binti Yusof", role: "Admin Coordinator", salary: 2800 });
+                await getCol("staff").add({ name: "Muhammad Amirul Bin Razak", role: "Graduate Engineer", salary: 3800 });
+                await getCol("staff").add({ name: "Siti Nurhaliza Binti Yusof", role: "Admin Coordinator", salary: 2800 });
 
                 Swal.fire('Sandbox Online!', 'Seed data deployed. Re-initialising dashboard...', 'success').then(() => {
                     location.reload();
