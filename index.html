@@ -26,6 +26,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Firebase SDKs (Using stable Compat wrappers to prevent import errors) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
@@ -709,7 +710,7 @@
                         </div>
                         <div>
                             <label class="text-[10px] font-bold text-cyan-700 uppercase tracking-widest mb-1 block">New Scope Proposal Description *</label>
-                            <input type="text" id="inv-proj-details" class="w-full bg-white border border-cyan-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500" placeholder="e.g. Cadangan Struktur Unipole 18m">
+                            <input type="text" id="inv-proj-details" class="w-full bg-white border border-cyan-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500" placeholder="e.g. Cadangan Unipole 18m">
                         </div>
                     </div>
 
@@ -1068,7 +1069,7 @@
         };
 
         // Setup PDF.js Worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
 
         // --- Global UI Helpers and Formatters ---
         window.escapeHTML = function(str) {
@@ -1186,6 +1187,9 @@
             Swal.fire({ title: 'Establishing Handshake', text: 'Syncing ledger data with active cloud nodes...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
             try {
+                // RULE 3: Authenticate before running database queries to meet Firestore access parameters
+                await firebase.auth().signInAnonymously();
+
                 const settingsDoc = await db.collection("settings").get();
                 if (!settingsDoc.empty) state.settings = { ...state.settings, ...settingsDoc.docs[0].data() };
                 else await db.collection("settings").doc("master").set(state.settings);
@@ -1217,10 +1221,12 @@
                 logActivity('ERP authenticated and synchronized with Firebase', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
+                Swal.close(); // Cleanly close the active loading handshake overlay before presenting the fallback window
                 Swal.fire({
                     title: 'Offline Sandboxed Mode Active', 
                     html: `<p class="text-sm">Local environment operational inside secure fallback sandbox.</p>`, 
-                    icon: 'info'
+                    icon: 'info',
+                    confirmButtonText: 'Access Sandbox'
                 }).then(() => refreshAllViews());
             }
         }
@@ -1939,7 +1945,7 @@
             
             const contentHtml = `
                 ${getLetterhead()}
-                <div class="flex justify-between mb-12 text-slate-800"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4><h2 class="text-xl font-black text-slate-800">${escapeHTML(client ? client.name : '')}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${escapeHTML(client ? client.address : '')}</p><p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${escapeHTML(client ? client.contact : '')}</p></div><div class="text-right"><h1 class="text-4xl font-black text-cyan-700 tracking-tighter uppercase mb-2">${docData.type}</h1><p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docDate.date}</span></p>${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${escapeHTML(docData.poRef)}</span></p>` : ''}</div></div><div class="mb-8"><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Scope Project:</h4><p class="text-sm font-bold text-slate-800">${escapeHTML(proj ? proj.details : '')}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-880"><td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td><td class="text-right py-3 font-mono text-cyan-700">${formatRM(docData.total)}</td></tr></table></div>
+                <div class="flex justify-between mb-12 text-slate-800"><div><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-2">Billed To:</h4><h2 class="text-xl font-black text-slate-800">${escapeHTML(client ? client.name : '')}</h2><p class="text-sm text-slate-600 mt-1 whitespace-pre-line">${escapeHTML(client ? client.address : '')}</p><p class="text-sm font-semibold text-slate-600 mt-2">Attn: ${escapeHTML(client ? client.contact : '')}</p></div><div class="text-right"><h1 class="text-4xl font-black text-cyan-700 tracking-tighter uppercase mb-2">${docData.type}</h1><p class="text-sm text-slate-600 font-bold mb-1">Ref No: <span class="font-mono text-slate-800">${docData.id}</span></p><p class="text-sm text-slate-600 font-bold mb-1">Date: <span class="font-mono text-slate-800">${docData.date}</span></p>${docData.poRef ? `<p class="text-sm text-slate-600 font-bold">PO Ref: <span class="font-mono text-slate-800">${escapeHTML(docData.poRef)}</span></p>` : ''}</div></div><div class="mb-8"><h4 class="font-black text-slate-400 uppercase tracking-widest text-xs mb-1">Scope Project:</h4><p class="text-sm font-bold text-slate-800">${escapeHTML(proj ? proj.details : '')}</p></div><table class="w-full text-left border-collapse mb-8"><thead><tr class="border-b-2 border-slate-800 text-xs uppercase tracking-widest text-slate-800 font-black"><th class="py-3 w-12">No.</th><th class="py-3">Description of Works</th><th class="py-3 text-center w-24">Qty</th><th class="py-3 text-right w-32">Unit Price</th><th class="py-3 text-right w-32">Amount</th></tr></thead><tbody class="text-sm">${itemsHtml}</tbody></table><div class="flex justify-end mb-12"><table class="w-72"><tr class="font-bold text-slate-600 text-sm border-t border-slate-200"><td class="text-right py-2">Subtotal</td><td class="text-right py-2 font-mono">${formatRM(docData.subtotal)}</td></tr>${sstRow}<tr class="font-black text-slate-800 text-lg border-t-2 border-slate-880"><td class="text-right py-3 uppercase tracking-widest text-xs">Grand Total</td><td class="text-right py-3 font-mono text-cyan-700">${formatRM(docData.total)}</td></tr></table></div>
                 <div class="mt-auto pt-8 flex-shrink-0">
                     <div class="text-xs text-slate-500 border-t border-slate-200 pt-6 space-y-2"><p class="font-bold text-slate-800 mb-2">Terms & Conditions:</p><p>1. Payment to be made payable to <strong>${escapeHTML(state.settings.name)}</strong>.</p><p>2. Account Details: <strong>${escapeHTML(state.settings.bank)}</strong></p><p>3. This is a computer-generated document. No signature is required.</p></div>
                 </div>
@@ -2208,7 +2214,7 @@
             Swal.fire({ title: 'Reading PDF...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             try {
                 const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
-                for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { const page = await pdf.getPage(i); const textContent = await page.getTextContent(); extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; }
+                for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { const page = await page.getTextContent(); extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; }
                 Swal.fire({ title: 'Analyzing...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
                 const prompt = `Analyze this contract text. Provide a professional summary focusing ONLY on: 1. Exact Scope of Work 2. Payment Terms 3. LAD/Penalty Clauses. Format using markdown.\n\nText: ${extractedText.substring(0, 30000)}`;
                 const aiResponse = await askGemini(prompt);
