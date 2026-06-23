@@ -934,7 +934,7 @@
     <!-- Application Logic Modules -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Global exports for HTML inline handlers
@@ -962,16 +962,16 @@
 
         try {
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-            if (firebaseConfig && firebaseConfig.projectId && firebaseConfig.projectId !== "dummy") {
+            if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "dummy") {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 isFirebaseActive = true;
             } else {
-                console.warn("Valid Firebase config not found. Running in local fallback state.");
+                console.warn("Firebase config not found or dummy. Running in local fallback state.");
             }
         } catch (e) {
-            console.warn("Firebase initialization error. Running in local fallback state.");
+            console.warn("Firebase config failed. Running in local fallback state.");
         }
 
         // Database Path Generators Rules
@@ -1002,7 +1002,7 @@
             'Renew license': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.'
         };
 
-        // --- PBT Command Filters ---
+        // --- STREAMING_CHUNK:Defining UI Filters and Search Operations ---
         window.setCouncilFilter = function(pbt) {
             state.currentPbtFilter = pbt;
             document.querySelectorAll('.btn-filter-pbt').forEach(btn => {
@@ -1137,7 +1137,7 @@
             const pass = document.getElementById('login-pass').value;
             if(id === 'assidqi' && pass === 'ases5577') {
                 document.getElementById('login-screen').style.display = 'none';
-                loadState();
+                window.loadState();
             } else { Swal.fire('Access Denied', 'Invalid Admin Credentials', 'error'); }
         };
 
@@ -1201,7 +1201,7 @@
                 </div>`;
         }
 
-        // --- Firebase Load state synchronization (Modular Fix) ---
+        // --- STREAMING_CHUNK:Loading Database State with Modular Firebase ---
         window.loadState = async function() {
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'short' });
             Swal.fire({ title: 'Establishing Handshake', text: 'Syncing ledger data with active cloud nodes...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -1251,7 +1251,6 @@
                 if(isFirebaseActive) logActivity('ERP authenticated and synchronized with Firebase (v11 Modular)', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
-                isFirebaseActive = false; // Fix: Instantly disable network calls on error to prevent infinite hang
                 Swal.close(); 
                 Swal.fire({
                     title: 'Offline Sandboxed Mode Active', 
@@ -1289,7 +1288,6 @@
                 }
             });
 
-            // Calculate Expenses
             state.expenses.forEach(e => {
                 if (e.date) {
                     const parts = e.date.split('/');
@@ -1308,7 +1306,6 @@
             document.getElementById('dash-collected').innerText = formatRM(col);
             document.getElementById('dash-clients').innerText = state.clients.length;
 
-            // Render Profit Analysis Numbers
             document.getElementById('mtd-invoiced').innerText = formatRM(mtdInvoiced);
             document.getElementById('mtd-expenses').innerText = formatRM(mtdExpensesVal);
             const mtdProfit = mtdInvoiced - mtdExpensesVal;
@@ -1340,6 +1337,7 @@
             });
         }
 
+        // --- STREAMING_CHUNK:Configuring Client Data Actions ---
         window.saveSettings = async function() {
             const newSettings = {};
             ['name', 'ssm', 'bem', 'address', 'bank', 'clientid', 'apikey', 'folderid', 'geminikey'].forEach(k => { newSettings[k] = document.getElementById('set-'+k).value; });
@@ -1413,7 +1411,6 @@
             });
         };
 
-        // --- Client Directory Operations ---
         window.saveClient = async function() {
             const id = document.getElementById('c-id').value;
             const name = document.getElementById('c-name').value;
@@ -1468,6 +1465,7 @@
             });
         }
 
+        // --- STREAMING_CHUNK:Managing High-tech Scope and Tracking ---
         // --- High-tech Scope of Works Tracker logic ---
         window.saveProjectUpdate = async function() {
             const id = document.getElementById('p-id').value; const clientId = document.getElementById('proj-client').value; const details = document.getElementById('p-details').value;
@@ -1654,6 +1652,7 @@
             });
         }
 
+        // --- STREAMING_CHUNK:Invoicing and Generating Subcontractor POs ---
         // --- Billing Logic ---
         let tempLineItems = []; let editingDocId = null;
         window.toggleNewProjectFields = function(val) { document.getElementById('new-proj-fields').classList.toggle('hidden', val !== 'NEW'); };
@@ -1890,7 +1889,7 @@
             });
         }
 
-        // --- HR & Staff Payroll Operations ---
+        // --- STREAMING_CHUNK:Managing HR Ledger and Expenses Engine ---
         window.saveStaff = async function() {
             const id = document.getElementById('s-id').value;
             const name = document.getElementById('s-name').value;
@@ -1963,7 +1962,6 @@
             });
         }
 
-        // --- Expenses & Claims ---
         window.saveExpense = async function() {
             const category = document.getElementById('exp-cat').value; const desc = document.getElementById('exp-desc').value; 
             const amount = parseCurrencyVal(document.getElementById('exp-amount').value); const projectId = document.getElementById('exp-project').value;
@@ -1997,7 +1995,7 @@
             });
         }
 
-        // --- Export & Data Import Logic ---
+        // --- STREAMING_CHUNK:Implementing Export and CSV Import Adapters ---
         window.exportToCSV = function(type) {
             let data = []; let filename = '';
             const escapeCSV = (str) => { if (str == null) return '""'; const s = String(str); if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`; return s; };
@@ -2078,7 +2076,7 @@
                 
                 // Extract number from currency strings like "RM 1,315,000.00"
                 let totalStr = row['Grand Total (RM)'] || row['Price'] || row['Total'] || '0';
-                const totalVal = parseFloat(String(totalStr).replace(/[^0-9.-]+/g, ""));
+                const totalVal = parseFloat(String(totalStr).replace(/[^0-9.-]+/g, "")) || 0;
                 
                 if (!docIdRaw && totalVal === 0) continue; // Skip empty rows safely
                 
@@ -2098,7 +2096,7 @@
                     state.clients.push({ id: clientId, name: clientStr.trim() }); 
                 }
 
-                // 2. Map or Auto-create Scope/Project Profile
+                // 2. Map or Auto-create Scope/Project Profile (General Works Default)
                 const projStr = row['Project ID'] || row['Project'] || `General Engineering Works - ${clientStr}`;
                 let projectId = null; 
                 const existingProj = state.projects.find(p => p.details.toLowerCase().trim() === projStr.toLowerCase().trim());
@@ -2133,6 +2131,7 @@
             else Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents.`, 'success');
         }
 
+        // --- STREAMING_CHUNK:Configuring the Live PDF Generators ---
         // --- Print & Drive Engine ---
         window.closePrintView = function(returnViewId) {
             document.getElementById('print-overlay').classList.add('hidden');
@@ -2236,10 +2235,11 @@
             });
         };
 
+        // --- STREAMING_CHUNK:Bringing Gemini AI Workflows Online ---
         // --- Core REST Gemini AI Engine ---
         async function askGemini(promptText, isJson = false) {
-            if (!state.settings.geminikey) { 
-                Swal.fire('AI Not Configured', 'Please configure your Gemini API Key in Company Setup.', 'warning'); 
+            if (!state.settings.geminikey || state.settings.geminikey.trim() === '') { 
+                Swal.fire('AI Key Required', 'Please insert your Gemini API Key in the Settings tab.', 'warning'); 
                 return null; 
             }
             try { 
@@ -2254,7 +2254,8 @@
                     })
                 });
                 if(!response.ok) {
-                    throw new Error(`REST request failed with status code ${response.status}`);
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || `HTTP Error ${response.status}`);
                 }
                 const data = await response.json();
                 let text = data.candidates[0].content.parts[0].text;
@@ -2264,7 +2265,7 @@
                 return text; 
             } catch (error) { 
                 console.error(error); 
-                Swal.fire('Gemini Error', 'Failed to connect to Google AI via REST protocol.', 'error'); 
+                Swal.fire('Gemini Error', error.message || 'Failed to connect to Google AI via REST protocol.', 'error'); 
                 return null; 
             }
         }
@@ -2276,8 +2277,8 @@
             try {
                 const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
                 for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { 
-                    const page = await pdf.getPage(i); 
-                    const textContent = await page.getTextContent(); 
+                    const pdfPage = await pdf.getPage(i); 
+                    const textContent = await pdfPage.getTextContent(); 
                     extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; 
                 }
                 
@@ -2329,14 +2330,17 @@
 
             Swal.fire({ title: 'Gemini Vision Analysis...', text: 'Examining structural integrity...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
-            if (!state.settings.geminikey) return Swal.fire('AI Not Configured', 'Missing Gemini API Key.', 'warning');
-            
             try {
                 const base64EncodedDataPromise = new Promise((resolve) => {
                     const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file);
                 });
                 const base64EncodedData = await base64EncodedDataPromise;
                 
+                if (!state.settings.geminikey || state.settings.geminikey.trim() === '') {
+                     Swal.fire('AI Key Required', 'Please insert your Gemini API Key in the Settings tab.', 'warning');
+                     return;
+                }
+
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.settings.geminikey}`;
                 const prompt = "You are a Professional Civil & Structural Engineer (Ir.) registered with BEM in Malaysia. Analyze this site photo. Generate a professional 'Structural Defect Assessment'. Format using Markdown. Structure it exactly like this:\n\n### 1. Visual Observations\n(Detail what is wrong, e.g. spalling, corrosion, honeycombing, cracked welds).\n\n### 2. Root Cause Analysis\n(Why it happened).\n\n### 3. Recommended Repair Methods\n(Technical solutions, e.g., Epoxy injection, steel jacketing, wire brushing and repainting). Keep it technical and concise.";
                 
@@ -2359,7 +2363,8 @@
                 });
                 
                 if(!response.ok) {
-                    throw new Error(`REST Vision request failed with status code ${response.status}`);
+                    const errData = await response.json();
+                    throw new Error(errData.error?.message || `HTTP Error ${response.status}`);
                 }
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
@@ -2367,7 +2372,7 @@
                 document.getElementById('ai-vision-result').innerHTML = marked.parse(text);
                 document.getElementById('ai-vision-result-container').classList.remove('hidden');
                 Swal.close();
-            } catch(e) { console.error(e); Swal.fire('Vision Error', 'Failed to analyze image.', 'error'); }
+            } catch(e) { console.error(e); Swal.fire('Vision Error', e.message || 'Failed to analyze image.', 'error'); }
             event.target.value = '';
         };
 
@@ -2436,7 +2441,6 @@
             try {
                 const arrayBuffer = await file.arrayBuffer(); const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise; let extractedText = "";
                 for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) { 
-                    // CRITICAL FIX: Changed variable from 'page' shadowing bug
                     const pdfPage = await pdf.getPage(i); 
                     const textContent = await pdfPage.getTextContent(); 
                     extractedText += textContent.items.map(item => item.str).join(' ') + "\n"; 
