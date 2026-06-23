@@ -86,9 +86,9 @@
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Security Passcode</label>
-                    <input type="password" id="login-pass" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-cyan-500 transition-colors font-mono" value="ases5577" onkeypress="if(event.key === 'Enter') handleLogin()">
+                    <input type="password" id="login-pass" class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-3 outline-none focus:border-cyan-500 transition-colors font-mono" value="ases5577" onkeypress="if(event.key === 'Enter') window.handleLogin()">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-cyan-600/20 mt-4 uppercase tracking-wider text-xs">Unlock System</button>
+                <button onclick="window.handleLogin()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-cyan-600/20 mt-4 uppercase tracking-wider text-xs">Unlock System</button>
             </div>
         </div>
     </div>
@@ -882,7 +882,7 @@
             </div>
             <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
                 <button onclick="closeModal('modal-staff')" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-700">Cancel</button>
-                <button onclick="saveStaff()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md">Register Member</button>
+                <button onclick="window.saveStaff()" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-md">Register Member</button>
             </div>
         </div>
     </div>
@@ -961,14 +961,16 @@
         let isFirebaseActive = false;
 
         try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "dummy", authDomain: "dummy.firebaseapp.com", projectId: "dummy"
+            };
             if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "dummy") {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
                 isFirebaseActive = true;
             } else {
-                console.warn("Firebase config not found or dummy. Running in local fallback state.");
+                console.warn("Firebase config is dummy. Running in local fallback state.");
             }
         } catch (e) {
             console.warn("Firebase config failed. Running in local fallback state.");
@@ -1002,7 +1004,6 @@
             'Renew license': 'Preparation of structural safety assessment report and P.E. endorsement for the annual renewal of the advertising structure license.'
         };
 
-        // --- STREAMING_CHUNK:Defining UI Filters and Search Operations ---
         window.setCouncilFilter = function(pbt) {
             state.currentPbtFilter = pbt;
             document.querySelectorAll('.btn-filter-pbt').forEach(btn => {
@@ -1024,77 +1025,42 @@
         window.filterScopes = function() { renderProjects(); };
         window.filterCommercials = function() { renderCommercials(); };
 
-        // --- Minimalist Spec & Location Parser ---
         window.parseMinimalistTitle = function(title) {
             if (!title) return { specs: 'UNKNOWN STRUCTURE', location: 'TBD LOCATION' };
-            
-            let upper = title.toUpperCase()
-                .replace(/[“”"']/g, '"')
-                .replace(/’/g, "'");
-                
+            let upper = title.toUpperCase().replace(/[“”"']/g, '"').replace(/’/g, "'");
             let specs = "";
             const diIndex = upper.indexOf(" DI ");
             let preamble = diIndex !== -1 ? title.substring(0, diIndex) : title;
-            
             const removePrefixes = [
-                "CADANGAN MEMBINA PAPARAN IKLAN",
-                "CADANGAN MEMBINA PAPAN IKLAN",
-                "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN",
-                "CADANGAN MEMBAHARUI LESEN STRUKTUR",
-                "CADANGAN MEMBAHARUI LESEN",
-                "CADANGAN MEMBINA STRUKTUR",
-                "CADANGAN MEMBINA",
-                "CADANGAN"
+                "CADANGAN MEMBINA PAPARAN IKLAN", "CADANGAN MEMBINA PAPAN IKLAN",
+                "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN", "CADANGAN MEMBAHARUI LESEN STRUKTUR",
+                "CADANGAN MEMBAHARUI LESEN", "CADANGAN MEMBINA STRUKTUR", "CADANGAN MEMBINA", "CADANGAN"
             ];
-            
             let cleanedSpecs = preamble;
             for (const prefix of removePrefixes) {
                 if (cleanedSpecs.toUpperCase().trim().startsWith(prefix)) {
                     cleanedSpecs = cleanedSpecs.substring(prefix.length).trim();
                 }
             }
-            
             specs = cleanedSpecs ? cleanedSpecs.trim() : "BILLBOARD STRUCTURE";
-            
             let location = "SITE LOCATION REFERENCE";
             if (diIndex !== -1) {
                 let locPart = title.substring(diIndex + 1).trim();
-                if (locPart.toUpperCase().startsWith("DI ")) {
-                    locPart = locPart.substring(3).trim();
-                }
-                
-                const stopKeywords = [
-                    "UNTUK TETUAN",
-                    "BAGI TETUAN",
-                    "DI TANAH MILIK",
-                    "DI ATAS LOT",
-                    "SEKSYEN"
-                ];
-                
+                if (locPart.toUpperCase().startsWith("DI ")) { locPart = locPart.substring(3).trim(); }
+                const stopKeywords = ["UNTUK TETUAN", "BAGI TETUAN", "DI TANAH MILIK", "DI ATAS LOT", "SEKSYEN"];
                 let cleanedLoc = locPart;
                 for (const kw of stopKeywords) {
                     const kwIdx = cleanedLoc.toUpperCase().indexOf(kw);
-                    if (kwIdx !== -1) {
-                        cleanedLoc = cleanedLoc.substring(0, kwIdx).trim();
-                    }
+                    if (kwIdx !== -1) cleanedLoc = cleanedLoc.substring(0, kwIdx).trim();
                 }
-                
                 cleanedLoc = cleanedLoc.replace(/[,.\s-]+$/, '');
-                if (cleanedLoc) {
-                    location = cleanedLoc.trim();
-                }
+                if (cleanedLoc) location = cleanedLoc.trim();
             }
-            
-            return {
-                specs: specs.toUpperCase(),
-                location: location.toUpperCase()
-            };
+            return { specs: specs.toUpperCase(), location: location.toUpperCase() };
         };
 
-        // Setup PDF.js Worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
 
-        // --- Global UI Helpers and Formatters ---
         window.escapeHTML = function(str) {
             if (!str) return '';
             return String(str).replace(/[&<>'"]/g, function(tag) {
@@ -1131,7 +1097,6 @@
             selects.forEach(sel => { sel.selectedIndex = 0; });
         };
 
-        // --- Core UI Logic & Navigation ---
         window.handleLogin = function() {
             const id = document.getElementById('login-id').value;
             const pass = document.getElementById('login-pass').value;
@@ -1145,7 +1110,7 @@
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
             document.getElementById('sidebar-overlay').classList.toggle('hidden');
         };
-        window.toggleSidebarOnMobile = function() { if(window.innerWidth < 768) toggleSidebar(); };
+        window.toggleSidebarOnMobile = function() { if(window.innerWidth < 768) window.toggleSidebar(); };
 
         window.switchView = function(viewId) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active', 'block'));
@@ -1155,17 +1120,10 @@
             document.getElementById(`view-${viewId}`).classList.add('active', 'block');
             
             const titleMap = {
-                'dashboard': 'Dashboard',
-                'clients': 'Clients',
-                'scopes': 'Scopes',
-                'invoices': 'Invoices',
-                'pos': 'Subcon POs',
-                'ai-analyzer': 'Analyzer',
-                'ai-letter': 'Surat Gen',
-                'ai-vision': 'Defect Vision',
-                'hr': 'HR Ledger',
-                'expenses': 'Expenses',
-                'settings': 'Settings'
+                'dashboard': 'Dashboard', 'clients': 'Clients', 'scopes': 'Scopes',
+                'invoices': 'Invoices', 'pos': 'Subcon POs', 'ai-analyzer': 'Analyzer',
+                'ai-letter': 'Surat Gen', 'ai-vision': 'Defect Vision', 'hr': 'HR Ledger',
+                'expenses': 'Expenses', 'settings': 'Settings'
             };
             document.getElementById('topbar-title').innerText = titleMap[viewId] || 'Dashboard';
             if(document.getElementById(`nav-${viewId}`)) document.getElementById(`nav-${viewId}`).classList.add('active');
@@ -1201,7 +1159,6 @@
                 </div>`;
         }
 
-        // --- STREAMING_CHUNK:Loading Database State with Modular Firebase ---
         window.loadState = async function() {
             document.getElementById('header-date').innerText = new Date().toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'short' });
             Swal.fire({ title: 'Establishing Handshake', text: 'Syncing ledger data with active cloud nodes...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -1222,7 +1179,7 @@
                     }
                 }
 
-                // SECURITY OVERRIDE: Force credentials if empty
+                // Default fallbacks if empty
                 if(!state.settings.clientid) state.settings.clientid = '767375203888-52ef3pnrgtpfv0ua6p2j6shartfbea2s.apps.googleusercontent.com';
                 if(!state.settings.apikey) state.settings.apikey = 'AIzaSyABvZtAlyA-L_v2jtkm6xnz6HLisq5ulBY';
                 if(!state.settings.geminikey) state.settings.geminikey = 'AIzaSyALV5-oaj3pU51u9cE1DzwJDm6aaI6tAhw';
@@ -1246,9 +1203,9 @@
                     state.expenses = expSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
                 }
 
-                refreshAllViews();
+                window.refreshAllViews();
                 Swal.close();
-                if(isFirebaseActive) logActivity('ERP authenticated and synchronized with Firebase (v11 Modular)', 'cloud-check', 'cyan');
+                if(isFirebaseActive) window.logActivity('ERP authenticated and synchronized with Firebase (v11 Modular)', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
                 Swal.close(); 
@@ -1256,11 +1213,10 @@
                     title: 'Offline Sandboxed Mode Active', 
                     html: `<p class="text-sm">Local environment operational inside secure fallback sandbox.</p>`, 
                     icon: 'info'
-                }).then(() => refreshAllViews());
+                }).then(() => window.refreshAllViews());
             }
         }
 
-        // --- Render Functions ---
         let revChart = null;
         function renderDashboard() {
             let out = 0; let col = 0;
@@ -1273,7 +1229,6 @@
             state.commercials.forEach(d => {
                 if(d.type === 'Invoice') {
                     if(d.status === 'Paid') col += d.total; else out += d.total;
-                    
                     if (d.date) {
                         const parts = d.date.split('/');
                         const m = parseInt(parts[1], 10);
@@ -1329,7 +1284,7 @@
             });
         }
 
-        function refreshAllViews() { 
+        window.refreshAllViews = function() { 
             renderClients(); renderProjects(); renderCommercials(); renderPOs(); renderDashboard(); renderStaff(); renderExpenses(); updateDropdowns(); 
             ['clients', 'projects', 'commercials', 'pos', 'staff', 'expenses'].forEach(type => {
                 if(document.getElementById(`selectAll-${type}`)) document.getElementById(`selectAll-${type}`).checked = false;
@@ -1337,7 +1292,6 @@
             });
         }
 
-        // --- STREAMING_CHUNK:Configuring Client Data Actions ---
         window.saveSettings = async function() {
             const newSettings = {};
             ['name', 'ssm', 'bem', 'address', 'bank', 'clientid', 'apikey', 'folderid', 'geminikey'].forEach(k => { newSettings[k] = document.getElementById('set-'+k).value; });
@@ -1365,7 +1319,6 @@
             if(document.getElementById('exp-project')) document.getElementById('exp-project').innerHTML = projOpts;
         }
 
-        // --- Bulk Operations Logic ---
         window.selectedItems = { clients: new Set(), projects: new Set(), commercials: new Set(), pos: new Set(), staff: new Set(), expenses: new Set() };
         
         window.toggleSelectAll = function(type, isChecked) {
@@ -1404,7 +1357,7 @@
                         if(type === 'pos') state.pos = state.pos.filter(d => !ids.includes(d.id));
                         if(type === 'staff') state.staff = state.staff.filter(s => !ids.includes(s.id));
                         if(type === 'expenses') state.expenses = state.expenses.filter(e => !ids.includes(e.id));
-                        window.selectedItems[type].clear(); refreshAllViews();
+                        window.selectedItems[type].clear(); window.refreshAllViews();
                         Swal.fire('Swept!', `${ids.length} parameters deleted safely.`, 'success');
                     } catch(e) { console.error(e); Swal.fire('Error', 'Cleanup failed.', 'error'); }
                 }
@@ -1429,17 +1382,17 @@
                         docId = docRef.id;
                     }
                     state.clients.push({ ...clientData, id: docId }); 
-                    logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); 
+                    window.logActivity(`Added new client: ${name}`, 'buildings', 'emerald'); 
                 }
-                if(document.getElementById('c-file').files.length > 0) await uploadFileToDrive(document.getElementById('c-file').files[0], name + ' - SSM/Profile');
-                closeModal('modal-client'); refreshAllViews(); Swal.close();
+                if(document.getElementById('c-file').files.length > 0) await window.uploadFileToDrive(document.getElementById('c-file').files[0], name + ' - SSM/Profile');
+                window.closeModal('modal-client'); window.refreshAllViews(); Swal.close();
             } catch(e) { console.error(e); Swal.fire('Error', 'Failed to save to cloud.', 'error'); }
         };
 
         window.editClient = function(id) {
             const c = state.clients.find(x => x.id === id); if(!c) return;
             document.getElementById('c-id').value = c.id; document.getElementById('c-name').value = c.name; document.getElementById('c-ssm').value = c.ssm || ''; document.getElementById('c-contact').value = c.contact || ''; document.getElementById('c-email').value = c.email || ''; document.getElementById('c-address').value = c.address || '';
-            openModal('modal-client');
+            window.openModal('modal-client');
         };
 
         function renderClients() {
@@ -1458,15 +1411,13 @@
                         <td class="p-4 md:p-5 border-b border-slate-100 font-black text-slate-800 text-center">${projCount}</td>
                         <td class="p-4 md:p-5 border-b border-slate-100 text-right">
                             <div class="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editClient('${c.id}')" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
+                                <button onclick="window.editClient('${c.id}')" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
                             </div>
                         </td>
                     </tr>`;
             });
         }
 
-        // --- STREAMING_CHUNK:Managing High-tech Scope and Tracking ---
-        // --- High-tech Scope of Works Tracker logic ---
         window.saveProjectUpdate = async function() {
             const id = document.getElementById('p-id').value; const clientId = document.getElementById('proj-client').value; const details = document.getElementById('p-details').value;
             if(!id || !clientId || !details) return Swal.fire('Error', 'Client developer and description details required', 'error');
@@ -1475,15 +1426,15 @@
             try {
                 if(isFirebaseActive) await updateDoc(getDocRef("projects", id), projData);
                 const index = state.projects.findIndex(p => p.id === id); if(index !== -1) state.projects[index] = { ...state.projects[index], ...projData };
-                if(document.getElementById('p-file').files.length > 0) await uploadFileToDrive(document.getElementById('p-file').files[0], 'Vault - ' + details.substring(0,20));
-                closeModal('modal-project'); refreshAllViews(); Swal.close();
+                if(document.getElementById('p-file').files.length > 0) await window.uploadFileToDrive(document.getElementById('p-file').files[0], 'Vault - ' + details.substring(0,20));
+                window.closeModal('modal-project'); window.refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to update engineering scope.', 'error'); }
         };
 
         window.editProject = function(id) {
             const p = state.projects.find(x => x.id === id); if(!p) return;
             document.getElementById('p-id').value = p.id; document.getElementById('proj-client').value = p.clientId; document.getElementById('p-details').value = p.details; document.getElementById('p-pbt').value = p.pbt || 'TBD'; document.getElementById('p-ref').value = p.ref || ''; document.getElementById('p-gps').value = p.gps || '';
-            openModal('modal-project');
+            window.openModal('modal-project');
         };
 
         window.toggleScopeStatus = async function(projectId, scopeName, currentStatus) {
@@ -1495,7 +1446,7 @@
             try { if(isFirebaseActive) await updateDoc(getDocRef("projects", projectId), { [`scopeStatuses.${scopeName}`]: newStatus }); } catch (e) { console.error(e); }
         };
 
-        window.quickQuote = function(projectId) { switchView('invoices'); openInvoiceWizard(); document.getElementById('inv-project').value = projectId; toggleNewProjectFields(projectId); };
+        window.quickQuote = function(projectId) { window.switchView('invoices'); window.openInvoiceWizard(); document.getElementById('inv-project').value = projectId; window.toggleNewProjectFields(projectId); };
 
         window.deleteData = async function(type, id) {
             Swal.fire({ title: 'Are you sure?', text: "Do you want to delete this scope profile?", icon: 'warning', showCancelButton: true }).then(async r => {
@@ -1506,7 +1457,7 @@
                             if(isFirebaseActive) await deleteDoc(getDocRef("projects", id));
                             state.projects = state.projects.filter(p => p.id !== id);
                         }
-                        refreshAllViews();
+                        window.refreshAllViews();
                         Swal.fire('Deleted!', 'Scope profile has been successfully cleaned.', 'success');
                     } catch(e) { Swal.fire('Error', 'Deletion failed.', 'error'); }
                 }
@@ -1582,7 +1533,7 @@
                             }
 
                             scopesHtml += `
-                            <div onclick="toggleScopeStatus('${p.id}', '${escapeHTML(scope)}', '${status}')" 
+                            <div onclick="window.toggleScopeStatus('${p.id}', '${escapeHTML(scope)}', '${status}')" 
                                  class="p-4 rounded-xl border ${baseClass} cursor-pointer transition-all flex items-center justify-between group">
                                 <div class="flex items-center gap-3">
                                     <i class="ph ${iconClass} transition-transform group-hover:scale-110"></i>
@@ -1601,7 +1552,7 @@
                         <i class="ph ph-warning-circle text-rose-400 text-3xl mb-2"></i>
                         <p class="text-xs font-black text-rose-600 uppercase tracking-widest">No Quotation/Invoice Linked</p>
                         <p class="text-xs text-rose-500 mt-1 mb-3">Generate a quote or invoice to auto-populate your tracking scopes.</p>
-                        <button onclick="quickQuote('${p.id}')" class="text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-xl transition-colors shadow-md">Generate Quote</button>
+                        <button onclick="window.quickQuote('${p.id}')" class="text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 px-4 py-2 rounded-xl transition-colors shadow-md">Generate Quote</button>
                     </div>`; 
                 }
 
@@ -1611,9 +1562,9 @@
                 container.innerHTML += `
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-8 transition-all hover:shadow-md relative interactive-card neon-glow-cyan">
                         <div class="absolute top-6 right-6 flex gap-2">
-                            <button onclick="editProject('${p.id}')" title="Edit Metadata" class="text-slate-400 hover:bg-slate-50 hover:text-indigo-600 p-2 rounded-lg border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-pencil text-xl"></i></button>
-                            <button onclick="quickQuote('${p.id}')" title="View/Create Quote" class="text-slate-400 hover:bg-cyan-50 hover:text-cyan-600 p-2 rounded-lg border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-receipt text-xl"></i></button>
-                            <button onclick="deleteData('project', '${p.id}')" title="Delete" class="text-slate-400 hover:bg-red-50 hover:text-red-500 p-2 rounded-lg border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-trash text-xl"></i></button>
+                            <button onclick="window.editProject('${p.id}')" title="Edit Metadata" class="text-slate-400 hover:bg-slate-50 hover:text-indigo-600 p-2 rounded-lg border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-pencil text-xl"></i></button>
+                            <button onclick="window.quickQuote('${p.id}')" title="View/Create Quote" class="text-slate-400 hover:bg-cyan-50 hover:text-cyan-600 p-2 rounded-lg border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-receipt text-xl"></i></button>
+                            <button onclick="window.deleteData('project', '${p.id}')" title="Delete" class="text-slate-400 hover:bg-red-50 hover:text-red-500 p-2 rounded-lg border border-transparent hover:border-slate-200 transition-all"><i class="ph ph-trash text-xl"></i></button>
                         </div>
 
                         <div class="flex items-start gap-4 mb-4 pr-32">
@@ -1652,8 +1603,6 @@
             });
         }
 
-        // --- STREAMING_CHUNK:Invoicing and Generating Subcontractor POs ---
-        // --- Billing Logic ---
         let tempLineItems = []; let editingDocId = null;
         window.toggleNewProjectFields = function(val) { document.getElementById('new-proj-fields').classList.toggle('hidden', val !== 'NEW'); };
         
@@ -1687,8 +1636,8 @@
             if(docId) {
                 const d = state.commercials.find(x => x.id === docId);
                 if(d) { document.getElementById('inv-project').value = d.projectId; document.getElementById('inv-type').value = d.type; document.getElementById('inv-po').value = d.poRef || ''; document.getElementById('inv-sst').checked = d.tax > 0; tempLineItems = JSON.parse(JSON.stringify(d.items)); }
-            } else { clearForm('modal-invoice'); document.getElementById('inv-project').value = 'NEW'; toggleNewProjectFields('NEW'); document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = ''; document.getElementById('inv-sst').checked = false; tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }]; }
-            renderLineItems(); openModal('modal-invoice');
+            } else { window.clearForm('modal-invoice'); document.getElementById('inv-project').value = 'NEW'; window.toggleNewProjectFields('NEW'); document.getElementById('inv-type').value = 'Quotation'; document.getElementById('inv-po').value = ''; document.getElementById('inv-sst').checked = false; tempLineItems = [{ desc: '', note: '', qty: 1, price: 0 }]; }
+            window.renderLineItems(); window.openModal('modal-invoice');
         };
 
         window.renderLineItems = function() {
@@ -1696,21 +1645,21 @@
             tempLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-0 relative group">
-                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${escapeHTML(item.desc)}" oninput="updateItemDesc(${index}, this.value)" list="scope-options" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-cyan-500" placeholder="e.g. PE Endorsement"><textarea id="item-note-${index}" oninput="updateItemNote(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none focus:border-cyan-500 h-16 resize-none" placeholder="Notes / Breakdown...">${escapeHTML(item.note || '')}</textarea></div>
-                        <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="updateItemQty(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-cyan-500"></div>
-                        <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="updateItemPrice(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-cyan-500" placeholder="0.00"></div>
-                        <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="removeLineItem(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
+                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${escapeHTML(item.desc)}" oninput="window.updateItemDesc(${index}, this.value)" list="scope-options" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-cyan-500" placeholder="e.g. PE Endorsement"><textarea id="item-note-${index}" oninput="window.updateItemNote(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-500 outline-none focus:border-cyan-500 h-16 resize-none" placeholder="Notes / Breakdown...">${escapeHTML(item.note || '')}</textarea></div>
+                        <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="window.updateItemQty(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-cyan-500"></div>
+                        <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="window.updateItemPrice(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-cyan-500" placeholder="0.00"></div>
+                        <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="window.removeLineItem(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
                     </div>`;
             });
-            calculateTotals();
+            window.calculateTotals();
         };
 
         window.updateItemDesc = function(index, val) { tempLineItems[index].desc = val; if(scopeNotesMap[val] && (!tempLineItems[index].note || tempLineItems[index].note.trim() === '')) { tempLineItems[index].note = scopeNotesMap[val]; document.getElementById(`item-note-${index}`).value = scopeNotesMap[val]; } };
         window.updateItemNote = function(index, val) { tempLineItems[index].note = val; };
-        window.updateItemQty = function(index, val) { tempLineItems[index].qty = Number(val); calculateTotals(); };
-        window.updateItemPrice = function(index, val) { tempLineItems[index].price = Number(val); calculateTotals(); };
-        window.addLineItem = function() { tempLineItems.push({ desc: '', note: '', qty: 1, price: 0 }); renderLineItems(); };
-        window.removeLineItem = function(index) { if(tempLineItems.length > 1) { tempLineItems.splice(index, 1); renderLineItems(); } };
+        window.updateItemQty = function(index, val) { tempLineItems[index].qty = Number(val); window.calculateTotals(); };
+        window.updateItemPrice = function(index, val) { tempLineItems[index].price = Number(val); window.calculateTotals(); };
+        window.addLineItem = function() { tempLineItems.push({ desc: '', note: '', qty: 1, price: 0 }); window.renderLineItems(); };
+        window.removeLineItem = function(index) { if(tempLineItems.length > 1) { tempLineItems.splice(index, 1); window.renderLineItems(); } };
 
         window.calculateTotals = function() {
             let sub = 0; tempLineItems.forEach(i => sub += (i.qty * i.price)); let tax = document.getElementById('inv-sst').checked ? (sub * 0.08) : 0;
@@ -1740,7 +1689,7 @@
                             }
                             clientId = clientDocId;
                             state.clients.push({ ...clientData, id: clientId });
-                            logActivity(`Added new client: ${newClientName}`, 'buildings', 'emerald');
+                            window.logActivity(`Added new client: ${newClientName}`, 'buildings', 'emerald');
                         }
                     } else {
                         clientId = document.getElementById('inv-client').value;
@@ -1770,9 +1719,9 @@
                 else { 
                     if(isFirebaseActive) await setDoc(getDocRef("commercials", docId), docData); 
                     state.commercials.push({ ...docData, id: docId }); 
-                    const tracking = `Generated new ${type} for ${formatRM(docData.total)}`; logActivity(tracking, 'receipt', 'cyan'); 
+                    window.logActivity(`Generated new ${type} for ${formatRM(docData.total)}`, 'receipt', 'cyan'); 
                 }
-                closeModal('modal-invoice'); refreshAllViews(); Swal.close();
+                window.closeModal('modal-invoice'); window.refreshAllViews(); Swal.close();
             } catch(e) { console.error(e); Swal.fire('Error', 'Failed to save billing document.', 'error'); }
         };
 
@@ -1781,13 +1730,12 @@
             const newStatus = state.commercials[docIndex].status === 'Paid' ? 'Unpaid' : 'Paid';
             try { 
                 if(isFirebaseActive) await updateDoc(getDocRef("commercials", id), { status: newStatus }); 
-                state.commercials[docIndex].status = newStatus; refreshAllViews(); 
+                state.commercials[docIndex].status = newStatus; window.refreshAllViews(); 
             } catch(e) { Swal.fire('Error', 'Update failed', 'error'); }
         };
 
         function renderCommercials() {
             const tbody = document.getElementById('commercials-table'); if(!tbody) return; tbody.innerHTML = '';
-            
             const searchVal = (document.getElementById('search-commercials')?.value || '').toLowerCase().trim();
 
             const filteredList = state.commercials.filter(d => {
@@ -1798,7 +1746,6 @@
                 const docId = d.id.toLowerCase();
                 
                 const textMatch = docId.includes(searchVal) || clientName.includes(searchVal) || details.includes(searchVal);
-                
                 if (state.currentDocTypeFilter === 'ALL') return textMatch;
                 return textMatch && d.type === state.currentDocTypeFilter;
             });
@@ -1810,9 +1757,9 @@
                 let statusBadge = '';
                 if (d.type === 'Invoice') {
                     if (d.status === 'Paid') {
-                        statusBadge = `<button onclick="togglePaidStatus('${d.id}')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-emerald-200"><i class="ph ph-check-circle-fill text-sm"></i> Paid</button>`;
+                        statusBadge = `<button onclick="window.togglePaidStatus('${d.id}')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-emerald-200"><i class="ph ph-check-circle-fill text-sm"></i> Paid</button>`;
                     } else {
-                        statusBadge = `<button onclick="togglePaidStatus('${d.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-rose-200"><i class="ph ph-x-circle text-sm"></i> Unpaid</button>`;
+                        statusBadge = `<button onclick="window.togglePaidStatus('${d.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-rose-200"><i class="ph ph-x-circle text-sm"></i> Unpaid</button>`;
                     }
                 } else {
                     statusBadge = `<span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-slate-400 border border-transparent">--</span>`;
@@ -1830,8 +1777,8 @@
                             <div class="flex items-center justify-end gap-3">
                                 ${statusBadge}
                                 <div class="flex justify-end gap-1 opacity-100 md:opacity-30 group-hover:opacity-100 transition-opacity">
-                                    <button onclick="printCommercial('${d.id}')" title="Print/PDF" class="text-slate-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition-colors"><i class="ph ph-printer text-lg"></i></button>
-                                    <button onclick="openInvoiceWizard('${d.id}')" title="Edit" class="text-slate-500 hover:text-cyan-600 p-1.5 rounded-lg hover:bg-cyan-50 transition-colors"><i class="ph ph-pencil text-lg"></i></button>
+                                    <button onclick="window.printCommercial('${d.id}')" title="Print/PDF" class="text-slate-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition-colors"><i class="ph ph-printer text-lg"></i></button>
+                                    <button onclick="window.openInvoiceWizard('${d.id}')" title="Edit" class="text-slate-500 hover:text-cyan-600 p-1.5 rounded-lg hover:bg-cyan-50 transition-colors"><i class="ph ph-pencil text-lg"></i></button>
                                 </div>
                             </div>
                         </td>
@@ -1839,28 +1786,27 @@
             });
         }
 
-        // --- Purchase Orders logic ---
         let tempPOLineItems = []; let editingPOId = null;
         window.openPOWizard = function(docId = null) {
             editingPOId = docId;
             if(docId) { const d = state.pos.find(x => x.id === docId); if(d) { document.getElementById('po-project').value = d.projectId; document.getElementById('po-vendor-name').value = d.vendorName || ''; document.getElementById('po-vendor-address').value = d.vendorAddress || ''; document.getElementById('po-sst').checked = d.tax > 0; tempPOLineItems = JSON.parse(JSON.stringify(d.items)); } }
-            else { clearForm('modal-po'); document.getElementById('po-project').value = ''; document.getElementById('po-vendor-name').value = ''; document.getElementById('po-vendor-address').value = ''; document.getElementById('po-sst').checked = false; tempPOLineItems = [{ desc: '', qty: 1, price: 0 }]; }
-            renderPOLineItems(); openModal('modal-po');
+            else { window.clearForm('modal-po'); document.getElementById('po-project').value = ''; document.getElementById('po-vendor-name').value = ''; document.getElementById('po-vendor-address').value = ''; document.getElementById('po-sst').checked = false; tempPOLineItems = [{ desc: '', qty: 1, price: 0 }]; }
+            window.renderPOLineItems(); window.openModal('modal-po');
         };
         window.renderPOLineItems = function() {
             const container = document.getElementById('po-line-items-container'); container.innerHTML = '';
             tempPOLineItems.forEach((item, index) => {
                 container.innerHTML += `
                     <div class="flex flex-col md:grid md:grid-cols-12 gap-2 md:gap-4 items-start md:items-center bg-slate-50 md:bg-transparent p-3 md:p-0 rounded-xl md:rounded-none border border-slate-100 md:border-0 relative group">
-                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${escapeHTML(item.desc)}" oninput="updateItemDescPO(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="e.g. Soil Investigation Borehole"></div>
-                        <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="updateItemQtyPO(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-indigo-500"></div>
-                        <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="updateItemPricePO(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-500" placeholder="0.00"></div>
-                        <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="removeLineItemPO(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
+                        <div class="col-span-12 md:col-span-6 w-full space-y-1"><input type="text" value="${escapeHTML(item.desc)}" oninput="window.updateItemDescPO(${index}, this.value)" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="e.g. Soil Investigation Borehole"></div>
+                        <div class="col-span-6 md:col-span-2 w-full"><input type="number" value="${item.qty}" oninput="window.updateItemQtyPO(${index}, this.value)" class="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-2 text-sm outline-none focus:border-indigo-500"></div>
+                        <div class="col-span-6 md:col-span-3 w-full"><input type="number" value="${item.price}" oninput="window.updateItemPricePO(${index}, this.value)" class="w-full text-right bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-indigo-500" placeholder="0.00"></div>
+                        <div class="col-span-12 md:col-span-1 flex justify-end w-full"><button onclick="window.removeLineItemPO(${index})" class="text-slate-300 hover:text-red-500 p-2 md:p-1 md:opacity-0 group-hover:opacity-100 transition-all"><i class="ph ph-trash text-lg md:text-xl"></i></button></div>
                     </div>`;
             });
-            calculateTotalsPO();
+            window.calculateTotalsPO();
         };
-        window.updateItemDescPO = function(index, val) { tempPOLineItems[index].desc = val; }; window.updateItemQtyPO = function(index, val) { tempPOLineItems[index].qty = Number(val); calculateTotalsPO(); }; window.updateItemPricePO = function(index, val) { tempPOLineItems[index].price = Number(val); calculateTotalsPO(); }; window.addLineItemPO = function() { tempPOLineItems.push({ desc: '', qty: 1, price: 0 }); renderPOLineItems(); }; window.removeLineItemPO = function(index) { if(tempPOLineItems.length > 1) { tempPOLineItems.splice(index, 1); renderPOLineItems(); } };
+        window.updateItemDescPO = function(index, val) { tempPOLineItems[index].desc = val; }; window.updateItemQtyPO = function(index, val) { tempPOLineItems[index].qty = Number(val); window.calculateTotalsPO(); }; window.updateItemPricePO = function(index, val) { tempPOLineItems[index].price = Number(val); window.calculateTotalsPO(); }; window.addLineItemPO = function() { tempPOLineItems.push({ desc: '', qty: 1, price: 0 }); window.renderPOLineItems(); }; window.removeLineItemPO = function(index) { if(tempPOLineItems.length > 1) { tempPOLineItems.splice(index, 1); window.renderPOLineItems(); } };
         window.calculateTotalsPO = function() { let sub = 0; tempPOLineItems.forEach(i => sub += (i.qty * i.price)); let tax = document.getElementById('po-sst').checked ? (sub * 0.08) : 0; document.getElementById('po-calc-sub').innerText = formatRM(sub); document.getElementById('po-calc-tax').innerText = formatRM(tax); document.getElementById('po-calc-total').innerText = formatRM(sub + tax); };
         window.savePO = async function() {
             const projectId = document.getElementById('po-project').value; const vendorName = document.getElementById('po-vendor-name').value; const vendorAddress = document.getElementById('po-vendor-address').value;
@@ -1877,9 +1823,9 @@
                 } 
                 else { 
                     if(isFirebaseActive) await setDoc(getDocRef("pos", docId), docData); 
-                    state.pos.push({ ...docData, id: docId }); logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); 
+                    state.pos.push({ ...docData, id: docId }); window.logActivity(`Issued new PO to ${vendorName}`, 'shopping-cart', 'indigo'); 
                 }
-                closeModal('modal-po'); refreshAllViews(); Swal.close();
+                window.closeModal('modal-po'); window.refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save PO details.', 'error'); }
         };
         window.togglePOSettled = async function(id) { 
@@ -1887,7 +1833,7 @@
             const newStatus = state.pos[docIndex].status === 'Settled' ? 'Pending' : 'Settled'; 
             try { 
                 if(isFirebaseActive) await updateDoc(getDocRef("pos", id), { status: newStatus }); 
-                state.pos[docIndex].status = newStatus; refreshAllViews(); 
+                state.pos[docIndex].status = newStatus; window.refreshAllViews(); 
             } catch(e) { Swal.fire('Error', 'Update failed', 'error'); } 
         };
         
@@ -1898,9 +1844,9 @@
                 
                 let statusBadge = '';
                 if (d.status === 'Settled') {
-                    statusBadge = `<button onclick="togglePOSettled('${d.id}')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-emerald-200"><i class="ph ph-check-circle-fill text-sm"></i> Settled</button>`;
+                    statusBadge = `<button onclick="window.togglePOSettled('${d.id}')" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-emerald-200"><i class="ph ph-check-circle-fill text-sm"></i> Settled</button>`;
                 } else {
-                    statusBadge = `<button onclick="togglePOSettled('${d.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-amber-200"><i class="ph ph-clock text-sm"></i> Pending</button>`;
+                    statusBadge = `<button onclick="window.togglePOSettled('${d.id}')" class="bg-amber-50 hover:bg-amber-100 text-amber-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all shadow-sm border border-amber-200"><i class="ph ph-clock text-sm"></i> Pending</button>`;
                 }
 
                 const isChecked = window.selectedItems.pos.has(d.id) ? 'checked' : '';
@@ -1914,8 +1860,8 @@
                             <div class="flex items-center justify-end gap-3">
                                 ${statusBadge}
                                 <div class="flex justify-end gap-1 opacity-100 md:opacity-30 group-hover:opacity-100 transition-opacity">
-                                    <button onclick="printPO('${d.id}')" title="Print/PDF" class="text-slate-500 hover:text-indigo-600 p-1.5 rounded-lg hover:bg-indigo-50 transition-colors"><i class="ph ph-printer text-lg"></i></button>
-                                    <button onclick="openPOWizard('${d.id}')" title="Edit" class="text-slate-500 hover:text-cyan-600 p-1.5 rounded-lg hover:bg-cyan-50 transition-colors"><i class="ph ph-pencil text-lg"></i></button>
+                                    <button onclick="window.printPO('${d.id}')" title="Print/PDF" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded"><i class="ph ph-printer text-lg"></i></button>
+                                    <button onclick="window.openPOWizard('${d.id}')" title="Edit" class="text-slate-400 hover:text-cyan-600 p-1.5 rounded"><i class="ph ph-pencil text-lg"></i></button>
                                 </div>
                             </div>
                         </td>
@@ -1923,13 +1869,28 @@
             });
         }
 
-        // --- HR & Staff Payroll Operations ---
+        window.saveStaff = async function() {
+            const id = document.getElementById('s-id').value;
+            const name = document.getElementById('s-name').value;
+            const role = document.getElementById('s-role').value;
+            const salary = parseCurrencyVal(document.getElementById('s-salary').value);
+            if(!name || !salary) return Swal.fire('Error', 'Name and Allocation salary required', 'error');
+            const staffData = { name, role, salary };
+            Swal.showLoading();
+            try {
+                if(id) {
+                    if(isFirebaseActive) await updateDoc(getDocRef("staff", id), staffData);
+                    const index = state.staff.findIndex(s => s.id === id);
+                    if(index !== -1) state.staff[index] = { ...staffData, id };
+                } else {
+                    let docId = 'staff_' + Date.now();
+                    if(isFirebaseActive) {
                         const docRef = await addDoc(getColRef("staff"), staffData);
                         docId = docRef.id;
                     }
                     state.staff.push({ ...staffData, id: docId });
                 }
-                closeModal('modal-staff'); refreshAllViews(); Swal.close();
+                window.closeModal('modal-staff'); window.refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to save staff.', 'error'); }
         };
 
@@ -1955,11 +1916,11 @@
                 </div>
             `;
             const actionsHtml = `
-                <button onclick="savePDFToDrive('print-content', '${s.name}-Payslip')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                <button onclick="openPDFNewTab('print-content', '${s.name}-Payslip')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.savePDFToDrive('print-content', '${s.name}-Payslip')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="window.openPDFNewTab('print-content', '${s.name}-Payslip')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                 <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-printer text-lg"></i> Print PDF</button>
             `;
-            openPrintView(contentHtml, actionsHtml, 'hr');
+            window.openPrintView(contentHtml, actionsHtml, 'hr');
         };
 
         function renderStaff() {
@@ -1970,7 +1931,7 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group hover:shadow-md transition-all">
                         <div class="absolute top-4 left-4"><input type="checkbox" value="${s.id}" onchange="toggleRowSelection('staff', '${s.id}', this.checked)" class="chk-staff w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300" ${isChecked}></div>
                         <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="generatePayslip('${s.id}')" title="Generate Payslip" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button>
+                            <button onclick="window.generatePayslip('${s.id}')" title="Generate Payslip" class="text-cyan-600 hover:bg-cyan-50 p-1.5 rounded"><i class="ph ph-receipt text-lg"></i></button>
                         </div>
                         <div class="w-12 h-12 mx-auto bg-slate-100 text-slate-700 rounded-full flex items-center justify-center font-black text-xl mb-4 border border-slate-200"><i class="ph ph-user"></i></div>
                         <h4 class="font-black text-slate-800 text-lg text-center">${escapeHTML(s.name)}</h4>
@@ -1993,7 +1954,7 @@
                     docId = docRef.id;
                 }
                 state.expenses.push({ ...expData, id: docId });
-                closeModal('modal-expense'); refreshAllViews(); Swal.close();
+                window.closeModal('modal-expense'); window.refreshAllViews(); Swal.close();
             } catch(e) { Swal.fire('Error', 'Failed to log expense claim.', 'error'); }
         };
 
@@ -2013,7 +1974,6 @@
             });
         }
 
-        // --- STREAMING_CHUNK:Implementing Export and CSV Import Adapters ---
         window.exportToCSV = function(type) {
             let data = []; let filename = '';
             const escapeCSV = (str) => { if (str == null) return '""'; const s = String(str); if (s.includes(',') || s.includes('"') || s.includes('\n')) return `"${s.replace(/"/g, '""')}"`; return s; };
@@ -2055,7 +2015,7 @@
                     state.clients.push({ ...clientData, id: docId }); addedCount++; 
                 }
             }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 clients added.', 'warning'); else Swal.fire('Clients Imported!', `Imported ${addedCount} clients.`, 'success');
+            window.refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 clients added.', 'warning'); else Swal.fire('Clients Imported!', `Imported ${addedCount} clients.`, 'success');
         }
 
         async function processProjectCSV(data) {
@@ -2079,7 +2039,7 @@
                 }
                 state.projects.push({ ...projData, id: docId }); addedCount++;
             }
-            refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 projects found.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.`, 'success');
+            window.refreshAllViews(); if (addedCount === 0) Swal.fire('No Data', '0 projects found.', 'warning'); else Swal.fire('Data Imported!', `Imported ${addedCount} projects.`, 'success');
         }
 
         async function processCommercialCSV(data) {
@@ -2092,15 +2052,13 @@
                 const statusStr = row['Status'] || 'Unpaid';
                 const poRef = row['PO Reference'] || '';
                 
-                // Extract number from currency strings like "RM 1,315,000.00"
                 let totalStr = row['Grand Total (RM)'] || row['Price'] || row['Total'] || '0';
-                const totalVal = parseFloat(String(totalStr).replace(/[^0-9.-]+/g, "")) || 0;
+                const totalVal = parseFloat(String(totalStr).replace(/[^0-9.-]+/g, ""));
                 
-                if (!docIdRaw && totalVal === 0) continue; // Skip empty rows safely
+                if (!docIdRaw && totalVal === 0) continue;
                 
                 const docId = docIdRaw ? String(docIdRaw).trim() : `${type === 'Quotation' ? 'QUO' : 'INV'}-${Date.now()}`;
                 
-                // 1. Map or Auto-create Client Profile
                 let clientId = null;
                 const existingClient = state.clients.find(c => c.name.toLowerCase().trim() === clientStr.toLowerCase().trim());
                 if (existingClient) clientId = existingClient.id; 
@@ -2114,7 +2072,6 @@
                     state.clients.push({ id: clientId, name: clientStr.trim() }); 
                 }
 
-                // 2. Map or Auto-create Scope/Project Profile (General Works Default)
                 const projStr = row['Project ID'] || row['Project'] || `General Engineering Works - ${clientStr}`;
                 let projectId = null; 
                 const existingProj = state.projects.find(p => p.details.toLowerCase().trim() === projStr.toLowerCase().trim());
@@ -2129,13 +2086,11 @@
                     state.projects.push({ id: projectId, details: projStr, clientId: clientId, date: dateStr, pbt:'TBD', status:'Drafting', scopeStatuses: {} }); 
                 }
                 
-                // 3. Construct Final Financial Document
                 const items = [{ desc: 'Imported Document Entry', note: 'Bulk imported from CSV', qty: 1, price: totalVal }];
                 const docData = { projectId, type, poRef, items, subtotal: totalVal, tax: 0, total: totalVal, date: dateStr, status: statusStr };
                 
                 if(isFirebaseActive) await setDoc(getDocRef("commercials", docId), docData);
                 
-                // Avoid duplication in local state memory
                 const existingDocIndex = state.commercials.findIndex(d => d.id === docId);
                 if (existingDocIndex !== -1) {
                     state.commercials[existingDocIndex] = { ...docData, id: docId };
@@ -2144,16 +2099,14 @@
                     addedCount++;
                 }
             }
-            refreshAllViews(); 
+            window.refreshAllViews(); 
             if (addedCount === 0) Swal.fire('No Data', '0 valid documents found in CSV.', 'warning'); 
             else Swal.fire('Billing Imported!', `Successfully imported ${addedCount} commercial documents.`, 'success');
         }
 
-        // --- STREAMING_CHUNK:Configuring the Live PDF Generators ---
-        // --- Print & Drive Engine ---
         window.closePrintView = function(returnViewId) {
             document.getElementById('print-overlay').classList.add('hidden');
-            if(returnViewId) switchView(returnViewId);
+            if(returnViewId) window.switchView(returnViewId);
         };
 
         window.openPrintView = function(htmlContent, actionsHtml, returnViewId) {
@@ -2176,11 +2129,11 @@
                 </div>
             `;
             const actionsHtml = `
-                <button onclick="savePDFToDrive('print-content', '${docData.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                <button onclick="openPDFNewTab('print-content', '${docData.id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.savePDFToDrive('print-content', '${docData.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="window.openPDFNewTab('print-content', '${docData.id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                 <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-printer text-lg"></i> Print PDF</button>
             `;
-            openPrintView(contentHtml, actionsHtml, 'invoices');
+            window.openPrintView(contentHtml, actionsHtml, 'invoices');
         };
 
         window.printPO = function(id) {
@@ -2197,11 +2150,11 @@
                 </div>
             `;
             const actionsHtml = `
-                <button onclick="savePDFToDrive('print-content', '${docData.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                <button onclick="openPDFNewTab('print-content', '${docData.id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.savePDFToDrive('print-content', '${docData.id}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="window.openPDFNewTab('print-content', '${docData.id}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                 <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"><i class="ph ph-printer text-lg"></i> Print P.O.</button>
             `;
-            openPrintView(contentHtml, actionsHtml, 'pos');
+            window.openPrintView(contentHtml, actionsHtml, 'pos');
         };
 
         window.openPDFNewTab = function(elementId, filename) {
@@ -2229,7 +2182,7 @@
                     client_id: state.settings.clientid, scope: 'https://www.googleapis.com/auth/drive.file',
                     callback: (response) => {
                         if (response.error) { Swal.fire('Error', 'Google Drive connection failed.', 'error'); } 
-                        else { window.gapiToken = response.access_token; Swal.fire('Connected!', 'Secure link to Google Drive established.', 'success'); document.querySelector('button[onclick="connectGoogleDrive()"]').innerHTML = '<i class="ph ph-cloud-check text-lg mr-2"></i> Vault Linked'; document.querySelector('button[onclick="connectGoogleDrive()"]').classList.replace('bg-indigo-50', 'bg-emerald-50'); document.querySelector('button[onclick="connectGoogleDrive()"]').classList.replace('text-indigo-700', 'text-emerald-700'); }
+                        else { window.gapiToken = response.access_token; Swal.fire('Connected!', 'Secure link to Google Drive established.', 'success'); document.querySelector('button[onclick="window.connectGoogleDrive()"]').innerHTML = '<i class="ph ph-cloud-check text-lg mr-2"></i> Vault Linked'; document.querySelector('button[onclick="window.connectGoogleDrive()"]').classList.replace('bg-indigo-50', 'bg-emerald-50'); document.querySelector('button[onclick="window.connectGoogleDrive()"]').classList.replace('text-indigo-700', 'text-emerald-700'); }
                     },
                 }); client.requestAccessToken();
             }; document.body.appendChild(script);
@@ -2253,11 +2206,9 @@
             });
         };
 
-        // --- STREAMING_CHUNK:Bringing Gemini AI Workflows Online ---
-        // --- Core REST Gemini AI Engine ---
-        async function askGemini(promptText, isJson = false) {
-            if (!state.settings.geminikey || state.settings.geminikey.trim() === '') { 
-                Swal.fire('AI Key Required', 'Please insert your Gemini API Key in the Settings tab.', 'warning'); 
+        window.askGemini = async function(promptText, isJson = false) {
+            if (!state.settings.geminikey) { 
+                Swal.fire('AI Not Configured', 'Please configure your Gemini API Key in Company Setup.', 'warning'); 
                 return null; 
             }
             try { 
@@ -2273,7 +2224,7 @@
                 });
                 if(!response.ok) {
                     const errData = await response.json();
-                    throw new Error(errData.error?.message || `HTTP Error ${response.status}`);
+                    throw new Error(errData.error?.message || `REST request failed with status code ${response.status}`);
                 }
                 const data = await response.json();
                 let text = data.candidates[0].content.parts[0].text;
@@ -2286,9 +2237,8 @@
                 Swal.fire('Gemini Error', error.message || 'Failed to connect to Google AI via REST protocol.', 'error'); 
                 return null; 
             }
-        }
+        };
 
-        // --- AI Operations: LOA Auto-Onboard ---
         window.processLOA = async function(event) {
             const file = event.target.files[0]; if (!file || file.type !== "application/pdf") return;
             Swal.fire({ title: 'AI Reading LOA...', text: 'Extracting Project and Client Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -2302,7 +2252,7 @@
                 
                 const prompt = `You are a Malaysian structural engineering assistant. Read this Letter of Award (LOA) or Tender document. Extract the following details: 1. The name of the Client. 2. The Project Details or Title. 3. The PBT or Local Authority mentioned. If none, say "TBD". 4. The Reference Number of the LOA/Tender. 5. The GPS or Location of the site. Return strictly as a valid JSON object with keys: "clientName", "projectDetails", "pbt", "ref", "gps". Do NOT include markdown blocks. Text: ${extractedText.substring(0, 20000)}`;
                 
-                const jsonText = await askGemini(prompt, true);
+                const jsonText = await window.askGemini(prompt, true);
                 if(jsonText) {
                     const data = JSON.parse(jsonText);
                     let clientId = null;
@@ -2326,16 +2276,15 @@
                     state.projects.push({ ...projData, id: docId });
                     
                     if(document.getElementById('ai-loa-upload').files.length > 0) {
-                        await uploadFileToDrive(document.getElementById('ai-loa-upload').files[0], 'LOA - ' + data.projectDetails.substring(0,20));
+                        await window.uploadFileToDrive(document.getElementById('ai-loa-upload').files[0], 'LOA - ' + data.projectDetails.substring(0,20));
                     }
-                    refreshAllViews();
+                    window.refreshAllViews();
                     Swal.fire('AI Onboarding Complete!', `Client: ${data.clientName}\nProject: ${data.projectDetails}`, 'success');
                 }
             } catch (error) { console.error(error); Swal.fire('Analysis Failed', 'Could not process PDF or JSON.', 'error'); }
             event.target.value = '';
         };
 
-        // --- AI Operations: Site Defect Vision ---
         window.analyzeDefect = async function(event) {
             const file = event.target.files[0]; if (!file) return;
             
@@ -2348,17 +2297,14 @@
 
             Swal.fire({ title: 'Gemini Vision Analysis...', text: 'Examining structural integrity...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
+            if (!state.settings.geminikey) return Swal.fire('AI Not Configured', 'Missing Gemini API Key.', 'warning');
+            
             try {
                 const base64EncodedDataPromise = new Promise((resolve) => {
                     const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file);
                 });
                 const base64EncodedData = await base64EncodedDataPromise;
                 
-                if (!state.settings.geminikey || state.settings.geminikey.trim() === '') {
-                     Swal.fire('AI Key Required', 'Please insert your Gemini API Key in the Settings tab.', 'warning');
-                     return;
-                }
-
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${state.settings.geminikey}`;
                 const prompt = "You are a Professional Civil & Structural Engineer (Ir.) registered with BEM in Malaysia. Analyze this site photo. Generate a professional 'Structural Defect Assessment'. Format using Markdown. Structure it exactly like this:\n\n### 1. Visual Observations\n(Detail what is wrong, e.g. spalling, corrosion, honeycombing, cracked welds).\n\n### 2. Root Cause Analysis\n(Why it happened).\n\n### 3. Recommended Repair Methods\n(Technical solutions, e.g., Epoxy injection, steel jacketing, wire brushing and repainting). Keep it technical and concise.";
                 
@@ -2381,8 +2327,7 @@
                 });
                 
                 if(!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || `HTTP Error ${response.status}`);
+                    throw new Error(`REST Vision request failed with status code ${response.status}`);
                 }
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
@@ -2390,7 +2335,7 @@
                 document.getElementById('ai-vision-result').innerHTML = marked.parse(text);
                 document.getElementById('ai-vision-result-container').classList.remove('hidden');
                 Swal.close();
-            } catch(e) { console.error(e); Swal.fire('Vision Error', e.message || 'Failed to analyze image.', 'error'); }
+            } catch(e) { console.error(e); Swal.fire('Vision Error', 'Failed to analyze image.', 'error'); }
             event.target.value = '';
         };
 
@@ -2407,14 +2352,13 @@
                 </div>
             `;
             const actionsHtml = `
-                <button onclick="savePDFToDrive('print-content', 'Site_Defect_Report')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                <button onclick="openPDFNewTab('print-content', 'Site_Defect_Report')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 animate-pulse"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                <button onclick="window.savePDFToDrive('print-content', 'Site_Defect_Report')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                <button onclick="window.openPDFNewTab('print-content', 'Site_Defect_Report')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 animate-pulse"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                 <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-printer text-lg"></i> Print Report</button>
             `;
-            openPrintView(contentHtml, actionsHtml, 'ai-vision');
+            window.openPrintView(contentHtml, actionsHtml, 'ai-vision');
         };
 
-        // --- AI Operations: Smart Quotation Auto-Pilot ---
         window.aiSuggestScopes = async function() {
             let projectTitle = '';
             const selectedProj = document.getElementById('inv-project').value;
@@ -2427,18 +2371,17 @@
             
             const prompt = `I am a Civil & Structural Consultant in Malaysia preparing a quotation for: "${projectTitle}". Suggest 3 to 4 standard engineering scopes of work for this. Return strictly a JSON array of objects. Keys: "desc" (scope title), "note" (detailed task description), "qty" (number, usually 1), "price" (estimated market price in RM, number only). Do not include markdown or backticks.`;
             
-            const jsonText = await askGemini(prompt, true);
+            const jsonText = await window.askGemini(prompt, true);
             if(jsonText) {
                 try {
                     const aiItems = JSON.parse(jsonText);
                     tempLineItems = aiItems;
-                    renderLineItems();
+                    window.renderLineItems();
                     Swal.fire('Auto-Filled!', 'Review the AI suggestions and adjust pricing as needed.', 'success');
                 } catch(e) { Swal.fire('Error', 'AI returned invalid formatting.', 'error'); }
             }
         };
 
-        // --- OCR & Contract Analyzer ---
         window.processReceiptImage = async function(event) {
             const file = event.target.files[0]; if (!file) return;
             Swal.fire({ title: 'AI Scanning...', text: 'Extracting data via Tesseract OCR...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
@@ -2465,7 +2408,7 @@
                 }
                 Swal.fire({ title: 'Analyzing...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
                 const prompt = `Analyze this contract text. Provide a professional summary focusing ONLY on: 1. Exact Scope of Work 2. Payment Terms 3. LAD/Penalty Clauses. Format using markdown.\n\nText: ${extractedText.substring(0, 30000)}`;
-                const aiResponse = await askGemini(prompt);
+                const aiResponse = await window.askGemini(prompt);
                 if (aiResponse) { const resultDiv = document.getElementById('ai-contract-result'); resultDiv.innerHTML = marked.parse(aiResponse); resultDiv.classList.remove('hidden'); Swal.close(); }
             } catch (error) { Swal.fire('Analysis Failed', 'Could not process PDF text.', 'error'); } event.target.value = '';
         };
@@ -2477,7 +2420,7 @@
             Swal.fire({ title: 'Gemini Drafting...', text: 'Writing professional Surat Rasmi...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
             const prompt = `Write an official Malay formal letter (Surat Rasmi) for an engineering consulting firm. From: ${state.settings.name}. To Client: ${client ? client.name : 'Client'}. Project: ${p.details}. PBT/Authority: ${p.pbt} (Ref: ${p.ref}). Letter Purpose: ${type}. Custom Instructions: ${customPrompt}. Format: Do NOT include a letterhead placeholder. Start with the date, then "Tuan/Puan", then the title, then the body. Keep it highly professional and technical.`;
-            const aiResponse = await askGemini(prompt);
+            const aiResponse = await window.askGemini(prompt);
             
             if (aiResponse) { 
                 const letterBody = aiResponse.replace(/\*\*/g, ''); 
@@ -2488,16 +2431,15 @@
                     </div>
                 `;
                 const actionsHtml = `
-                    <button onclick="savePDFToDrive('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
-                    <button onclick="openPDFNewTab('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
+                    <button onclick="window.savePDFToDrive('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-google-drive-logo text-lg"></i> Save to Drive</button>
+                    <button onclick="window.openPDFNewTab('print-content', 'Surat_Rasmi_${escapeHTML(p.pbt)}')" class="w-full bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-file-pdf text-lg"></i> Open PDF</button>
                     <button onclick="window.print()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-5 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2"><i class="ph ph-printer text-lg"></i> Print Official</button>
                 `;
-                openPrintView(contentHtml, actionsHtml, 'ai-letter');
+                window.openPrintView(contentHtml, actionsHtml, 'ai-letter');
                 Swal.close(); 
             }
         };
 
-        // --- Interactive Co-Pilot Chatbot ---
         window.toggleChatbot = function() { const windowChat = document.getElementById('ai-chat-window'); windowChat.classList.toggle('hidden'); windowChat.classList.toggle('flex'); };
         window.sendChatMessage = async function() {
             const inputEl = document.getElementById('ai-chat-input'); const message = inputEl.value.trim(); if(!message) return;
@@ -2505,40 +2447,33 @@
             const typingId = 'typing-' + Date.now(); chatBox.innerHTML += `<div id="${typingId}" class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-500 self-start shadow-sm max-w-[85%] mt-3 flex items-center gap-2"><i class="ph ph-spinner-gap animate-spin"></i> Gemini is thinking...</div>`; chatBox.scrollTop = chatBox.scrollHeight;
             const dbSummary = { clients: state.clients.map(c=>({id:c.id, name:c.name})), projects: state.projects.map(p=>({id:p.id, details:p.details, status:p.status})), invoices: state.commercials.map(c=>({id:c.id, total:c.total, status:c.status})) };
             const prompt = `You are ERP Co-Pilot. Answer based ONLY on this JSON database: ${JSON.stringify(dbSummary)}\n\nQuestion: "${message}"`;
-            const responseText = await askGemini(prompt); document.getElementById(typingId).remove();
+            const responseText = await window.askGemini(prompt); document.getElementById(typingId).remove();
             if(responseText) chatBox.innerHTML += `<div class="bg-white p-3 rounded-lg rounded-tl-none border border-slate-200 text-slate-800 self-start shadow-sm max-w-[85%] mt-3 prose prose-sm font-medium">${marked.parse(responseText)}</div>`;
             else chatBox.innerHTML += `<div class="bg-rose-50 text-rose-600 p-3 rounded-lg self-start mt-3">Connection error.</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         };
 
-        // Standard Seed Data Injections
         window.manualInjectData = async function() {
             Swal.fire({ title: 'Deploying Sandbox...', text: 'Writing standard mock entities into sandboxed memory...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             try {
-                // Clients
                 let cl1Id = 'cl_' + Date.now() + '1';
                 let cl2Id = 'cl_' + Date.now() + '2';
-                
                 if(isFirebaseActive) {
                     const cl1 = await addDoc(getColRef("clients"), { name: "NEIGE DESIGN SDN BHD", ssm: "20180104XXXX", contact: "En. Shahrul", email: "contact@neigedesign.com", address: "3A-12, Plaza Damas, Sri Hartamas, KL" });
                     const cl2 = await addDoc(getColRef("clients"), { name: "OUTDOOR CHANNEL SDN BHD", ssm: "20150203XXXX", contact: "Mr. Wong", email: "wong@outdoorchannel.com.my", address: "No 5, Jalan Tandang, Petaling Jaya" });
                     cl1Id = cl1.id; cl2Id = cl2.id;
                 }
                 
-                // Projects
                 let p1Id = 'p_' + Date.now() + '1';
                 let p2Id = 'p_' + Date.now() + '2';
-                
                 if(isFirebaseActive) {
                     const p1 = await addDoc(getColRef("projects"), { clientId: cl1Id, details: "CADANGAN MEMBINA PAPARAN IKLAN TWINPOLE DUA MUKAAN BERUKURAN 60ft x 40ft DI PERSIMPANGAN JALAN TEMPLER/JALAN KLANG LAMA", pbt: "MBPJ", gps: "3.0851, 101.6433", status: "In Progress", ref: "MBPJ/OSC/2026-001", date: "22/06/2026", scopeStatuses: { "Design & Drawing": "Completed", "PE Endorsement": "In Progress" } });
                     const p2 = await addDoc(getColRef("projects"), { clientId: cl2Id, details: "CADANGAN MEMBAHARUI LESEN STRUKTUR PAPAN IKLAN UNIPOLE 18m x 6m DI LEBUHRAYA LDP KM 5.2 ARAH UTARA", pbt: "DBKL", gps: "3.1501, 101.6112", status: "Awarded", ref: "DBKL/OSC/2026-144", date: "22/06/2026", scopeStatuses: { "Renew license": "In Progress" } });
                     p1Id = p1.id; p2Id = p2.id;
                     
-                    // Commercials
                     await setDoc(getDocRef("commercials", "QUO-2026-001"), { projectId: p1Id, type: "Quotation", poRef: "PO-ND-889", items: [{ desc: "Design & Drawing", note: scopeNotesMap["Design & Drawing"], qty: 1, price: 4500 }, { desc: "PE Endorsement", note: scopeNotesMap["PE Endorsement"], qty: 1, price: 3000 }], subtotal: 7500, tax: 600, total: 8100, date: "22/06/2026", status: "Unpaid" });
                     await setDoc(getDocRef("commercials", "QUO-2026-002"), { projectId: p2Id, type: "Quotation", poRef: "PO-OC-772", items: [{ desc: "Renew license", note: scopeNotesMap["Renew license"], qty: 1, price: 3500 }], subtotal: 3500, tax: 0, total: 3500, date: "22/06/2026", status: "Unpaid" });
 
-                    // Staff
                     await addDoc(getColRef("staff"), { name: "Muhammad Amirul Bin Razak", role: "Graduate Engineer", salary: 3800 });
                     await addDoc(getColRef("staff"), { name: "Siti Nurhaliza Binti Yusof", role: "Admin Coordinator", salary: 2800 });
                 }
