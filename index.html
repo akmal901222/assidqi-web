@@ -961,13 +961,15 @@
         let isFirebaseActive = false;
 
         try {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-                apiKey: "dummy", authDomain: "dummy.firebaseapp.com", projectId: "dummy"
-            };
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            isFirebaseActive = true;
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                const firebaseConfig = JSON.parse(__firebase_config);
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                isFirebaseActive = true;
+            } else {
+                console.warn("Running in local fallback state.");
+            }
         } catch (e) {
             console.warn("Firebase config not found or invalid. Running in local fallback state.");
         }
@@ -1251,6 +1253,7 @@
                 if(isFirebaseActive) logActivity('ERP authenticated and synchronized with Firebase (v11 Modular)', 'cloud-check', 'cyan');
             } catch (e) { 
                 console.error(e); 
+                isFirebaseActive = false;
                 Swal.close(); 
                 Swal.fire({
                     title: 'Offline Sandboxed Mode Active', 
@@ -2196,7 +2199,7 @@
                 
                 // 3. Construct Final Financial Document
                 const items = [{ desc: 'Imported Document Entry', note: 'Bulk imported from CSV', qty: 1, price: totalVal }];
-                const amountPaid = statusStr === 'Paid' ? totalVal : 0;
+                const amountPaid = statusStr.toLowerCase() === 'paid' ? totalVal : 0;
                 const docData = { projectId, type, poRef, items, subtotal: totalVal, tax: 0, total: totalVal, date: dateStr, status: statusStr, amountPaid };
                 
                 if(isFirebaseActive) await setDoc(getDocRef("commercials", docId), docData);
